@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>登录页 - 原型图</title>
+    <style>
+      /* === 原型图基础样式 === */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family:
+          -apple-system, "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+        background: #f0f0f0;
+        color: #333;
+        padding: 20px;
+      }
+
+      .prototype-frame {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: #fff;
+        border: 2px solid #ccc;
+        border-radius: 4px;
+        overflow: hidden;
+      }
+
+      .prototype-header {
+        background: #4a90d9;
+        color: #fff;
+        padding: 12px 20px;
+        font-size: 14px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .prototype-header .page-title {
+        font-weight: bold;
+        font-size: 16px;
+      }
+      .prototype-header .page-info {
+        font-size: 12px;
+        opacity: 0.8;
+      }
+
+      .prototype-body {
+        padding: 20px;
+        min-height: 600px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .section {
+        border: 1.5px dashed #b0b0b0;
+        border-radius: 4px;
+        padding: 16px;
+        margin-bottom: 16px;
+        position: relative;
+      }
+
+      .section-label {
+        position: absolute;
+        top: -10px;
+        left: 12px;
+        background: #4a90d9;
+        color: #fff;
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 2px;
+        font-weight: bold;
+      }
+
+      .annotation {
+        background: #fff3cd;
+        border: 1px solid #fbbf24;
+        border-radius: 4px;
+        padding: 8px 12px;
+        font-size: 12px;
+        color: #92600a;
+        margin: 8px 0;
+        display: inline-block;
+      }
+
+      .annotation::before {
+        content: "💡 ";
+      }
+
+      .func-tag {
+        display: inline-block;
+        background: #e8f4fd;
+        border: 1px solid #4a90d9;
+        color: #4a90d9;
+        font-size: 11px;
+        padding: 1px 6px;
+        border-radius: 10px;
+        margin-left: 6px;
+        font-weight: bold;
+        vertical-align: middle;
+      }
+
+      .input-placeholder {
+        border: 1.5px solid #d0d0d0;
+        border-radius: 4px;
+        padding: 8px 12px;
+        background: #fafafa;
+        color: #999;
+        font-size: 14px;
+        width: 100%;
+        margin: 4px 0;
+      }
+
+      .btn-placeholder {
+        display: inline-block;
+        padding: 8px 20px;
+        border-radius: 4px;
+        font-size: 14px;
+        cursor: default;
+        margin: 4px;
+        border: none;
+      }
+
+      .btn-primary {
+        background: #4a90d9;
+        color: #fff;
+      }
+      .btn-secondary {
+        background: #e0e0e0;
+        color: #666;
+      }
+
+      .image-placeholder {
+        background: #eaeaea;
+        border: 1.5px dashed #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #999;
+        font-size: 13px;
+        border-radius: 4px;
+        min-height: 120px;
+      }
+
+      .flex {
+        display: flex;
+      }
+      .gap-md {
+        gap: 16px;
+      }
+      .gap-lg {
+        gap: 24px;
+      }
+      .items-center {
+        align-items: center;
+      }
+      .justify-between {
+        justify-content: space-between;
+      }
+      .flex-1 {
+        flex: 1;
+      }
+      .w-full {
+        width: 100%;
+      }
+      .text-center {
+        text-align: center;
+      }
+      .text-muted {
+        color: #999;
+        font-size: 13px;
+      }
+      .mt-sm {
+        margin-top: 8px;
+      }
+      .mt-md {
+        margin-top: 16px;
+      }
+      .mb-sm {
+        margin-bottom: 8px;
+      }
+      .mb-md {
+        margin-bottom: 16px;
+      }
+      .divider {
+        border: none;
+        border-top: 1px solid #e0e0e0;
+        margin: 16px 0;
+      }
+
+      .prototype-footer {
+        background: #f9f9f9;
+        border-top: 1px solid #e0e0e0;
+        padding: 12px 20px;
+        font-size: 12px;
+        color: #999;
+      }
+
+      .prototype-footer .notes-title {
+        font-weight: bold;
+        color: #666;
+        margin-bottom: 6px;
+      }
+
+      .prototype-footer .note-item {
+        margin-bottom: 4px;
+        padding-left: 16px;
+        position: relative;
+      }
+
+      .prototype-footer .note-item::before {
+        content: "•";
+        position: absolute;
+        left: 4px;
+        color: #4a90d9;
+      }
+
+      /* 登录页专用样式 */
+      .login-container {
+        width: 400px;
+      }
+
+      .login-logo {
+        text-align: center;
+        margin-bottom: 32px;
+      }
+
+      .login-logo .logo-placeholder {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 12px;
+      }
+
+      .login-logo h1 {
+        font-size: 22px;
+        color: #333;
+      }
+
+      .login-logo p {
+        font-size: 13px;
+        color: #999;
+        margin-top: 4px;
+      }
+
+      .form-group {
+        margin-bottom: 16px;
+      }
+
+      .form-group label {
+        display: block;
+        font-size: 13px;
+        color: #555;
+        margin-bottom: 4px;
+        font-weight: 500;
+      }
+
+      .login-options {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 13px;
+        color: #666;
+        margin: 12px 0;
+      }
+
+      .link-text {
+        color: #4a90d9;
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="prototype-frame">
+      <!-- 标题栏 -->
+      <div class="prototype-header">
+        <span class="page-title">📐 登录页 原型</span>
+        <span class="page-info">页面 1/5 | 任务管理系统</span>
+      </div>
+
+      <!-- 页面主内容 -->
+      <div class="prototype-body">
+        <div class="login-container">
+          <!-- Logo 区域 -->
+          <div class="login-logo">
+            <div class="section" style="border: none; padding: 0">
+              <div class="image-placeholder logo-placeholder">LOGO</div>
+              <h1>任务管理系统 <span class="func-tag">F1</span></h1>
+              <p>高效协作，轻松管理团队任务</p>
+            </div>
+          </div>
+
+          <!-- 登录表单 -->
+          <div class="section">
+            <span class="section-label">登录表单</span>
+
+            <div class="form-group">
+              <label>用户名 / 邮箱 <span class="func-tag">F2</span></label>
+              <div class="input-placeholder">请输入用户名或邮箱</div>
+            </div>
+
+            <div class="form-group">
+              <label>密码 <span class="func-tag">F3</span></label>
+              <div class="input-placeholder">请输入密码</div>
+            </div>
+
+            <div class="login-options">
+              <span>☐ 记住我 <span class="func-tag">F4</span></span>
+              <span class="link-text"
+                >忘记密码？ <span class="func-tag">F5</span></span
+              >
+            </div>
+
+            <div
+              class="btn-placeholder btn-primary w-full text-center"
+              style="display: block; width: 100%"
+            >
+              登 录
+              <span
+                class="func-tag"
+                style="
+                  background: rgba(255, 255, 255, 0.2);
+                  border-color: rgba(255, 255, 255, 0.5);
+                  color: #fff;
+                "
+                >F6</span
+              >
+            </div>
+
+            <div class="annotation mt-md">
+              点击登录后，系统验证账号密码，成功后跳转到仪表盘页面
+            </div>
+          </div>
+
+          <!-- 其他登录方式 -->
+          <div class="section mt-md">
+            <span class="section-label">其他操作</span>
+
+            <hr class="divider" />
+            <p class="text-center text-muted mb-sm">
+              其他登录方式 <span class="func-tag">F7</span>
+            </p>
+            <div class="text-center">
+              <span class="btn-placeholder btn-secondary">微信登录</span>
+              <span class="btn-placeholder btn-secondary">钉钉登录</span>
+            </div>
+
+            <hr class="divider" />
+            <p class="text-center">
+              <span class="text-muted">还没有账号？</span>
+              <span class="link-text"
+                >立即注册 <span class="func-tag">F8</span></span
+              >
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 底部标注 -->
+      <div class="prototype-footer">
+        <div class="notes-title">📝 功能标注说明</div>
+        <div class="note-item">
+          [F1] 系统名称和品牌标识，Logo 由设计团队提供
+        </div>
+        <div class="note-item">
+          [F2] 支持用户名或邮箱登录，输入框支持自动补全
+        </div>
+        <div class="note-item">[F3] 密码输入框，支持显示/隐藏密码切换</div>
+        <div class="note-item">[F4] 勾选后 7 天内免登录，使用 Token 持久化</div>
+        <div class="note-item">
+          [F5] 点击后跳转到密码重置页面，通过邮箱验证码重置
+        </div>
+        <div class="note-item">
+          [F6] 提交登录请求，失败 3 次后显示验证码，锁定 15 分钟
+        </div>
+        <div class="note-item">
+          [F7] 第三方登录集成，MVP 阶段可选，需对接 OAuth
+        </div>
+        <div class="note-item">[F8] 点击跳转到注册页面，注册流程需邮箱验证</div>
+      </div>
+    </div>
+  </body>
+</html>
