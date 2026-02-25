@@ -1,0 +1,142 @@
+% ============================================
+% 企业智能工作台 - PDF 样式配置
+% ============================================
+
+% 颜色支持
+\usepackage[table]{xcolor}
+
+% 定义主题色
+\definecolor{primary}{HTML}{2563EB}       % 主色调 - 蓝色
+\definecolor{primaryLight}{HTML}{EFF6FF}  % 浅蓝背景
+\definecolor{headerBg}{HTML}{1E40AF}      % 表头深蓝
+\definecolor{rowAlt}{HTML}{F0F7FF}        % 表格交替行背景
+\definecolor{codeBg}{HTML}{F5F5F5}        % 代码块背景
+\definecolor{linkColor}{HTML}{2563EB}     % 链接颜色
+\definecolor{titleColor}{HTML}{1E3A5F}    % 标题颜色
+\definecolor{subtitleColor}{HTML}{374151} % 副标题颜色
+
+% 表格样式
+\usepackage{longtable}
+\usepackage{booktabs}
+
+% 表格交替行颜色
+\rowcolors{2}{white}{rowAlt}
+
+% 表头样式 - 深蓝背景白字
+\let\oldtoprule\toprule
+\renewcommand{\toprule}{\rowcolor{headerBg}\oldtoprule}
+
+% 标题颜色
+\usepackage{titlesec}
+
+% 一级标题样式
+\titleformat{\section}
+  {\LARGE\bfseries\color{titleColor}}
+  {\thesection}{1em}{}
+  [\vspace{0.3em}\titlerule]
+
+% 二级标题样式
+\titleformat{\subsection}
+  {\Large\bfseries\color{primary}}
+  {\thesubsection}{0.8em}{}
+
+% 三级标题样式
+\titleformat{\subsubsection}
+  {\large\bfseries\color{subtitleColor}}
+  {\thesubsubsection}{0.6em}{}
+
+% 四级标题样式
+\titleformat{\paragraph}[hang]
+  {\normalsize\bfseries\color{primary}}
+  {\theparagraph}{0.5em}{}
+
+% 页眉页脚
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{primary}\leftmark}
+\fancyhead[R]{\small\color{gray}企业智能工作台}
+\fancyfoot[C]{\small\color{gray}\thepage}
+\renewcommand{\headrulewidth}{0.5pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{primary}\leaders\hrule height \headrulewidth\hfill}}
+\renewcommand{\footrulewidth}{0pt}
+
+% 链接颜色
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=primary,
+  urlcolor=linkColor,
+  citecolor=primary,
+  pdfborderstyle={/S/U/W 1}
+}
+
+% 代码块样式
+\usepackage{fancyvrb}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{
+  commandchars=\\\{\},
+  frame=single,
+  rulecolor=\color{gray!30},
+  framesep=3mm,
+  fontsize=\small
+}
+
+% 引用块样式
+\usepackage{mdframed}
+\renewenvironment{quote}{%
+  \begin{mdframed}[
+    linecolor=primary,
+    linewidth=3pt,
+    backgroundcolor=primaryLight,
+    topline=false,
+    rightline=false,
+    bottomline=false,
+    innertopmargin=8pt,
+    innerbottommargin=8pt,
+    innerleftmargin=12pt,
+    innerrightmargin=12pt,
+    skipabove=10pt,
+    skipbelow=10pt
+  ]
+  \color{subtitleColor}\itshape
+}{%
+  \end{mdframed}
+}
+
+% 目录样式
+\usepackage{tocloft}
+\renewcommand{\cftsecfont}{\bfseries\color{titleColor}}
+\renewcommand{\cftsubsecfont}{\color{primary}}
+\renewcommand{\cftsecpagefont}{\bfseries\color{titleColor}}
+\renewcommand{\cftsubsecpagefont}{\color{primary}}
+
+% 封面样式
+\makeatletter
+\renewcommand{\maketitle}{
+  \begin{titlepage}
+    \centering
+    \vspace*{3cm}
+    {\Huge\bfseries\color{titleColor}\@title\par}
+    \vspace{1.5cm}
+    {\Large\color{primary}\rule{0.6\textwidth}{0.5pt}\par}
+    \vspace{1cm}
+    {\large\color{subtitleColor}需求设计文档\par}
+    \vspace{2cm}
+    {\normalsize\color{gray}\@date\par}
+    \vfill
+  \end{titlepage}
+}
+\makeatother
+
+% 列表样式
+\usepackage{enumitem}
+\setlist[itemize]{leftmargin=2em, itemsep=2pt}
+\setlist[enumerate]{leftmargin=2em, itemsep=2pt}
+
+% 段落间距
+\setlength{\parskip}{0.5em}
+\setlength{\parindent}{0em}
+
+% 行间距
+\usepackage{setspace}
+\onehalfspacing

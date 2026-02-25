@@ -45,7 +45,7 @@ pandoc --version
 
 ```bash
 brew install pandoc
-brew install basictex  # 可选,用于更好的 PDF 支持
+brew cask install basictex # 可选,用于更好的 PDF 支持
 ```
 
 **其他系统:**
@@ -67,13 +67,18 @@ brew install basictex  # 可选,用于更好的 PDF 支持
    - 输出目录（默认：与源文件同目录）
 
 3. **样式选项**：
+   - 是否需要添加 PDF 样式：是 / 否（**默认：使用内置企业通用样式 `styles/common.tex`**）
+   - 如果用户需要自定义或切换风格,提供以下选项：
+     - **极简专业 (Minimalist)**：黑灰配色,简洁报头
+     - **商务蓝色 (Business Blue)**：深蓝页眉,现代感强
+     - **学术规范 (Academic)**：标准论文格式,注重页码
    - 纸张大小：A4 / Letter / A3
    - 页边距：默认 / 窄边距 / 宽边距
    - 字体大小：10pt / 11pt / 12pt（默认）
    - 是否生成目录：是 / 否
 
 4. **高级选项**（可选）：
-   - 自定义 CSS 样式
+   - 自定义 CSS 样式（仅限 HTML 引擎）
    - 页眉页脚
    - 代码高亮主题
 
@@ -153,26 +158,73 @@ pandoc input.md -o output.pdf \
 
 ### 预设样式模板
 
-**1. 专业商务风格**
+**0. 企业通用样式 (Default / Common)**
 
-- 字体：PingFang SC / Arial
-- 颜色：深蓝色标题
-- 页边距：2.5cm
-- 包含页眉页脚
+- **文件路径**：`./styles/common.tex`
+- **特点**：包含专业封面、企业蓝主题色、表格交替行颜色、代码块美化及页眉页脚。
+- **使用建议**：当用户没有明确样式偏好时,**必须优先推荐并默认使用此样式**。
 
-**2. 简洁技术风格**
+当用户选择特定风格时,请生成对应的 `pdf-style.tex` 文件并将其应用于转换。
 
-- 字体：Menlo / Monaco
-- 代码高亮：Monokai
-- 窄页边距：1.5cm
-- 无页眉页脚
+**1. 极简专业 (Minimalist)**
 
-**3. 学术论文风格**
+- 特点：灰度配色,无框设计,适合正式报告。
+- `pdf-style.tex` 内容：
 
-- 字体：Times New Roman / 宋体
-- 双倍行距
-- 宽页边距：3cm
-- 包含目录和页码
+```latex
+\usepackage{fancyhdr}
+\usepackage{xcolor}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\fancyhead[L]{\textcolor{gray}{Document Report}}
+\fancyhead[R]{\textcolor{gray}{\today}}
+\fancyfoot[C]{\thepage}
+```
+
+**2. 商务蓝色 (Business Blue)**
+
+- 特点：深蓝色标题,现代感页边距。
+- `pdf-style.tex` 内容：
+
+```latex
+\usepackage{fancyhdr}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\textcolor{blue!70!black}{Project Documentation}}
+\fancyhead[R]{\thepage}
+\titleformat{\section}{\color{blue!70!black}\normalfont\Large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\color{blue!70!black}\normalfont\large\bfseries}{\thesubsection}{1em}{}
+```
+
+**3. 学术规范 (Academic)**
+
+- 特点：标准页码,首行缩进,适合论文。
+- `pdf-style.tex` 内容：
+
+```latex
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[C]{\itshape \leftmark}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+\usepackage[indentafter]{indentfirst}
+\setlength{\parindent}{2em}
+```
+
+### 应用样式文件
+
+在转换时增加 `--include-in-header=pdf-style.tex` 选项：
+
+```bash
+pandoc input.md -o output.pdf \
+  --pdf-engine=xelatex \
+  --include-in-header=pdf-style.tex \
+  --variable mainfont="PingFang SC"
+```
 
 ### 自定义 CSS 示例
 

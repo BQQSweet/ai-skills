@@ -178,7 +178,7 @@ PANDOC_CMD="$PANDOC_CMD --variable monofont=\"$MONOFONT\""
 PANDOC_CMD="$PANDOC_CMD --variable fontsize=$FONTSIZE"
 PANDOC_CMD="$PANDOC_CMD --variable geometry:margin=$MARGIN"
 PANDOC_CMD="$PANDOC_CMD --variable papersize=$PAPERSIZE"
-PANDOC_CMD="$PANDOC_CMD --highlight-style=$HIGHLIGHT_STYLE"
+PANDOC_CMD="$PANDOC_CMD --syntax-highlighting=$HIGHLIGHT_STYLE"
 
 if [[ "$TOC" == true ]]; then
     PANDOC_CMD="$PANDOC_CMD --toc --toc-depth=$TOC_DEPTH"
