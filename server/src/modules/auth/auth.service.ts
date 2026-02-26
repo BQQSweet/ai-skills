@@ -105,6 +105,7 @@ export class AuthService {
         phone: user.phone,
         nickname: user.nickname,
         avatarUrl: user.avatar_url,
+        role: user.role,
         preferences: user.preferences,
         createdAt: user.created_at,
       },

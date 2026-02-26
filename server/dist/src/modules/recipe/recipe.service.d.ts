@@ -4,12 +4,12 @@ export declare class RecipeService {
     private readonly prisma;
     constructor(prisma: PrismaService);
     create(dto: CreateRecipeDto, userId?: string): Promise<{
-        description: string | null;
-        title: string;
         id: string;
         created_at: Date;
         updated_at: Date;
         deleted_at: Date | null;
+        description: string | null;
+        title: string;
         tags: string[];
         ingredients: import("@prisma/client/runtime/client").JsonValue;
         steps: import("@prisma/client/runtime/client").JsonValue;
@@ -25,12 +25,12 @@ export declare class RecipeService {
     }>;
     findAll(query: QueryRecipeDto): Promise<{
         list: {
-            description: string | null;
-            title: string;
             id: string;
             created_at: Date;
             updated_at: Date;
             deleted_at: Date | null;
+            description: string | null;
+            title: string;
             tags: string[];
             ingredients: import("@prisma/client/runtime/client").JsonValue;
             steps: import("@prisma/client/runtime/client").JsonValue;
@@ -49,12 +49,12 @@ export declare class RecipeService {
         pageSize: number;
     }>;
     findOne(id: string): Promise<{
-        description: string | null;
-        title: string;
         id: string;
         created_at: Date;
         updated_at: Date;
         deleted_at: Date | null;
+        description: string | null;
+        title: string;
         tags: string[];
         ingredients: import("@prisma/client/runtime/client").JsonValue;
         steps: import("@prisma/client/runtime/client").JsonValue;
@@ -69,12 +69,12 @@ export declare class RecipeService {
         created_by: string | null;
     }>;
     update(id: string, dto: UpdateRecipeDto): Promise<{
-        description: string | null;
-        title: string;
         id: string;
         created_at: Date;
         updated_at: Date;
         deleted_at: Date | null;
+        description: string | null;
+        title: string;
         tags: string[];
         ingredients: import("@prisma/client/runtime/client").JsonValue;
         steps: import("@prisma/client/runtime/client").JsonValue;
@@ -89,12 +89,12 @@ export declare class RecipeService {
         created_by: string | null;
     }>;
     remove(id: string): Promise<{
-        description: string | null;
-        title: string;
         id: string;
         created_at: Date;
         updated_at: Date;
         deleted_at: Date | null;
+        description: string | null;
+        title: string;
         tags: string[];
         ingredients: import("@prisma/client/runtime/client").JsonValue;
         steps: import("@prisma/client/runtime/client").JsonValue;
