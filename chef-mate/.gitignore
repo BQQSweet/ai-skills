@@ -7,15 +7,38 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
+# Node
+node_modules/
+
+# Mac / Windows
 .DS_Store
-dist
-*.local
+Thumbs.db
+
+# Build & Dist
+dist/
+dist-build/
+unpackage/
+.hbuilderx/
+
+# Vue / Vite / uniapp temp and cache
+.vuepress/dist
+.serverless/
+.eslintcache
+.stylelintcache
+vite.config.ts.timestamp-*
+auto-imports.d.ts
+components.d.ts
 
 # Editor directories and files
-.idea
+.idea/
+.vscode/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+
+# Local environment files
+.env.local
+.env.*.local
+*.local
