@@ -14,7 +14,7 @@ export class AuthController {
   @ApiResponse({ status: 200, description: '验证码发送成功' })
   async sendSmsCode(@Body() sendSmsDto: SendSmsDto) {
     await this.authService.sendSmsCode(sendSmsDto);
-    return { code: 0, data: null, msg: '验证码发送成功' };
+    return null;
   }
 
   @Post('login')
@@ -22,7 +22,6 @@ export class AuthController {
   @ApiOperation({ summary: '统一登录入口 (验证码/密码)' })
   @ApiResponse({ status: 200, description: '登录成功，返回 Token' })
   async login(@Body() loginDto: LoginDto) {
-    const data = await this.authService.login(loginDto);
-    return { code: 0, data, msg: '登录成功' };
+    return this.authService.login(loginDto);
   }
 }

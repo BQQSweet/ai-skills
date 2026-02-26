@@ -30,8 +30,8 @@ const theme: Config["theme"] = {
         light: "#fafafa",
       },
       text: {
-        main: "#333333",
-        muted: "#9ca3af",
+        main: "#1d160c",
+        muted: "#a17c45",
       },
     },
   },

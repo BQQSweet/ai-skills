@@ -14,6 +14,7 @@ model User {
   password_hash String    @db.VarChar(255)
   nickname      String    @db.VarChar(50)
   avatar_url    String?   @db.VarChar(500)
+  role          String    @default("user") @db.VarChar(20) // user | admin
   preferences   Json?     // 饮食偏好：{diet_type, allergies[], taste[], spice_level}
   created_at    DateTime  @default(now())
   updated_at    DateTime  @updatedAt
@@ -94,9 +95,11 @@ model Recipe {
   difficulty  String    @db.VarChar(20)
   cook_time   Int
   servings    Int       @default(2)
+  cover_url   String?   @db.VarChar(500)
   source_type String    @db.VarChar(20)
   source_url  String?   @db.VarChar(500)
   tags        String[]
+  status      String    @default("published") @db.VarChar(20) // published | draft | archived
   created_by  String?   @db.Uuid
   created_at  DateTime  @default(now())
   updated_at  DateTime  @updatedAt

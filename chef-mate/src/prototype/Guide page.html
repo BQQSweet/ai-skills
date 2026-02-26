@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ChefMate 家庭组设置 (背景优化版)</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ff9d0a",
+                        "primary-content": "#1d160c",
+                        "background-light": "#f8f7f5",
+                        "background-dark": "#231b0f",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#2e2415",
+                        "text-main": "#1d160c",
+                        "text-muted": "#a17c45",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "Noto Sans SC", "sans-serif"],
+                        "body": ["Noto Sans SC", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        body {
+            font-family: "Plus Jakarta Sans", "Noto Sans SC", sans-serif;
+            -webkit-font-smoothing: antialiased;
+            min-height: max(884px, 100dvh);
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-text-main min-h-screen flex justify-center selection:bg-primary/30">
+<div class="relative w-full max-w-md mx-auto flex flex-col min-h-screen pb-6 overflow-hidden bg-background-light dark:bg-background-dark">
+<header class="pt-8 pb-4 px-6 flex flex-col items-start">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-primary text-3xl">skillet</span>
+<span class="font-display font-bold text-lg text-primary tracking-wide">ChefMate</span>
+</div>
+<h1 class="text-[#1d160c] dark:text-white tracking-tight text-3xl font-bold leading-tight text-left">
+                欢迎来到 ChefMate！
+            </h1>
+<p class="text-text-muted dark:text-[#ccbca3] text-base font-normal leading-normal pt-2">
+                开启你的智慧厨房生涯
+            </p>
+</header>
+<main class="flex-1 px-4 flex flex-col gap-5 overflow-y-auto no-scrollbar">
+<div class="group bg-surface-light dark:bg-surface-dark rounded-2xl shadow-sm border border-orange-100 dark:border-orange-900/30 overflow-hidden transition-all duration-300 hover:shadow-md">
+<div class="w-full h-32 bg-orange-50 dark:bg-[#3a2e1e] flex items-center justify-center relative overflow-hidden">
+<div class="absolute -right-4 -top-4 w-24 h-24 bg-primary/10 rounded-full blur-xl"></div>
+<div class="absolute -left-4 -bottom-4 w-20 h-20 bg-primary/10 rounded-full blur-xl"></div>
+<img alt="Happy family cooking together in a bright kitchen" class="w-full h-full object-cover opacity-90 mix-blend-overlay" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXJVMlFlcnSQVLwPdtmrozPemq-lQhIzF48wwzIU_vOqdwhQYlHx6T8V_qUVqfn8AGf1S74xcSaWsBQrxhZaim1_om90-CuCo2NdWT-2_Qf999NeH7JONeQ0NAilmFDgZQhIbLwGflgzSjVLjNNNIXFf4lnJTIaAHzCxfC0UIz4BXvdsI_0MZ6gBX04x_MV52IPu93O39uXsL8N8CLnlSBRt9dtb6Y99eO6gtq7-KDsyajVJXUWN61zPWs4-ERfC_ygpxyNBQaVT8y"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-light dark:from-surface-dark to-transparent"></div>
+<div class="absolute bottom-2 left-4 z-10 flex items-center gap-2">
+<span class="bg-white dark:bg-black/40 backdrop-blur-md p-1.5 rounded-lg shadow-sm text-primary">
+<span class="material-symbols-outlined text-xl leading-none">diversity_3</span>
+</span>
+</div>
+</div>
+<div class="p-5 pt-2">
+<h2 class="text-[#1d160c] dark:text-white text-lg font-bold leading-tight mb-2">创建家庭厨房</h2>
+<p class="text-text-muted dark:text-[#9ca3af] text-sm font-normal leading-relaxed mb-4">
+                        创建一个新的协作空间，邀请家人或室友加入，共同管理食谱和食材。
+                    </p>
+<label class="block mb-4">
+<span class="text-xs font-semibold text-[#1d160c] dark:text-gray-300 mb-1.5 block ml-1">厨房名称</span>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-gray-400 text-[20px]">soup_kitchen</span>
+</div>
+<input class="form-input block w-full pl-10 pr-4 py-3 bg-background-light dark:bg-background-dark border-transparent focus:border-primary focus:ring-0 focus:bg-white dark:focus:bg-[#231b0f] rounded-xl text-sm transition-colors text-[#1d160c] dark:text-white placeholder:text-gray-400" placeholder="例如：幸福里小家" type="text"/>
+</div>
+</label>
+<button class="w-full flex items-center justify-center gap-2 bg-primary hover:bg-orange-500 active:bg-orange-600 text-[#1d160c] font-semibold py-3 px-4 rounded-xl transition-colors shadow-sm shadow-orange-200 dark:shadow-none">
+<span>立即创建</span>
+<span class="material-symbols-outlined text-sm font-bold">arrow_forward</span>
+</button>
+</div>
+</div>
+<div class="group bg-surface-light dark:bg-surface-dark rounded-2xl shadow-sm border border-orange-100 dark:border-orange-900/30 overflow-hidden transition-all duration-300 hover:shadow-md">
+<div class="w-full h-32 bg-[#fffaf5] dark:bg-[#2a241b] flex items-center justify-center relative overflow-hidden">
+<div class="absolute top-0 right-0 w-40 h-40 bg-orange-100/40 dark:bg-orange-900/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
+<div class="absolute bottom-0 left-0 w-32 h-32 bg-orange-100/30 dark:bg-orange-900/10 rounded-full -ml-16 -mb-16 blur-2xl"></div>
+<div class="relative z-10 flex items-center justify-center w-20 h-20">
+<div class="absolute inset-0 bg-primary/10 rounded-3xl rotate-12 transition-transform group-hover:rotate-6 duration-500"></div>
+<div class="absolute inset-0 bg-primary/5 rounded-3xl -rotate-6 transition-transform group-hover:rotate-0 duration-500"></div>
+<div class="relative bg-white dark:bg-[#3d3122] w-14 h-14 rounded-2xl shadow-sm flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-4xl" style="font-variation-settings: 'FILL' 1, 'wght' 400;">door_open</span>
+</div>
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-light dark:from-surface-dark via-transparent to-transparent opacity-80"></div>
+<div class="absolute bottom-2 left-4 z-10">
+<span class="bg-white/80 dark:bg-black/30 backdrop-blur-md p-1.5 rounded-lg shadow-sm text-primary inline-flex">
+<span class="material-symbols-outlined text-xl leading-none">vpn_key</span>
+</span>
+</div>
+</div>
+<div class="p-5 pt-4">
+<h2 class="text-[#1d160c] dark:text-white text-lg font-bold leading-tight mb-2">加入他人厨房</h2>
+<p class="text-text-muted dark:text-[#9ca3af] text-sm font-normal leading-relaxed mb-5">
+                        输入好友分享的 6 位邀请码，即可快速加入已有的家庭厨房。
+                    </p>
+<div class="flex gap-2 justify-between mb-4">
+<input class="w-11 h-12 text-center text-xl font-display font-bold rounded-xl border border-orange-100 dark:border-gray-700 bg-background-light/50 dark:bg-background-dark focus:border-primary focus:ring-1 focus:ring-primary text-[#1d160c] dark:text-white transition-all caret-primary shadow-inner" inputmode="numeric" maxlength="1" placeholder="•" type="text"/>
+<input class="w-11 h-12 text-center text-xl font-display font-bold rounded-xl border border-orange-100 dark:border-gray-700 bg-background-light/50 dark:bg-background-dark focus:border-primary focus:ring-1 focus:ring-primary text-[#1d160c] dark:text-white transition-all caret-primary shadow-inner" inputmode="numeric" maxlength="1" placeholder="•" type="text"/>
+<input class="w-11 h-12 text-center text-xl font-display font-bold rounded-xl border border-orange-100 dark:border-gray-700 bg-background-light/50 dark:bg-background-dark focus:border-primary focus:ring-1 focus:ring-primary text-[#1d160c] dark:text-white transition-all caret-primary shadow-inner" inputmode="numeric" maxlength="1" placeholder="•" type="text"/>
+<input class="w-11 h-12 text-center text-xl font-display font-bold rounded-xl border border-orange-100 dark:border-gray-700 bg-background-light/50 dark:bg-background-dark focus:border-primary focus:ring-1 focus:ring-primary text-[#1d160c] dark:text-white transition-all caret-primary shadow-inner" inputmode="numeric" maxlength="1" placeholder="•" type="text"/>
+<input class="w-11 h-12 text-center text-xl font-display font-bold rounded-xl border border-orange-100 dark:border-gray-700 bg-background-light/50 dark:bg-background-dark focus:border-primary focus:ring-1 focus:ring-primary text-[#1d160c] dark:text-white transition-all caret-primary shadow-inner" inputmode="numeric" maxlength="1" placeholder="•" type="text"/>
+<input class="w-11 h-12 text-center text-xl font-display font-bold rounded-xl border border-orange-100 dark:border-gray-700 bg-background-light/50 dark:bg-background-dark focus:border-primary focus:ring-1 focus:ring-primary text-[#1d160c] dark:text-white transition-all caret-primary shadow-inner" inputmode="numeric" maxlength="1" placeholder="•" type="text"/>
+</div>
+<button class="w-full text-center text-sm font-semibold text-primary py-2 hover:underline">验证邀请码</button>
+</div>
+</div>
+<div class="mt-4 pb-10 text-center">
+<a class="inline-flex items-center gap-1 text-sm text-gray-400 hover:text-primary transition-colors font-medium dark:text-gray-500 dark:hover:text-primary" href="#">
+<span>先随便看看，以后再设置</span>
+<span class="material-symbols-outlined text-sm">arrow_right_alt</span>
+</a>
+</div>
+</main>
+</div>
+<div class="hidden lg:block fixed top-0 left-0 w-full h-full -z-10 pointer-events-none bg-[#f2f0eb] dark:bg-[#1a150e]"></div>
+
+</body></html>

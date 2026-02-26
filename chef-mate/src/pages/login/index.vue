@@ -1,6 +1,6 @@
 <template>
   <view
-    class="min-h-screen bg-background-light flex flex-col items-center justify-center relative overflow-hidden font-sans text-text-main"
+    class="relative w-full flex flex-col justify-between min-h-screen pb-6 overflow-hidden bg-background-light dark:bg-background-dark font-sans"
   >
     <!-- Background Decorations -->
     <view
@@ -183,6 +183,8 @@
     >
       <text class="material-symbols-outlined text-[180px]">eco</text>
     </view>
+    <!-- 引入 uview-plus 的 up-toast 组件 -->
+    <up-toast ref="uToastRef"></up-toast>
   </view>
 </template>
 
@@ -194,16 +196,17 @@ import { useUserStore } from "@/stores/user";
 import * as authService from "@/services/auth";
 
 const userStore = useUserStore();
+const uToastRef = ref<any>(null);
 
 const loading = ref(false);
 const codeCooldown = ref(0);
-const agreedToTerms = ref(false);
+const agreedToTerms = ref(true);
 
 const loginType = ref<"code" | "password">("code");
 
 const form = reactive({
-  phone: "",
-  code: "",
+  phone: "17760385717",
+  code: "123456",
   account: "",
   password: "",
 });
@@ -214,7 +217,10 @@ function toggleLoginType() {
 
 async function handleSendCode() {
   if (!form.phone || form.phone.length !== 11) {
-    uni.showToast({ title: "请输入正确的手机号", icon: "none" });
+    uToastRef.value?.show({
+      type: "error",
+      message: "请输入正确的手机号",
+    });
     return;
   }
 
@@ -222,7 +228,10 @@ async function handleSendCode() {
     uni.showLoading({ title: "发送中" });
     await authService.sendSmsCode(form.phone);
     uni.hideLoading();
-    uni.showToast({ title: "验证码已发送", icon: "success" });
+    uToastRef.value?.show({
+      type: "success",
+      message: "验证码已发送",
+    });
 
     codeCooldown.value = 60;
     const timer = setInterval(() => {
@@ -240,22 +249,31 @@ function toggleTerms() {
 }
 
 function openAgreement() {
-  uni.showToast({ title: "用户协议", icon: "none" });
+  uToastRef.value?.show({
+    type: "default",
+    message: "用户协议",
+  });
 }
 
 function openPrivacy() {
-  uni.showToast({ title: "隐私保护指引", icon: "none" });
+  uToastRef.value?.show({
+    type: "default",
+    message: "隐私保护指引",
+  });
 }
 
 function handleWechatLogin() {
-  uni.showToast({ title: "微信登录开发中", icon: "none" });
+  uToastRef.value?.show({
+    type: "default",
+    message: "微信登录开发中",
+  });
 }
 
 async function handleSubmit() {
   if (!agreedToTerms.value) {
-    uni.showToast({
-      title: "请先阅读并同意用户协议和隐私保护指引",
-      icon: "none",
+    uToastRef.value?.show({
+      type: "error",
+      message: "请先阅读并同意用户协议和隐私保护指引",
     });
     return;
   }
@@ -264,14 +282,20 @@ async function handleSubmit() {
 
   if (loginType.value === "code") {
     if (!form.phone || !form.code) {
-      uni.showToast({ title: "请填写完整信息", icon: "none" });
+      uToastRef.value?.show({
+        type: "error",
+        message: "请填写完整信息",
+      });
       return;
     }
     payload.phone = form.phone;
     payload.code = form.code;
   } else {
     if (!form.account || !form.password) {
-      uni.showToast({ title: "请填写完整信息", icon: "none" });
+      uToastRef.value?.show({
+        type: "error",
+        message: "请填写完整信息",
+      });
       return;
     }
     payload.account = form.account;
@@ -281,9 +305,16 @@ async function handleSubmit() {
   loading.value = true;
   try {
     await userStore.login(payload);
-    uni.showToast({ title: "登录成功", icon: "success" });
+    uToastRef.value?.show({
+      type: "success",
+      message: "登录成功",
+    });
     setTimeout(() => {
-      uni.reLaunch({ url: "/pages/index/index" });
+      if (userStore.currentGroupId) {
+        uni.reLaunch({ url: "/pages/index/index" });
+      } else {
+        uni.reLaunch({ url: "/pages/guide/index" });
+      }
     }, 1000);
   } catch (err: any) {
     // 失败由请求层拦截吐司

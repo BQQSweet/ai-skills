@@ -95,10 +95,22 @@ let AuthService = class AuthService {
         if (!user) {
             throw new common_1.UnauthorizedException('登录失败，用户状态异常');
         }
-        const payload = { sub: user.id, phone: user.phone };
+        const payload = { sub: user.id, phone: user.phone, role: user.role };
         const token = await this.jwtService.signAsync(payload);
         const refreshToken = await this.jwtService.signAsync({ sub: user.id }, {
             expiresIn: this.configService.get('jwt.refreshExpiresIn'),
+        });
+        const groupMemberships = await this.prisma.groupMember.findMany({
+            where: { user_id: user.id },
+            include: {
+                group: {
+                    select: {
+                        id: true,
+                        name: true,
+                        invite_code: true,
+                    },
+                },
+            },
         });
         return {
             token,
@@ -111,6 +123,12 @@ let AuthService = class AuthService {
                 preferences: user.preferences,
                 createdAt: user.created_at,
             },
+            groups: groupMemberships.map((m) => ({
+                groupId: m.group.id,
+                name: m.group.name,
+                inviteCode: m.group.invite_code,
+                role: m.role,
+            })),
         };
     }
     async verifyCodeAndGetUser(phone, code) {

@@ -15,8 +15,14 @@ export function useAuth() {
     loading.value = true;
     try {
       await userStore.login(params);
-      // 登录成功后跳转首页
-      uni.switchTab({ url: "/pages/index/index" });
+
+      // 判断用户是否已有关联分组
+      if (userStore.currentGroupId) {
+        uni.switchTab({ url: "/pages/index/index" });
+      } else {
+        // 无关联则跳转引导页
+        uni.navigateTo({ url: "/pages/guide/index" });
+      }
     } catch (e) {
       console.error("[useAuth] 登录失败", e);
     } finally {

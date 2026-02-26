@@ -2,11 +2,17 @@
  * 统一请求封装
  * 基于 uni.request，支持自动注入 Token、统一错误处理、Token 刷新
  */
-import { getToken, getRefreshToken, setToken, setRefreshToken, clearAuth } from '@/utils/storage';
-import { BASE_URL } from '@/utils/env';
-import type { ApiResponse } from '@/types/api';
+import {
+  getToken,
+  getRefreshToken,
+  setToken,
+  setRefreshToken,
+  clearAuth,
+} from "@/utils/storage";
+import { BASE_URL } from "@/utils/env";
+import type { ApiResponse } from "@/types/api";
 
-type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
+type HttpMethod = "GET" | "POST" | "PUT" | "DELETE";
 
 interface RequestOptions {
   url: string;
@@ -25,19 +31,21 @@ let refreshPromise: Promise<string> | null = null;
 async function refreshTokenRequest(): Promise<string> {
   const refreshToken = getRefreshToken();
   if (!refreshToken) {
-    throw new Error('No refresh token');
+    throw new Error("No refresh token");
   }
 
-  const res = await new Promise<UniApp.RequestSuccessCallbackResult>((resolve, reject) => {
-    uni.request({
-      url: `${BASE_URL}/api/auth/refresh`,
-      method: 'POST',
-      data: { refreshToken },
-      header: { 'Content-Type': 'application/json' },
-      success: resolve,
-      fail: reject,
-    });
-  });
+  const res = await new Promise<UniApp.RequestSuccessCallbackResult>(
+    (resolve, reject) => {
+      uni.request({
+        url: `${BASE_URL}/api/auth/refresh`,
+        method: "POST",
+        data: { refreshToken },
+        header: { "Content-Type": "application/json" },
+        success: resolve,
+        fail: reject,
+      });
+    },
+  );
 
   const data = res.data as ApiResponse<{ token: string; refreshToken: string }>;
   if (data.code === 0) {
@@ -46,7 +54,7 @@ async function refreshTokenRequest(): Promise<string> {
     return data.data.token;
   }
 
-  throw new Error('Token refresh failed');
+  throw new Error("Token refresh failed");
 }
 
 /**
@@ -57,17 +65,17 @@ export function request<T = any>(options: RequestOptions): Promise<T> {
     const token = getToken();
 
     const header: Record<string, string> = {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...options.header,
     };
 
     if (!options.noAuth && token) {
-      header['Authorization'] = `Bearer ${token}`;
+      header["Authorization"] = `Bearer ${token}`;
     }
 
     uni.request({
       url: `${BASE_URL}${options.url}`,
-      method: options.method || 'GET',
+      method: options.method || "GET",
       data: options.data,
       header,
       success: async (res) => {
@@ -97,18 +105,18 @@ export function request<T = any>(options: RequestOptions): Promise<T> {
             isRefreshing = false;
             refreshPromise = null;
             clearAuth();
-            uni.reLaunch({ url: '/pages/login/index' });
-            reject(new Error('登录已过期，请重新登录'));
+            uni.reLaunch({ url: "/pages/login/index" });
+            reject(new Error("登录已过期，请重新登录"));
           }
           return;
         }
 
         // 其他业务错误
-        uni.showToast({ title: data.msg || '请求失败', icon: 'none' });
+        uni.$u.toast(data.msg || "请求失败");
         reject(data);
       },
       fail: (err) => {
-        uni.showToast({ title: '网络错误，请检查网络连接', icon: 'none' });
+        uni.$u.toast("网络错误，请检查网络连接");
         reject(err);
       },
     });
@@ -118,17 +126,17 @@ export function request<T = any>(options: RequestOptions): Promise<T> {
 // ========== 快捷方法 ==========
 
 export function get<T = any>(url: string, data?: any): Promise<T> {
-  return request<T>({ url, method: 'GET', data });
+  return request<T>({ url, method: "GET", data });
 }
 
 export function post<T = any>(url: string, data?: any): Promise<T> {
-  return request<T>({ url, method: 'POST', data });
+  return request<T>({ url, method: "POST", data });
 }
 
 export function put<T = any>(url: string, data?: any): Promise<T> {
-  return request<T>({ url, method: 'PUT', data });
+  return request<T>({ url, method: "PUT", data });
 }
 
 export function del<T = any>(url: string, data?: any): Promise<T> {
-  return request<T>({ url, method: 'DELETE', data });
+  return request<T>({ url, method: "DELETE", data });
 }

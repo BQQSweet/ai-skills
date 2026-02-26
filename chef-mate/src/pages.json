@@ -17,6 +17,13 @@
       }
     },
     {
+      "path": "pages/guide/index",
+      "style": {
+        "navigationBarTitleText": "欢迎来到 ChefMate",
+        "navigationStyle": "custom"
+      }
+    },
+    {
       "path": "pages/index/index",
       "style": {
         "navigationBarTitleText": "ChefMate",
@@ -24,6 +31,26 @@
       }
     }
   ],
+  "tabBar": {
+    "color": "#9ca3af",
+    "selectedColor": "#ff9d0a",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "iconPath": "static/logo.png",
+        "selectedIconPath": "static/logo.png",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/guide/index",
+        "iconPath": "static/logo.png",
+        "selectedIconPath": "static/logo.png",
+        "text": "引导页"
+      }
+    ]
+  },
   "globalStyle": {
     "navigationBarTextStyle": "black",
     "navigationBarTitleText": "ChefMate",

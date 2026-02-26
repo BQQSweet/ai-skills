@@ -24,11 +24,10 @@ let AuthController = class AuthController {
     }
     async sendSmsCode(sendSmsDto) {
         await this.authService.sendSmsCode(sendSmsDto);
-        return { code: 0, data: null, msg: '验证码发送成功' };
+        return null;
     }
     async login(loginDto) {
-        const data = await this.authService.login(loginDto);
-        return { code: 0, data, msg: '登录成功' };
+        return this.authService.login(loginDto);
     }
 };
 exports.AuthController = AuthController;

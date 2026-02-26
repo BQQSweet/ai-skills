@@ -8,15 +8,31 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RecipeModule = void 0;
 const common_1 = require("@nestjs/common");
+const jwt_1 = require("@nestjs/jwt");
+const config_1 = require("@nestjs/config");
 const recipe_controller_1 = require("./recipe.controller");
 const recipe_service_1 = require("./recipe.service");
+const prisma_service_1 = require("../../common/prisma.service");
+const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
+const admin_guard_1 = require("../../common/guards/admin.guard");
 let RecipeModule = class RecipeModule {
 };
 exports.RecipeModule = RecipeModule;
 exports.RecipeModule = RecipeModule = __decorate([
     (0, common_1.Module)({
+        imports: [
+            jwt_1.JwtModule.registerAsync({
+                inject: [config_1.ConfigService],
+                useFactory: (config) => ({
+                    secret: config.get('jwt.secret'),
+                    signOptions: {
+                        expiresIn: config.get('jwt.expiresIn'),
+                    },
+                }),
+            }),
+        ],
         controllers: [recipe_controller_1.RecipeController],
-        providers: [recipe_service_1.RecipeService],
+        providers: [recipe_service_1.RecipeService, prisma_service_1.PrismaService, jwt_auth_guard_1.JwtAuthGuard, admin_guard_1.AdminGuard],
         exports: [recipe_service_1.RecipeService],
     })
 ], RecipeModule);

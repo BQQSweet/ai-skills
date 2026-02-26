@@ -10,6 +10,7 @@ import {
   clearAuth,
   setStorage,
   STORAGE_KEYS,
+  getStorage,
 } from "@/utils/storage";
 import * as authService from "@/services/auth";
 import type { UserInfo } from "@/types/user";
@@ -17,7 +18,9 @@ import type { UserInfo } from "@/types/user";
 export const useUserStore = defineStore("user", () => {
   // ========== State ==========
   const token = ref<string>(getToken());
-  const userInfo = ref<UserInfo | null>(null);
+  const userInfo = ref<UserInfo | null>(
+    JSON.parse(getStorage(STORAGE_KEYS.USER_INFO) || "{}"),
+  );
   const currentGroupId = ref<string>("");
 
   // ========== Getters ==========
@@ -35,6 +38,14 @@ export const useUserStore = defineStore("user", () => {
     setToken(res.token);
     setRefreshToken(res.refreshToken);
     setStorage(STORAGE_KEYS.USER_INFO, JSON.stringify(res.user));
+
+    // 初始化家庭组信息
+    if (res.groups && res.groups.length > 0) {
+      const { useGroupStore } = await import("@/stores/group");
+      const groupStore = useGroupStore();
+      groupStore.initFromLogin(res.groups);
+      setCurrentGroupId(res.groups[0].groupId);
+    }
   }
 
   /** 退出登录 */

@@ -3,3 +3,7 @@ declare module "uview-plus" {
   const uviewPlus: Plugin;
   export default uviewPlus;
 }
+
+declare interface Uni {
+  $u: any;
+}

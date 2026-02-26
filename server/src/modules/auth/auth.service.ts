@@ -72,7 +72,7 @@ export class AuthService {
     }
 
     // 签发 Token
-    const payload = { sub: user.id, phone: user.phone };
+    const payload = { sub: user.id, phone: user.phone, role: user.role };
     const token = await this.jwtService.signAsync(payload);
     const refreshToken = await this.jwtService.signAsync(
       { sub: user.id },
@@ -82,6 +82,20 @@ export class AuthService {
         ) as any,
       },
     );
+
+    // 查询用户的家庭组
+    const groupMemberships = await this.prisma.groupMember.findMany({
+      where: { user_id: user.id },
+      include: {
+        group: {
+          select: {
+            id: true,
+            name: true,
+            invite_code: true,
+          },
+        },
+      },
+    });
 
     return {
       token,
@@ -94,6 +108,12 @@ export class AuthService {
         preferences: user.preferences,
         createdAt: user.created_at,
       },
+      groups: groupMemberships.map((m) => ({
+        groupId: m.group.id,
+        name: m.group.name,
+        inviteCode: m.group.invite_code,
+        role: m.role,
+      })),
     };
   }
 

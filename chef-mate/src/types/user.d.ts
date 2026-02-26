@@ -38,4 +38,5 @@ export interface AuthResult {
   token: string;
   refreshToken: string;
   user: UserInfo;
+  groups: import("./group").GroupBrief[];
 }

@@ -18,7 +18,8 @@ description: ChefMate 前端开发规范，适用于 Uni-app (Vue 3) 环境。
 ## 📂 目录结构规范
 
 - `src/pages/`：页面组件，按功能模块划分子目录。
-- `src/components/`：业务公共组件，遵循 `PascalCase` 命名。
+- `src/pages/<模块>/components/`：页面私有组件，就近放置在页面同级的 `components/` 目录下，仅供该页面使用。
+- `src/components/`：全局公共组件（如 `CmTabBar`、`CmIcon`、`CmInput`），遵循 `PascalCase` 命名，可被任意页面引用。
 - `src/stores/`：Pinia store 定义，文件名小写，如 `user.ts`。
 - `src/services/`：API 请求封装，按模块划分，如 `recipe.ts`。
 - `src/static/`：静态资源（图片、图标）。
@@ -44,3 +45,7 @@ description: ChefMate 前端开发规范，适用于 Uni-app (Vue 3) 环境。
 5. **样式规范**：
    - 所有样式尽量使用 Tailwind CSS 类名实现，以保持样式统一并减少手写 CSS 代码量。
    - 所有颜色值不要使用硬编码（如直接写 HEX 码），尽量提取到 `tailwind.config.ts` 中并使用 CSS 变量或 Tailwind 预设的颜色类名。
+6. **UI 交互提示规范**：
+   - 全局禁用直接调用原生的 `uni.showToast` 等基础提示 API。
+   - **Vue 组件/页面**：统一在模板末尾挂载 `<up-toast ref="uToastRef"></up-toast>`，并通过引用的方式调用显示样式化的消息。
+   - **普通 TS/JS 文件**（如请求拦截、工具类）：直接调用 `uni.$u.toast('消息内容')` 进行全局消息弹出。
