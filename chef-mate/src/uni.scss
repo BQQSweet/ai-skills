@@ -1,0 +1,85 @@
+/**
+ * ChefMate 全局 SCSS 变量
+ * 项目中可直接使用，无需 import
+ */
+@import 'uview-plus/theme.scss';
+
+// ========== 品牌色 ==========
+$cm-primary: #ff6b35; // 主色（烹饪橙）
+$cm-primary-light: #ff8f65; // 主色浅
+$cm-primary-dark: #e55a28; // 主色深
+$cm-secondary: #2ec4b6; // 辅助色（清新绿）
+$cm-secondary-light: #5ad4c9;
+$cm-accent: #ffd166; // 点缀色（暖黄）
+
+// ========== 功能色 ==========
+$cm-success: #4cd964;
+$cm-warning: #f0ad4e;
+$cm-error: #dd524d;
+$cm-info: #5ac8fa;
+
+// ========== 食材状态色 ==========
+$cm-fresh: #4cd964; // 新鲜
+$cm-expiring: #f0ad4e; // 即将过期
+$cm-expired: #dd524d; // 已过期
+
+// ========== 文字色 ==========
+$cm-text-primary: #1a1a2e;
+$cm-text-secondary: #666666;
+$cm-text-placeholder: #aaaaaa;
+$cm-text-disabled: #cccccc;
+$cm-text-inverse: #ffffff;
+
+// ========== 背景色 ==========
+$cm-bg-page: #f5f6fa;
+$cm-bg-card: #ffffff;
+$cm-bg-hover: #f0f0f5;
+$cm-bg-mask: rgba(0, 0, 0, 0.5);
+$cm-bg-input: #f7f7fa;
+
+// ========== 边框 ==========
+$cm-border-color: #eaeaea;
+$cm-border-light: #f0f0f0;
+
+// ========== 圆角 ==========
+$cm-radius-sm: 8rpx;
+$cm-radius-base: 16rpx;
+$cm-radius-lg: 24rpx;
+$cm-radius-xl: 32rpx;
+$cm-radius-full: 50%;
+
+// ========== 间距 ==========
+$cm-spacing-xs: 8rpx;
+$cm-spacing-sm: 16rpx;
+$cm-spacing-base: 24rpx;
+$cm-spacing-lg: 32rpx;
+$cm-spacing-xl: 48rpx;
+
+// ========== 字体大小 ==========
+$cm-font-xs: 22rpx;
+$cm-font-sm: 24rpx;
+$cm-font-base: 28rpx;
+$cm-font-lg: 32rpx;
+$cm-font-xl: 36rpx;
+$cm-font-xxl: 44rpx;
+$cm-font-title: 40rpx;
+
+// ========== 阴影 ==========
+$cm-shadow-sm: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+$cm-shadow-base: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
+$cm-shadow-lg: 0 8rpx 32rpx rgba(0, 0, 0, 0.12);
+
+// ========== 动画 ==========
+$cm-transition-fast: 0.15s ease;
+$cm-transition-base: 0.3s ease;
+$cm-transition-slow: 0.5s ease;
+
+// ========== uni-app 内置变量覆盖 ==========
+$uni-color-primary: $cm-primary;
+$uni-color-success: $cm-success;
+$uni-color-warning: $cm-warning;
+$uni-color-error: $cm-error;
+$uni-text-color: $cm-text-primary;
+$uni-bg-color: $cm-bg-card;
+$uni-bg-color-grey: $cm-bg-page;
+$uni-border-color: $cm-border-color;

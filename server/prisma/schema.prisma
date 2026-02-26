@@ -1,0 +1,203 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ========== 用户与家庭组 ==========
+
+model User {
+  id            String    @id @default(uuid()) @db.Uuid
+  phone         String    @unique @db.VarChar(20)
+  password_hash String    @db.VarChar(255)
+  nickname      String    @db.VarChar(50)
+  avatar_url    String?   @db.VarChar(500)
+  preferences   Json?     // 饮食偏好：{diet_type, allergies[], taste[], spice_level}
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  deleted_at    DateTime?
+
+  groups            GroupMember[]
+  cooking_histories CookingHistory[]
+  notifications     Notification[]
+  recipe_favorites  RecipeFavorite[]
+
+  @@map("user")
+}
+
+model Group {
+  id          String    @id @default(uuid()) @db.Uuid
+  name        String    @db.VarChar(50)
+  invite_code String    @unique @db.VarChar(8)
+  owner_id    String    @db.Uuid
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  deleted_at  DateTime?
+
+  members        GroupMember[]
+  fridge_items   FridgeItem[]
+  shopping_lists ShoppingList[]
+  tasks          Task[]
+
+  @@map("group")
+}
+
+model GroupMember {
+  id       String @id @default(uuid()) @db.Uuid
+  user_id  String @db.Uuid
+  group_id String @db.Uuid
+  role     String @default("member") @db.VarChar(20) // owner | admin | member
+
+  user  User  @relation(fields: [user_id], references: [id])
+  group Group @relation(fields: [group_id], references: [id])
+
+  @@unique([user_id, group_id])
+  @@map("group_member")
+}
+
+// ========== 食材管理 ==========
+
+model FridgeItem {
+  id              String    @id @default(uuid()) @db.Uuid
+  group_id        String    @db.Uuid
+  name            String    @db.VarChar(100)
+  category        String    @db.VarChar(50)
+  quantity        Float
+  unit            String    @db.VarChar(20)
+  photo_url       String?   @db.VarChar(500)
+  production_date DateTime?
+  expire_date     DateTime
+  source          String    @default("image") @db.VarChar(20)
+  status          String    @default("fresh") @db.VarChar(20)
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+  deleted_at      DateTime?
+
+  group Group @relation(fields: [group_id], references: [id])
+
+  @@index([group_id, status])
+  @@index([expire_date])
+  @@map("fridge_item")
+}
+
+// ========== 食谱 ==========
+
+model Recipe {
+  id          String    @id @default(uuid()) @db.Uuid
+  title       String    @db.VarChar(200)
+  description String?   @db.Text
+  ingredients Json      // [{name, quantity, unit, optional}]
+  steps       Json      // [{order, instruction, duration_min, timer_required}]
+  nutrition   Json?     // {calories, protein_g, carbs_g, fat_g, fiber_g}
+  difficulty  String    @db.VarChar(20)
+  cook_time   Int
+  servings    Int       @default(2)
+  source_type String    @db.VarChar(20)
+  source_url  String?   @db.VarChar(500)
+  tags        String[]
+  created_by  String?   @db.Uuid
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  deleted_at  DateTime?
+
+  favorites         RecipeFavorite[]
+  cooking_histories CookingHistory[]
+
+  @@index([source_type])
+  @@map("recipe")
+}
+
+model RecipeFavorite {
+  id         String   @id @default(uuid()) @db.Uuid
+  user_id    String   @db.Uuid
+  recipe_id  String   @db.Uuid
+  created_at DateTime @default(now())
+
+  user   User   @relation(fields: [user_id], references: [id])
+  recipe Recipe @relation(fields: [recipe_id], references: [id])
+
+  @@unique([user_id, recipe_id])
+  @@map("recipe_favorite")
+}
+
+model CookingHistory {
+  id        String   @id @default(uuid()) @db.Uuid
+  user_id   String   @db.Uuid
+  recipe_id String   @db.Uuid
+  rating    Int?
+  note      String?  @db.Text
+  cooked_at DateTime @default(now())
+
+  user   User   @relation(fields: [user_id], references: [id])
+  recipe Recipe @relation(fields: [recipe_id], references: [id])
+
+  @@map("cooking_history")
+}
+
+// ========== 购物与协作 ==========
+
+model ShoppingList {
+  id         String   @id @default(uuid()) @db.Uuid
+  group_id   String   @db.Uuid
+  title      String   @db.VarChar(100)
+  status     String   @default("active") @db.VarChar(20)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  group Group          @relation(fields: [group_id], references: [id])
+  items ShoppingItem[]
+
+  @@map("shopping_list")
+}
+
+model ShoppingItem {
+  id          String    @id @default(uuid()) @db.Uuid
+  list_id     String    @db.Uuid
+  name        String    @db.VarChar(100)
+  quantity    Float
+  unit        String    @db.VarChar(20)
+  assigned_to String?   @db.Uuid
+  is_bought   Boolean   @default(false)
+  bought_at   DateTime?
+
+  list ShoppingList @relation(fields: [list_id], references: [id])
+
+  @@map("shopping_item")
+}
+
+model Task {
+  id          String    @id @default(uuid()) @db.Uuid
+  group_id    String    @db.Uuid
+  type        String    @db.VarChar(30)
+  title       String    @db.VarChar(200)
+  description String?   @db.Text
+  assigned_to String?   @db.Uuid
+  status      String    @default("pending") @db.VarChar(20)
+  due_date    DateTime?
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+
+  group Group @relation(fields: [group_id], references: [id])
+
+  @@index([group_id, status])
+  @@map("task")
+}
+
+// ========== 通知 ==========
+
+model Notification {
+  id         String   @id @default(uuid()) @db.Uuid
+  user_id    String   @db.Uuid
+  type       String   @db.VarChar(30)
+  title      String   @db.VarChar(200)
+  content    String   @db.Text
+  is_read    Boolean  @default(false)
+  created_at DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id])
+
+  @@index([user_id, is_read])
+  @@map("notification")
+}

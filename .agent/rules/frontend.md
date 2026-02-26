@@ -41,3 +41,6 @@ description: ChefMate 前端开发规范，适用于 Uni-app (Vue 3) 环境。
 4. **AI/LLM 交互**：
    - 处理食谱推荐时，必须支持处理流式数据（SSE）的展示逻辑。
    - 语音指引功能需封装统一的 TTS 工具类。
+5. **样式规范**：
+   - 所有样式尽量使用 Tailwind CSS 类名实现，以保持样式统一并减少手写 CSS 代码量。
+   - 所有颜色值不要使用硬编码（如直接写 HEX 码），尽量提取到 `tailwind.config.ts` 中并使用 CSS 变量或 Tailwind 预设的颜色类名。
