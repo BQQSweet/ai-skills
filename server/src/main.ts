@@ -1,12 +1,20 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    bodyParser: true,
+  });
+
+  // 提高请求体大小限制（支持 Base64 图片上传）
+  app.useBodyParser('json', { limit: '20mb' });
+  app.useBodyParser('urlencoded', { limit: '20mb', extended: true });
 
   // 全局校验管道
   app.useGlobalPipes(
@@ -25,6 +33,11 @@ async function bootstrap() {
 
   // 跨域
   app.enableCors();
+
+  // 静态文件托管（用于临时图片等）
+  app.useStaticAssets(join(process.cwd(), 'uploads'), {
+    prefix: '/uploads/',
+  });
 
   // Swagger API 文档
   const swaggerConfig = new DocumentBuilder()

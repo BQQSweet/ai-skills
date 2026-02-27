@@ -2,8 +2,9 @@
   "name": "chef-mate",
   "version": "0.0.0",
   "scripts": {
+    "update-ip": "./scripts/update-ip.sh",
     "dev:custom": "uni -p",
-    "dev:h5": "uni",
+    "dev:h5": "pnpm run update-ip && uni",
     "dev:h5:ssr": "uni --ssr",
     "dev:mp-alipay": "uni -p mp-alipay",
     "dev:mp-baidu": "uni -p mp-baidu",
@@ -13,7 +14,7 @@
     "dev:mp-qq": "uni -p mp-qq",
     "dev:mp-toutiao": "uni -p mp-toutiao",
     "dev:mp-harmony": "uni -p mp-harmony",
-    "dev:mp-weixin": "uni -p mp-weixin",
+    "dev:mp-weixin": "pnpm run update-ip && uni -p mp-weixin",
     "dev:mp-xhs": "uni -p mp-xhs",
     "dev:quickapp-webview": "uni -p quickapp-webview",
     "dev:quickapp-webview-huawei": "uni -p quickapp-webview-huawei",
@@ -34,6 +35,7 @@
     "build:quickapp-webview": "uni build -p quickapp-webview",
     "build:quickapp-webview-huawei": "uni build -p quickapp-webview-huawei",
     "build:quickapp-webview-union": "uni build -p quickapp-webview-union",
+    "dev:app-plus": "pnpm run update-ip && uni -p app-plus",
     "type-check": "vue-tsc --noEmit"
   },
   "dependencies": {

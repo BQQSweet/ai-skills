@@ -1,6 +1,5 @@
 ---
 trigger: always_on
-glob: src/frontend/**/*
 description: ChefMate 前端开发规范，适用于 Uni-app (Vue 3) 环境。
 ---
 
@@ -49,3 +48,10 @@ description: ChefMate 前端开发规范，适用于 Uni-app (Vue 3) 环境。
    - 全局禁用直接调用原生的 `uni.showToast` 等基础提示 API。
    - **Vue 组件/页面**：统一在模板末尾挂载 `<up-toast ref="uToastRef"></up-toast>`，并通过引用的方式调用显示样式化的消息。
    - **普通 TS/JS 文件**（如请求拦截、工具类）：直接调用 `uni.$u.toast('消息内容')` 进行全局消息弹出。
+7. **UI 组件优先级**：
+   - 所有 UI 组件（弹窗、对话框、表单控件、提示等）**优先使用 uView Plus**（`up-modal`、`up-popup`、`up-toast` 等）。
+   - 仅当 uView Plus 没有提供对应组件时，才降级使用 `uni.*` 原生 API（如 `uni.showActionSheet`）。
+8. **组件化与内聚性**：
+   - 页面必须使用组件化开发，禁止按页面维度把全部逻辑和 UI 代码写在一个文件中。
+   - 优先保持组件内聚：组件的独立交互或功能以及数据（如操作反馈、局部状态流转、远程数据）尽最大可能在组件内部消化完成或者定义。
+   - 除必要的数据同步或改变外部环境状态外，不要滥用 `$emit` 向上抛出事件。

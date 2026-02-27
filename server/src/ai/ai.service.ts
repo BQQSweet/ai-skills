@@ -6,6 +6,7 @@ import OpenAI from 'openai';
 export class AiService {
   private readonly logger = new Logger(AiService.name);
   private openai: OpenAI;
+  private visionClient: OpenAI;
 
   constructor(private readonly config: ConfigService) {
     const apiKey = this.config.get<string>('AI_API_KEY');
@@ -20,19 +21,43 @@ export class AiService {
     } else {
       this.logger.warn('AI Service initialized without API key or base URL');
     }
+
+    // Vision 模型可能使用不同的 API Key 和 Base URL（如阿里云 DashScope）
+    const visionApiKey = this.config.get<string>('AI_VISION_API_KEY') || apiKey;
+    const visionBaseURL =
+      this.config.get<string>('AI_VISION_BASE_URL') || baseURL;
+
+    if (visionApiKey && visionBaseURL) {
+      this.visionClient = new OpenAI({
+        apiKey: visionApiKey,
+        baseURL: visionBaseURL,
+      });
+      this.logger.log(
+        `AI Vision Service initialized with base URL: ${visionBaseURL}`,
+      );
+    } else {
+      this.visionClient = this.openai; // fallback to main client
+    }
   }
 
   /**
    * AI 生成食谱
    * 通过 prompt 调用 DeepSeek，返回结构化的食谱数据
    */
-  async generateRecipe(prompt: string): Promise<any> {
+  async generateRecipe(options: {
+    prompt?: string;
+    taste?: string;
+    dietary?: string;
+    servings?: number;
+  }): Promise<any> {
     if (!this.openai) {
       throw new BadRequestException('AI Service is not fully configured');
     }
 
     const modelOptions = this.config.get<string>('AI_MODEL') || 'deepseek-chat';
-    this.logger.log(`Generating recipe with prompt: ${prompt}`);
+    this.logger.log(
+      `Generating recipe with options: ${JSON.stringify(options)}`,
+    );
 
     const systemPrompt = `
       你是一个专业的厨师和全栈菜谱生成助手。
@@ -59,11 +84,20 @@ export class AiService {
       }
     `;
 
+    // 动态构建 User Prompt
+    let userPromptContent = '请帮我生成一个菜谱。';
+    if (options.prompt) userPromptContent += ` 具体要求是：${options.prompt}。`;
+    if (options.taste) userPromptContent += ` 口味偏好是：${options.taste}。`;
+    if (options.dietary)
+      userPromptContent += ` 饮食偏好或忌口是：${options.dietary}。`;
+    if (options.servings)
+      userPromptContent += ` 建议适用人数是：${options.servings}人份。`;
+
     try {
       const completion = await this.openai.chat.completions.create({
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: prompt },
+          { role: 'user', content: userPromptContent },
         ],
         model: modelOptions,
         response_format: { type: 'json_object' },
@@ -137,11 +171,13 @@ export class AiService {
    * 视觉识别（多模态）
    */
   async vision(imageBase64: string, prompt: string): Promise<string> {
-    const model = this.config.get<string>('AI_VISION_MODEL') || 'deepseek-vl';
-    // Deepseek VR doesn't officially support standard vision through the main /chat/completions endpoint yet as of standard SDK
-    // This is a placeholder for standard OpenAI vision payload structure if deepseek-vl proxy uses it.
+    const model = this.config.get<string>('AI_VISION_MODEL') || 'qwen-vl-plus';
+    const client = this.visionClient || this.openai;
+    if (!client) {
+      throw new BadRequestException('AI Vision Service is not configured');
+    }
     try {
-      const completion = await this.openai.chat.completions.create({
+      const completion = await client.chat.completions.create({
         model,
         messages: [
           {

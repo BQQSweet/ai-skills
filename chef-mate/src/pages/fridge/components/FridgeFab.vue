@@ -1,0 +1,104 @@
+<template>
+  <view>
+    <!-- FAB Menu Overlay -->
+    <view
+      class="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] z-[45] transition-opacity duration-300"
+      :class="
+        isFabOpen
+          ? 'opacity-100 pointer-events-auto'
+          : 'opacity-0 pointer-events-none'
+      "
+      @click="isFabOpen = false"
+    ></view>
+
+    <!-- FAB Menu Items -->
+    <view
+      class="fixed bottom-[164px] right-6 z-50 flex flex-col items-end gap-4 transition-all duration-300"
+      :class="
+        isFabOpen
+          ? 'translate-y-0 opacity-100 pointer-events-auto'
+          : 'translate-y-4 opacity-0 pointer-events-none'
+      "
+    >
+      <view class="flex items-center gap-3">
+        <text
+          class="text-slate-700 font-medium text-sm bg-white/90 px-3 py-1.5 rounded-lg shadow-sm backdrop-blur-sm"
+          >扫描录入</text
+        >
+        <button
+          class="w-12 h-12 rounded-full bg-white border border-primary/20 flex items-center justify-center text-primary shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:bg-slate-50 transition-all active:scale-95 m-0 p-0 after:hidden"
+          @click="handleAction('camera')"
+        >
+          <text class="material-symbols-outlined text-[24px]"
+            >photo_camera</text
+          >
+        </button>
+      </view>
+      <view class="flex items-center gap-3">
+        <text
+          class="text-slate-700 font-medium text-sm bg-white/90 px-3 py-1.5 rounded-lg shadow-sm backdrop-blur-sm"
+          >语音录入</text
+        >
+        <button
+          class="w-12 h-12 rounded-full bg-white border border-primary/20 flex items-center justify-center text-primary shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:bg-slate-50 transition-all active:scale-95 m-0 p-0 after:hidden"
+          @click="handleAction('mic')"
+        >
+          <text class="material-symbols-outlined text-[24px]">mic</text>
+        </button>
+      </view>
+      <view class="flex items-center gap-3">
+        <text
+          class="text-slate-700 font-medium text-sm bg-white/90 px-3 py-1.5 rounded-lg shadow-sm backdrop-blur-sm"
+          >手动输入</text
+        >
+        <button
+          class="w-12 h-12 rounded-full bg-white border border-primary/20 flex items-center justify-center text-primary shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:bg-slate-50 transition-all active:scale-95 m-0 p-0 after:hidden"
+          @click="handleAction('edit')"
+        >
+          <text class="material-symbols-outlined text-[24px]">edit</text>
+        </button>
+      </view>
+    </view>
+
+    <!-- FAB Main Button -->
+    <button
+      class="fixed bottom-[96px] right-6 z-50 w-14 h-14 rounded-full bg-primary text-white shadow-[0_8px_20px_-4px_rgba(255,159,10,0.4),_0_4px_8px_-4px_rgba(255,159,10,0.2)] flex items-center justify-center cursor-pointer transition-all active:scale-90 active:shadow-inner m-0 p-0 border-none after:hidden"
+      @click="isFabOpen = !isFabOpen"
+    >
+      <text
+        class="material-symbols-outlined text-[32px] font-bold transition-transform duration-300"
+        :class="isFabOpen ? 'rotate-45' : ''"
+        >add</text
+      >
+    </button>
+    <ScanCamera v-model:show="showScanCamera" @added="onItemAdded" />
+    <up-toast ref="uToastRef"></up-toast>
+  </view>
+</template>
+
+<script setup lang="ts">
+import { ref } from "vue";
+import ScanCamera from "./ScanCamera.vue";
+
+const emit = defineEmits(["added"]);
+
+const isFabOpen = ref(false);
+const showScanCamera = ref(false);
+const uToastRef = ref();
+
+const handleAction = (type: string) => {
+  isFabOpen.value = false;
+  if (type === "camera") {
+    showScanCamera.value = true;
+  } else if (type === "mic") {
+    uToastRef.value?.show({ message: "语音录入开发中", type: "default" });
+  } else if (type === "edit") {
+    uToastRef.value?.show({ message: "手动录入开发中", type: "default" });
+  }
+};
+
+const onItemAdded = () => {
+  uToastRef.value?.show({ message: "食材已添加到冰箱", type: "success" });
+  emit("added");
+};
+</script>

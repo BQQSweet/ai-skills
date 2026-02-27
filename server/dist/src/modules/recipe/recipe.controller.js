@@ -31,6 +31,9 @@ let RecipeController = class RecipeController {
     async findAll(query) {
         return this.recipeService.findAll(query);
     }
+    async recommend(userId) {
+        return this.recipeService.recommend(userId);
+    }
     async findOne(id) {
         return this.recipeService.findOne(id);
     }
@@ -60,6 +63,15 @@ __decorate([
     __metadata("design:paramtypes", [recipe_dto_1.QueryRecipeDto]),
     __metadata("design:returntype", Promise)
 ], RecipeController.prototype, "findAll", null);
+__decorate([
+    (0, common_1.Get)('recommend'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiOperation)({ summary: '首页基于时间的菜谱推荐' }),
+    __param(0, (0, current_user_decorator_1.CurrentUser)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], RecipeController.prototype, "recommend", null);
 __decorate([
     (0, common_1.Get)(':id'),
     (0, swagger_1.ApiOperation)({ summary: '获取食谱详情' }),

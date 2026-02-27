@@ -54,6 +54,11 @@ export function deleteRecipe(id: string) {
   return axios.delete(`/api/recipe/${id}`);
 }
 
-export function generateRecipeAi(prompt: string) {
-  return axios.post<any>("/api/ai/generate-recipe", { prompt });
+export function generateRecipeAi(data: {
+  prompt?: string;
+  taste?: string;
+  dietary?: string;
+  servings?: number;
+}) {
+  return axios.post<any>("/api/ai/generate-recipe", data);
 }

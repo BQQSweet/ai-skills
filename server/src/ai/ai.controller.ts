@@ -9,12 +9,24 @@ import { AiService } from './ai.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { AdminGuard } from '../common/guards/admin.guard';
 
-import { IsString, IsNotEmpty } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsNumber } from 'class-validator';
 
 export class GenerateRecipeDto {
   @IsString()
-  @IsNotEmpty()
-  prompt: string;
+  @IsOptional()
+  prompt?: string;
+
+  @IsString()
+  @IsOptional()
+  taste?: string;
+
+  @IsString()
+  @IsOptional()
+  dietary?: string;
+
+  @IsNumber()
+  @IsOptional()
+  servings?: number;
 }
 
 @Controller('api/ai')
@@ -24,10 +36,12 @@ export class AiController {
   @Post('generate-recipe')
   @UseGuards(JwtAuthGuard, AdminGuard)
   async generateRecipe(@Body() dto: GenerateRecipeDto) {
-    if (!dto.prompt) {
-      throw new BadRequestException('Prompt is required');
+    if (!dto.prompt && !dto.taste && !dto.dietary) {
+      throw new BadRequestException(
+        'At least one of prompt, taste, or dietary is required',
+      );
     }
-    const result = await this.aiService.generateRecipe(dto.prompt);
+    const result = await this.aiService.generateRecipe(dto);
     return result;
   }
 }

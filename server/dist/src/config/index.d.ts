@@ -26,11 +26,15 @@ export declare const aiConfig: (() => {
     apiKey: string | undefined;
     baseUrl: string;
     model: string;
+    visionApiKey: string | undefined;
+    visionBaseUrl: string | undefined;
     visionModel: string;
 }) & import("@nestjs/config").ConfigFactoryKeyHost<{
     apiKey: string | undefined;
     baseUrl: string;
     model: string;
+    visionApiKey: string | undefined;
+    visionBaseUrl: string | undefined;
     visionModel: string;
 }>;
 export declare const ossConfig: (() => {

@@ -1,242 +1,421 @@
-<!DOCTYPE html>
-
-<html lang="zh-CN"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>ChefMate 首页仪表盘</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Noto+Sans+SC:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#ff9d0a",
-                        "background-light": "#fcfaf8", // Modified slightly to match the provided component example
-                        "background-dark": "#231b0f",
-                        "surface-light": "#ffffff",
-                        "surface-dark": "#2d2418",
-                        "text-main": "#1d160c",
-                        "text-sub": "#a17c45",
-                        "danger": "#ef4444",
-                        "warning": "#f59e0b",
-                    },
-                    fontFamily: {
-                        "display": ["Plus Jakarta Sans", "Noto Sans SC", "sans-serif"],
-                        "body": ["Noto Sans SC", "sans-serif"],
-                    },
-                    borderRadius: {"DEFAULT": "1rem", "lg": "1.5rem", "xl": "2rem", "2xl": "2.5rem", "full": "9999px"},
-                    boxShadow: {
-                        "soft": "0 4px 20px -2px rgba(29, 22, 12, 0.08)",
-                        "glow": "0 4px 20px -2px rgba(255, 157, 10, 0.3)",
-                    }
-                },
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>ChefMate 首页仪表盘</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Noto+Sans+SC:wght@400;500;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#ff9d0a",
+              "background-light": "#fcfaf8",
+              "background-dark": "#231b0f",
+              "surface-light": "#ffffff",
+              "surface-dark": "#2d2418",
+              "text-main": "#1d160c",
+              "text-sub": "#a17c45",
+              danger: "#ef4444",
+              warning: "#f59e0b",
             },
-        }
+            fontFamily: {
+              display: ["Plus Jakarta Sans", "Noto Sans SC", "sans-serif"],
+              body: ["Noto Sans SC", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "1rem",
+              lg: "1.5rem",
+              xl: "2rem",
+              "2xl": "2.5rem",
+              full: "9999px",
+            },
+            boxShadow: {
+              soft: "0 4px 20px -2px rgba(29, 22, 12, 0.08)",
+              glow: "0 4px 20px -2px rgba(255, 157, 10, 0.3)",
+            },
+          },
+        },
+      };
     </script>
-<style>
-        body {
-            font-family: "Plus Jakarta Sans", "Noto Sans SC", sans-serif;
-            -webkit-font-smoothing: antialiased;
-        }
-        /* Custom scrollbar hiding */
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
+    <style>
+      body {
+        font-family: "Plus Jakarta Sans", "Noto Sans SC", sans-serif;
+        -webkit-font-smoothing: antialiased;
+        background-color: #fafafa;
+      }
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
     </style>
-<style>
-    body {
-      min-height: max(884px, 100dvh);
-    }
-  </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
   </head>
-<body class="bg-background-light dark:bg-background-dark text-text-main dark:text-white transition-colors duration-200">
-<div class="relative flex min-h-screen w-full flex-col mx-auto max-w-md bg-background-light dark:bg-background-dark shadow-2xl overflow-hidden border-x border-slate-100 dark:border-slate-800">
-<!-- Header -->
-<header class="flex items-center justify-between px-6 pt-12 pb-4">
-<div class="flex items-center gap-4">
-<div class="relative group cursor-pointer">
-<div class="size-12 rounded-full bg-cover bg-center border-2 border-white dark:border-surface-dark shadow-sm" data-alt="User profile avatar of a smiling woman" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD0iW1d4Jt80uMnfNvJkxsQyY-DRAc0thIS-xz9KScOBnllEHVygDwiE6q40LC0pju0rayqWEBnZSTou7CllJ6Y9aOrmvVcizUCW7jZzU1evPsWY4MU0PYvz_winzZM1RMfyIbVcl5oDAZw6KIhn-ecSSi7vSXzYll9osyo0rnUUhm8WtXIA8KQYHZ93VKhQFCLLv7zW39F9l9gcniHRGX68iHIwMnfGykT7sln_nE9QR5xnHNUW_c23MLuDfrO7_e4vMnaxS7N3k7M');">
-</div>
-<div class="absolute bottom-0 right-0 size-3 bg-green-500 rounded-full border-2 border-white dark:border-surface-dark"></div>
-</div>
-<div>
-<p class="text-sm text-text-sub dark:text-orange-200/80 font-medium">晚上好</p>
-<h1 class="text-xl font-bold text-text-main dark:text-white">大厨 Chef</h1>
-</div>
-</div>
-<button class="relative p-2 rounded-full bg-white dark:bg-surface-dark shadow-soft text-text-main dark:text-white hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors">
-<span class="material-symbols-outlined filled">notifications</span>
-<span class="absolute top-2 right-2 size-2 bg-danger rounded-full border border-white dark:border-surface-dark"></span>
-</button>
-</header>
-<!-- Scrollable Content -->
-<main class="flex-1 overflow-y-auto no-scrollbar pb-24 space-y-8">
-<!-- Hero Card: Today's Cooking Plan -->
-<section class="px-6">
-<div class="flex items-center justify-between mb-4">
-<h2 class="text-lg font-bold text-text-main dark:text-white">今日烹饪计划</h2>
-<span class="text-xs font-medium text-primary bg-primary/10 px-3 py-1 rounded-full">晚餐推荐</span>
-</div>
-<div class="relative w-full rounded-2xl bg-white dark:bg-surface-dark shadow-soft overflow-hidden group">
-<!-- Image Area -->
-<div class="relative h-64 w-full overflow-hidden">
-<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10"></div>
-<img alt="Tomato Stir-fried Eggs dish presentation" class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="Close up of tomato egg stir fry dish" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAgpI_IYcGM8oAcWZRTUBl3Vr2rGLHDvyThJDCZFmjiUk8AOcFOviu_oi9jDFeg3xfV2A2ZcLZ0v5la4N_u150o2Fbv_3fUZYxcdXMC_KT_EZ5gsU-2SBs3rCzuZHurAOftI_PZhb8NKSBovhNXpZ_RdMhTs5fwc8Hs_o98xRxPTIdT65NFYdqrE9MrH59O6MGKwffYBcdvcIkcaySy8tTodJU8IEI9AN-R7H_kZIYdZoWiVQ8XxzpYJEDWRJtib94CnadM6IAClRxT"/>
-<!-- Floating Dish Name on Image -->
-<div class="absolute bottom-4 left-4 right-4 z-20 text-white">
-<h3 class="text-2xl font-bold mb-1">西红柿炒鸡蛋</h3>
-<div class="flex items-center gap-3 text-sm font-medium text-white/90">
-<div class="flex items-center gap-1 bg-black/20 backdrop-blur-md px-2 py-1 rounded-lg">
-<span class="material-symbols-outlined text-[16px]">schedule</span>
-<span>15分钟</span>
-</div>
-<div class="flex items-center gap-1 bg-black/20 backdrop-blur-md px-2 py-1 rounded-lg">
-<span class="material-symbols-outlined text-[16px]">equalizer</span>
-<span>简单</span>
-</div>
-</div>
-</div>
-</div>
-<!-- Action Area -->
-<div class="p-4 flex items-center justify-between gap-4">
-<div class="flex -space-x-2 overflow-hidden">
-<img alt="Family member 1" class="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-surface-dark object-cover" data-alt="Small avatar of family member" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD1xaCumzLqpzkvNproVHkvr7kbITVW7Rrrq_K0jEWYv6MVKLYtxpM9wRnDNa9ch7uia3rw-Vksvv_gBgaOAjk4Et6k7-z-9zXXEh18GBMTX24La3vLU0D4pxKYKG6Lc9_MQYgnOsU0cfFo3JEOxiWPsZxEAzGjXFEvDT3GNIfrKyTVlh4befBHCsI041Bs1uikL95epvlGanoUCMVkHM8INwVyBO56nfmFHMmCDFw9Px9vmWoW_FOPWM8IZEc9ZXfxQSA6gY52Bc8n"/>
-<img alt="Family member 2" class="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-surface-dark object-cover" data-alt="Small avatar of family member" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBMjBXwdgX9O5A9OyGhveJuCy1ou4rtfeI9iP79ElvVJrJzGBDmoiwPfZTSOoIU5O_UUxZEZbUppuxHI4eqVffk8goJJp45M1YxkcoBf6l8njM9VppTY76QsErYo1QyBYzAm0M_xqt0Q5Zsb0fGYFs-P6iH6aKhNrSo86EFLAn5nBY7um8EWYvbfuRffgtgHlaqU1ZtMT8UijqxmW_Cz690QO8yuVbVrVoulJxUkGonHHfNzTrFUICJEPRn_TjbXAMW7I347SaMFWS_"/>
-<div class="flex h-8 w-8 items-center justify-center rounded-full ring-2 ring-white dark:ring-surface-dark bg-orange-100 text-xs font-bold text-primary">+2</div>
-</div>
-<button class="flex-1 bg-primary hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-xl shadow-glow active:scale-95 transition-all flex items-center justify-center gap-2">
-<span class="material-symbols-outlined">skillet</span>
-<span>开始下厨</span>
-</button>
-</div>
-</div>
-</section>
-<!-- Expiry Alerts Section -->
-<section class="pl-6">
-<div class="flex items-center justify-between pr-6 mb-4">
-<h2 class="text-lg font-bold text-text-main dark:text-white flex items-center gap-2">
-                        过期预警
-                        <span class="flex h-2 w-2 relative">
-<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-danger opacity-75"></span>
-<span class="relative inline-flex rounded-full h-2 w-2 bg-danger"></span>
-</span>
-</h2>
-<a class="text-sm font-medium text-text-sub dark:text-orange-200 hover:text-primary" href="#">查看全部</a>
-</div>
-<div class="flex gap-4 overflow-x-auto no-scrollbar pb-4 pr-6">
-<!-- Alert Card 1 (Urgent) -->
-<div class="min-w-[160px] p-4 rounded-2xl bg-white dark:bg-surface-dark shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col gap-3 relative overflow-hidden">
-<div class="absolute top-0 right-0 p-2">
-<div class="size-2 rounded-full bg-danger"></div>
-</div>
-<div class="size-12 rounded-xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center text-danger">
-<span class="material-symbols-outlined">set_meal</span>
-</div>
-<div>
-<p class="font-bold text-text-main dark:text-white">肉类即将到期</p>
-<p class="text-xs text-danger mt-1 font-medium">请尽快使用</p>
-</div>
-</div>
-<!-- Alert Card 2 (Warning) -->
-<div class="min-w-[160px] p-4 rounded-2xl bg-white dark:bg-surface-dark shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col gap-3 relative overflow-hidden">
-<div class="absolute top-0 right-0 p-2">
-<div class="size-2 rounded-full bg-warning"></div>
-</div>
-<div class="size-12 rounded-xl bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center text-warning">
-<span class="material-symbols-outlined">eco</span>
-</div>
-<div>
-<p class="font-bold text-text-main dark:text-white">蔬菜存放3天</p>
-<p class="text-xs text-text-sub dark:text-gray-400 mt-1">建议尽快烹饪</p>
-</div>
-</div>
-<!-- Alert Card 3 (Info) -->
-<div class="min-w-[160px] p-4 rounded-2xl bg-white dark:bg-surface-dark shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col gap-3 relative overflow-hidden opacity-60">
-<div class="size-12 rounded-xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-400">
-<span class="material-symbols-outlined">egg</span>
-</div>
-<div>
-<p class="font-bold text-text-main dark:text-white">鸡蛋库存充足</p>
-<p class="text-xs text-text-sub dark:text-gray-400 mt-1">保质期良好</p>
-</div>
-</div>
-</div>
-</section>
-<!-- Family Collaboration Feed -->
-<section class="px-6 pb-6">
-<div class="flex items-center justify-between mb-4">
-<h2 class="text-lg font-bold text-text-main dark:text-white">家庭协作</h2>
-</div>
-<div class="rounded-2xl bg-white dark:bg-surface-dark shadow-soft p-1">
-<div class="flex items-center gap-4 p-4 border-b border-slate-50 dark:border-slate-800/50">
-<div class="relative">
-<img alt="Wang Dali Profile" class="size-10 rounded-full object-cover" data-alt="Profile picture of Wang Dali" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBjcq8CxGQy10qOw1mGfDaRNM6EANdhOWxTONBLlMw3M9Xco518tnNUaf0RZtaJtdGn-hLIqhUQihRUs10iZ3l0-MF0A5rihvZPyF9JUzmc97ZSumzqsL24avZUijzhjPbHffNsUtsl59YO0cs_jWktk2kk_acKT7z8xaASvDhqgf17j6EoBuf4sOfq70sIpsOiKO9ewIqFGOvRlqHTNoOp_aI5sAerjifbxTcRYBox9suxgcqiS-h0cOlCkcByyryY8L_CRfMPZlZt"/>
-<div class="absolute -bottom-1 -right-1 bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300 rounded-full p-0.5 border-2 border-white dark:border-surface-dark">
-<span class="material-symbols-outlined text-[14px] block">check</span>
-</div>
-</div>
-<div class="flex-1">
-<p class="text-sm text-text-main dark:text-white">
-<span class="font-bold">王大力</span> 标记了 <span class="font-bold text-primary">生姜</span> 已买
-                            </p>
-<p class="text-xs text-text-sub mt-0.5">10分钟前</p>
-</div>
-</div>
-<div class="flex items-center gap-4 p-4">
-<div class="relative">
-<img alt="Li Mama Profile" class="size-10 rounded-full object-cover" data-alt="Profile picture of Li Mama" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSyb22lNKeHPxwTv8K7Je_lJriUDk6NJpc7_DkkBTi0PT0B99bYFRnLqx2GTd7GgVWp-f5YZCgT-v-vQV_zw8tm3kIGsrzO5IOZH_koZgd7lwuwiSN5anglDylsKfPMCkA1NHIiBb1p2YbqjSbKehjtjI3lfxPRAs39dKJ1O--G7zYGdw0dCFpGLKdpJcd3vMBNUGyl0SU5QGQZAex7-eJObFDVYI6G5jVDtpwTE9D256cBo1GTpiKpEhWTP86v2_TCDZBC_148NXq"/>
-<div class="absolute -bottom-1 -right-1 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 rounded-full p-0.5 border-2 border-white dark:border-surface-dark">
-<span class="material-symbols-outlined text-[14px] block">add</span>
-</div>
-</div>
-<div class="flex-1">
-<p class="text-sm text-text-main dark:text-white">
-<span class="font-bold">李妈妈</span> 添加了 <span class="font-bold text-primary">酱油</span> 到清单
-                            </p>
-<p class="text-xs text-text-sub mt-0.5">30分钟前</p>
-</div>
-</div>
-</div>
-<!-- Quick Action Button -->
-<button class="w-full mt-4 flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-dashed border-primary/30 text-primary bg-primary/5 hover:bg-primary/10 transition-colors">
-<span class="material-symbols-outlined">shopping_basket</span>
-<span class="font-bold">去买菜</span>
-</button>
-</section>
-</main>
-<!-- Bottom Navigation -->
-<nav class="absolute bottom-0 left-0 right-0 bg-white/90 dark:bg-surface-dark/90 backdrop-blur-lg border-t border-slate-100 dark:border-slate-800 pt-2 pb-6 px-6 z-50">
-<div class="flex items-center justify-between">
-<a class="flex flex-col items-center justify-center gap-1 w-16 group" href="#">
-<span class="material-symbols-outlined text-text-main dark:text-white group-hover:text-primary transition-colors filled" style="font-variation-settings: 'FILL' 1;">home</span>
-<span class="text-[10px] font-bold text-text-main dark:text-white group-hover:text-primary transition-colors">首页</span>
-</a>
-<a class="flex flex-col items-center justify-center gap-1 w-16 group" href="#">
-<span class="material-symbols-outlined text-text-sub dark:text-gray-400 group-hover:text-primary transition-colors">menu_book</span>
-<span class="text-[10px] font-medium text-text-sub dark:text-gray-400 group-hover:text-primary transition-colors">菜谱</span>
-</a>
-<div class="relative -top-5">
-<button class="size-14 bg-primary text-white rounded-full shadow-glow flex items-center justify-center transform hover:scale-105 transition-transform">
-<span class="material-symbols-outlined text-3xl">add</span>
-</button>
-</div>
-<a class="flex flex-col items-center justify-center gap-1 w-16 group" href="#">
-<span class="material-symbols-outlined text-text-sub dark:text-gray-400 group-hover:text-primary transition-colors">kitchen</span>
-<span class="text-[10px] font-medium text-text-sub dark:text-gray-400 group-hover:text-primary transition-colors">厨房</span>
-</a>
-<a class="flex flex-col items-center justify-center gap-1 w-16 group" href="#">
-<span class="material-symbols-outlined text-text-sub dark:text-gray-400 group-hover:text-primary transition-colors">person</span>
-<span class="text-[10px] font-medium text-text-sub dark:text-gray-400 group-hover:text-primary transition-colors">我的</span>
-</a>
-</div>
-</nav>
-</div>
-</body></html>
+  <body
+    class="bg-[#FAFAFA] dark:bg-background-dark text-text-main dark:text-white transition-colors duration-200"
+  >
+    <div
+      class="relative flex min-h-screen w-full flex-col mx-auto max-w-md bg-[#FAFAFA] dark:bg-background-dark shadow-2xl overflow-hidden border-x border-slate-100 dark:border-slate-800"
+    >
+      <header class="flex items-center justify-between px-6 pt-12 pb-4">
+        <div class="flex items-center gap-4">
+          <div class="relative group cursor-pointer">
+            <div
+              class="size-12 rounded-full bg-cover bg-center border-2 border-white dark:border-surface-dark shadow-sm"
+              style="
+                background-image: url(&quot;https://lh3.googleusercontent.com/aida-public/AB6AXuD0iW1d4Jt80uMnfNvJkxsQyY-DRAc0thIS-xz9KScOBnllEHVygDwiE6q40LC0pju0rayqWEBnZSTou7CllJ6Y9aOrmvVcizUCW7jZzU1evPsWY4MU0PYvz_winzZM1RMfyIbVcl5oDAZw6KIhn-ecSSi7vSXzYll9osyo0rnUUhm8WtXIA8KQYHZ93VKhQFCLLv7zW39F9l9gcniHRGX68iHIwMnfGykT7sln_nE9QR5xnHNUW_c23MLuDfrO7_e4vMnaxS7N3k7M&quot;);
+              "
+            ></div>
+            <div
+              class="absolute bottom-0 right-0 size-3 bg-green-500 rounded-full border-2 border-white dark:border-surface-dark"
+            ></div>
+          </div>
+          <div>
+            <p
+              class="text-sm text-text-sub dark:text-orange-200/80 font-medium"
+            >
+              晚上好
+            </p>
+            <h1 class="text-xl font-bold text-text-main dark:text-white">
+              大厨 Chef
+            </h1>
+          </div>
+        </div>
+        <button
+          class="relative p-2 rounded-full bg-white dark:bg-surface-dark shadow-soft text-text-main dark:text-white hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors"
+        >
+          <span class="material-symbols-outlined">notifications</span>
+          <span
+            class="absolute top-2 right-2 size-2 bg-danger rounded-full border border-white dark:border-surface-dark"
+          ></span>
+        </button>
+      </header>
+      <main class="flex-1 overflow-y-auto no-scrollbar pb-24 space-y-8">
+        <section class="px-6">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-bold text-text-main dark:text-white">
+              今日烹饪计划
+            </h2>
+            <span
+              class="text-xs font-medium text-primary bg-primary/10 px-3 py-1 rounded-full"
+              >晚餐推荐</span
+            >
+          </div>
+          <div
+            class="flex gap-4 overflow-x-auto no-scrollbar snap-x snap-mandatory"
+          >
+            <div
+              class="min-w-full snap-center relative rounded-2xl bg-white dark:bg-surface-dark shadow-soft overflow-hidden group"
+            >
+              <div class="relative h-64 w-full overflow-hidden">
+                <div
+                  class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10"
+                ></div>
+                <img
+                  alt="Tomato Stir-fried Eggs"
+                  class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuAgpI_IYcGM8oAcWZRTUBl3Vr2rGLHDvyThJDCZFmjiUk8AOcFOviu_oi9jDFeg3xfV2A2ZcLZ0v5la4N_u150o2Fbv_3fUZYxcdXMC_KT_EZ5gsU-2SBs3rCzuZHurAOftI_PZhb8NKSBovhNXpZ_RdMhTs5fwc8Hs_o98xRxPTIdT65NFYdqrE9MrH59O6MGKwffYBcdvcIkcaySy8tTodJU8IEI9AN-R7H_kZIYdZoWiVQ8XxzpYJEDWRJtib94CnadM6IAClRxT"
+                />
+                <div class="absolute top-4 right-4 z-20 flex gap-2">
+                  <button
+                    class="size-9 rounded-full bg-black/20 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white hover:text-danger transition-all"
+                  >
+                    <span class="material-symbols-outlined text-[20px]"
+                      >favorite</span
+                    >
+                  </button>
+                  <button
+                    class="size-9 rounded-full bg-black/20 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white hover:text-primary transition-all"
+                  >
+                    <span class="material-symbols-outlined text-[20px]"
+                      >share</span
+                    >
+                  </button>
+                </div>
+                <div class="absolute bottom-4 left-4 right-4 z-20 text-white">
+                  <div class="flex flex-wrap items-center gap-2 mb-2">
+                    <span
+                      class="text-[10px] px-2 py-0.5 rounded bg-white/20 backdrop-blur-md border border-white/30 text-white font-medium"
+                      >清淡</span
+                    >
+                    <span
+                      class="text-[10px] px-2 py-0.5 rounded bg-white/20 backdrop-blur-md border border-white/30 text-white font-medium"
+                      >家常</span
+                    >
+                    <span
+                      class="text-[10px] px-2 py-0.5 rounded bg-white/20 backdrop-blur-md border border-white/30 text-white font-medium"
+                      >快手</span
+                    >
+                  </div>
+                  <h3 class="text-2xl font-bold mb-2">西红柿炒鸡蛋</h3>
+                  <div
+                    class="flex items-center gap-3 text-xs font-medium text-white/90"
+                  >
+                    <div
+                      class="flex items-center gap-1 bg-black/30 backdrop-blur-md px-2 py-1 rounded-lg"
+                    >
+                      <span class="material-symbols-outlined text-[14px]"
+                        >schedule</span
+                      >
+                      <span>15分钟</span>
+                    </div>
+                    <div
+                      class="flex items-center gap-1 bg-black/30 backdrop-blur-md px-2 py-1 rounded-lg"
+                    >
+                      <span class="material-symbols-outlined text-[14px]"
+                        >equalizer</span
+                      >
+                      <span>简单</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="p-4">
+                <button
+                  class="w-full bg-primary hover:bg-orange-600 text-white font-bold py-3.5 px-6 rounded-xl shadow-glow active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-sm"
+                >
+                  <span class="material-symbols-outlined text-lg">skillet</span>
+                  <span>开始下厨</span>
+                </button>
+              </div>
+            </div>
+            <div
+              class="min-w-[85%] snap-center relative rounded-2xl bg-white dark:bg-surface-dark shadow-soft overflow-hidden group opacity-60 scale-95 transition-all"
+            >
+              <div class="relative h-64 w-full overflow-hidden">
+                <div
+                  class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent z-10"
+                ></div>
+                <img
+                  alt="Spicy Pot"
+                  class="h-full w-full object-cover"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuAgpI_IYcGM8oAcWZRTUBl3Vr2rGLHDvyThJDCZFmjiUk8AOcFOviu_oi9jDFeg3xfV2A2ZcLZ0v5la4N_u150o2Fbv_3fUZYxcdXMC_KT_EZ5gsU-2SBs3rCzuZHurAOftI_PZhb8NKSBovhNXpZ_RdMhTs5fwc8Hs_o98xRxPTIdT65NFYdqrE9MrH59O6MGKwffYBcdvcIkcaySy8tTodJU8IEI9AN-R7H_kZIYdZoWiVQ8XxzpYJEDWRJtib94CnadM6IAClRxT"
+                />
+                <div class="absolute bottom-4 left-4 right-4 z-20 text-white">
+                  <div class="flex items-center gap-2 mb-2">
+                    <span
+                      class="text-[10px] px-2 py-0.5 rounded bg-red-500/40 backdrop-blur-md border border-red-400/30 text-white font-medium"
+                      >麻辣</span
+                    >
+                    <span
+                      class="text-[10px] px-2 py-0.5 rounded bg-white/20 backdrop-blur-md border border-white/30 text-white font-medium"
+                      >下饭</span
+                    >
+                  </div>
+                  <h3 class="text-2xl font-bold mb-2">麻辣香锅</h3>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="pl-6">
+          <div class="flex items-center justify-between pr-6 mb-4">
+            <h2
+              class="text-lg font-bold text-text-main dark:text-white flex items-center gap-2"
+            >
+              过期预警
+              <span class="flex h-2 w-2 relative">
+                <span
+                  class="animate-ping absolute inline-flex h-full w-full rounded-full bg-danger opacity-75"
+                ></span>
+                <span
+                  class="relative inline-flex rounded-full h-2 w-2 bg-danger"
+                ></span>
+              </span>
+            </h2>
+            <a
+              class="text-sm font-medium text-text-sub dark:text-orange-200 hover:text-primary"
+              href="#"
+              >查看全部</a
+            >
+          </div>
+          <div class="flex gap-4 overflow-x-auto no-scrollbar pb-4 pr-6">
+            <div
+              class="min-w-[160px] p-4 rounded-2xl bg-white dark:bg-surface-dark shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col gap-3 relative overflow-hidden"
+            >
+              <div class="absolute top-0 right-0 p-2">
+                <div class="size-2 rounded-full bg-danger"></div>
+              </div>
+              <div
+                class="size-12 rounded-xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center text-danger"
+              >
+                <span class="material-symbols-outlined">set_meal</span>
+              </div>
+              <div>
+                <p class="font-bold text-text-main dark:text-white">
+                  肉类即将到期
+                </p>
+                <p class="text-xs text-danger mt-1 font-medium">请尽快使用</p>
+              </div>
+            </div>
+            <div
+              class="min-w-[160px] p-4 rounded-2xl bg-white dark:bg-surface-dark shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col gap-3 relative overflow-hidden"
+            >
+              <div class="absolute top-0 right-0 p-2">
+                <div class="size-2 rounded-full bg-warning"></div>
+              </div>
+              <div
+                class="size-12 rounded-xl bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center text-warning"
+              >
+                <span class="material-symbols-outlined">eco</span>
+              </div>
+              <div>
+                <p class="font-bold text-text-main dark:text-white">
+                  蔬菜存放3天
+                </p>
+                <p class="text-xs text-text-sub dark:text-gray-400 mt-1">
+                  建议尽快烹饪
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="px-6 pb-6">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-bold text-text-main dark:text-white">
+              家庭协作
+            </h2>
+          </div>
+          <div
+            class="rounded-2xl bg-white dark:bg-surface-dark shadow-soft p-1"
+          >
+            <div
+              class="flex items-center gap-4 p-4 border-b border-slate-50 dark:border-slate-800/50"
+            >
+              <div class="relative">
+                <img
+                  alt="User 1"
+                  class="size-10 rounded-full object-cover"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuBjcq8CxGQy10qOw1mGfDaRNM6EANdhOWxTONBLlMw3M9Xco518tnNUaf0RZtaJtdGn-hLIqhUQihRUs10iZ3l0-MF0A5rihvZPyF9JUzmc97ZSumzqsL24avZUijzhjPbHffNsUtsl59YO0cs_jWktk2kk_acKT7z8xaASvDhqgf17j6EoBuf4sOfq70sIpsOiKO9ewIqFGOvRlqHTNoOp_aI5sAerjifbxTcRYBox9suxgcqiS-h0cOlCkcByyryY8L_CRfMPZlZt"
+                />
+                <div
+                  class="absolute -bottom-1 -right-1 bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300 rounded-full p-0.5 border-2 border-white dark:border-surface-dark"
+                >
+                  <span class="material-symbols-outlined text-[14px] block"
+                    >check</span
+                  >
+                </div>
+              </div>
+              <div class="flex-1">
+                <p class="text-sm text-text-main dark:text-white">
+                  <span class="font-bold">王大力</span> 标记了
+                  <span class="font-bold text-primary">生姜</span> 已买
+                </p>
+                <p class="text-xs text-text-sub mt-0.5">10分钟前</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-4 p-4">
+              <div class="relative">
+                <img
+                  alt="User 2"
+                  class="size-10 rounded-full object-cover"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSyb22lNKeHPxwTv8K7Je_lJriUDk6NJpc7_DkkBTi0PT0B99bYFRnLqx2GTd7GgVWp-f5YZCgT-v-vQV_zw8tm3kIGsrzO5IOZH_koZgd7lwuwiSN5anglDylsKfPMCkA1NHIiBb1p2YbqjSbKehjtjI3lfxPRAs39dKJ1O--G7zYGdw0dCFpGLKdpJcd3vMBNUGyl0SU5QGQZAex7-eJObFDVYI6G5jVDtpwTE9D256cBo1GTpiKpEhWTP86v2_TCDZBC_148NXq"
+                />
+                <div
+                  class="absolute -bottom-1 -right-1 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 rounded-full p-0.5 border-2 border-white dark:border-surface-dark"
+                >
+                  <span class="material-symbols-outlined text-[14px] block"
+                    >add</span
+                  >
+                </div>
+              </div>
+              <div class="flex-1">
+                <p class="text-sm text-text-main dark:text-white">
+                  <span class="font-bold">李妈妈</span> 添加了
+                  <span class="font-bold text-primary">酱油</span> 到清单
+                </p>
+                <p class="text-xs text-text-sub mt-0.5">30分钟前</p>
+              </div>
+            </div>
+          </div>
+          <button
+            class="w-full mt-4 flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-dashed border-primary/30 text-primary bg-primary/5 hover:bg-primary/10 transition-colors"
+          >
+            <span class="material-symbols-outlined">shopping_basket</span>
+            <span class="font-bold">去买菜</span>
+          </button>
+        </section>
+      </main>
+      <nav
+        class="absolute bottom-0 left-0 right-0 bg-white/90 dark:bg-surface-dark/90 backdrop-blur-lg border-t border-slate-100 dark:border-slate-800 pt-2 pb-6 px-6 z-50"
+      >
+        <div class="flex items-center justify-between">
+          <a
+            class="flex flex-col items-center justify-center gap-1 w-16 group"
+            href="#"
+          >
+            <span
+              class="material-symbols-outlined text-primary"
+              style="font-variation-settings: &quot;FILL&quot; 1"
+              >home</span
+            >
+            <span class="text-[10px] font-bold text-primary">首页</span>
+          </a>
+          <a
+            class="flex flex-col items-center justify-center gap-1 w-16 group"
+            href="#"
+          >
+            <span
+              class="material-symbols-outlined text-text-sub dark:text-gray-400 group-hover:text-primary transition-colors"
+              >menu_book</span
+            >
+            <span
+              class="text-[10px] font-medium text-text-sub dark:text-gray-400 group-hover:text-primary transition-colors"
+              >菜谱</span
+            >
+          </a>
+          <div class="relative -top-5">
+            <button
+              class="size-14 bg-primary text-white rounded-full shadow-glow flex items-center justify-center transform hover:scale-105 transition-transform"
+            >
+              <span class="material-symbols-outlined text-3xl">add</span>
+            </button>
+          </div>
+          <a
+            class="flex flex-col items-center justify-center gap-1 w-16 group"
+            href="#"
+          >
+            <span
+              class="material-symbols-outlined text-text-sub dark:text-gray-400 group-hover:text-primary transition-colors"
+              >kitchen</span
+            >
+            <span
+              class="text-[10px] font-medium text-text-sub dark:text-gray-400 group-hover:text-primary transition-colors"
+              >厨房</span
+            >
+          </a>
+          <a
+            class="flex flex-col items-center justify-center gap-1 w-16 group"
+            href="#"
+          >
+            <span
+              class="material-symbols-outlined text-text-sub dark:text-gray-400 group-hover:text-primary transition-colors"
+              >person</span
+            >
+            <span
+              class="text-[10px] font-medium text-text-sub dark:text-gray-400 group-hover:text-primary transition-colors"
+              >我的</span
+            >
+          </a>
+        </div>
+      </nav>
+    </div>
+  </body>
+</html>

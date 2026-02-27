@@ -91,6 +91,69 @@ let RecipeService = class RecipeService {
             data: { deleted_at: new Date() },
         });
     }
+    async recommend(userId) {
+        const currentHour = new Date().getHours();
+        let mealTag = '';
+        if (currentHour >= 5 && currentHour < 10) {
+            mealTag = '早餐';
+        }
+        else if (currentHour >= 10 && currentHour < 14) {
+            mealTag = '午餐';
+        }
+        else if (currentHour >= 14 && currentHour < 17) {
+            mealTag = '下午茶';
+        }
+        else if (currentHour >= 17 && currentHour < 21) {
+            mealTag = '晚餐';
+        }
+        else {
+            mealTag = '夜宵';
+        }
+        let userTaste = null;
+        let userDietary = null;
+        if (userId) {
+            const user = await this.prisma.user.findUnique({
+                where: { id: userId },
+                select: { taste_preference: true, dietary_preference: true },
+            });
+            if (user) {
+                userTaste = user.taste_preference;
+                userDietary = user.dietary_preference;
+            }
+        }
+        const preferenceTags = [mealTag, userTaste, userDietary].filter(Boolean);
+        const recipes = await this.prisma.recipe.findMany({
+            where: {
+                status: 'published',
+                deleted_at: null,
+            },
+            take: 50,
+            orderBy: { created_at: 'desc' },
+        });
+        const ALL_MEAL_TAGS = ['早餐', '午餐', '下午茶', '晚餐', '夜宵'];
+        const validRecipes = [];
+        for (const recipe of recipes) {
+            let score = 0;
+            const tags = recipe.tags || [];
+            const recipeMealTags = tags.filter((tag) => ALL_MEAL_TAGS.includes(tag));
+            if (recipeMealTags.length > 0 && !recipeMealTags.includes(mealTag)) {
+                continue;
+            }
+            if (tags.includes(mealTag))
+                score += 10;
+            if (userTaste && tags.includes(userTaste))
+                score += 5;
+            if (userDietary && tags.includes(userDietary))
+                score += 5;
+            score += Math.random() * 2;
+            validRecipes.push({ ...recipe, _score: score });
+        }
+        validRecipes.sort((a, b) => b._score - a._score);
+        return validRecipes.slice(0, 5).map((r) => {
+            const { _score, ...rest } = r;
+            return rest;
+        });
+    }
 };
 exports.RecipeService = RecipeService;
 exports.RecipeService = RecipeService = __decorate([

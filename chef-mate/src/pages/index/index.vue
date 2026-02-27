@@ -15,7 +15,18 @@
       class="flex-1 overflow-y-auto no-scrollbar space-y-8"
       :show-scrollbar="false"
     >
-      <CookingPlanCard />
+      <CookingPlanCard
+        v-if="recommendedRecipes.length > 0"
+        :recipes="recommendedRecipes"
+        :meal-tag="mealTag"
+      />
+      <view
+        v-else
+        class="px-6 mb-8 mt-2 h-64 flex items-center justify-center bg-white/50 dark:bg-black/20 rounded-[30rpx] mx-6"
+      >
+        <text class="text-sm text-gray-400">正在为您推荐今日菜单...</text>
+      </view>
+
       <ExpiryAlerts />
       <FamilyFeed />
       <!-- Safe Area Spacing + Tab bar height -->
@@ -29,40 +40,49 @@
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
+import { onShow } from "@dcloudio/uni-app";
 import HomeHeader from "./components/HomeHeader.vue";
 import CookingPlanCard from "./components/CookingPlanCard.vue";
 import ExpiryAlerts from "./components/ExpiryAlerts.vue";
 import FamilyFeed from "./components/FamilyFeed.vue";
 import CmTabBar from "@/components/CmTabBar/CmTabBar.vue";
 import { useUserStore } from "@/stores/user";
+import { getRecommendedRecipes, type Recipe } from "@/services/recipe";
 
 const userStore = useUserStore();
 
 // TODO: 从 userStore 获取
-const nickname = computed(() => userStore.userInfo?.nickname);
+const nickname = computed(() => userStore.userInfo?.nickname || "Chef");
 const avatarUrl = computed(() => userStore.userInfo?.avatarUrl);
+
+// 推荐食谱
+const recommendedRecipes = ref<Recipe[]>([]);
+const mealTag = ref("今日推荐");
+
+onShow(async () => {
+  try {
+    const res = await getRecommendedRecipes();
+    if (res && res.length > 0) {
+      // 传递整个数组给轮播组件
+      recommendedRecipes.value = res;
+
+      // 简单的时间段处理标签
+      const hour = new Date().getHours();
+      if (hour >= 5 && hour < 10) mealTag.value = "早餐推荐";
+      else if (hour >= 10 && hour < 14) mealTag.value = "午餐推荐";
+      else if (hour >= 14 && hour < 17) mealTag.value = "下午茶推荐";
+      else if (hour >= 17 && hour < 21) mealTag.value = "晚餐推荐";
+      else mealTag.value = "夜宵推荐";
+    }
+  } catch (err) {
+    console.error("获取推荐食谱失败:", err);
+  }
+});
 </script>
 
 <style scoped>
-@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap");
-
 .font-sans {
   font-family: "Plus Jakarta Sans", "Noto Sans SC", "PingFang SC", sans-serif;
-}
-
-.material-symbols-outlined {
-  font-family: "Material Symbols Outlined";
-  font-weight: normal;
-  font-style: normal;
-  line-height: 1;
-  letter-spacing: normal;
-  text-transform: none;
-  display: inline-block;
-  white-space: nowrap;
-  word-wrap: normal;
-  direction: ltr;
-  font-feature-settings: "liga";
-  -webkit-font-smoothing: antialiased;
 }
 
 /* 隐藏滚动条 */

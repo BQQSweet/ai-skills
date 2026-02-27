@@ -8,8 +8,8 @@ exports.default = (0, config_1.registerAs)('app', () => ({
 }));
 exports.jwtConfig = (0, config_1.registerAs)('jwt', () => ({
     secret: process.env.JWT_SECRET || 'default-secret',
-    expiresIn: process.env.JWT_EXPIRES_IN || '2h',
-    refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
+    expiresIn: process.env.JWT_EXPIRES_IN || '30d',
+    refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '30d',
 }));
 exports.redisConfig = (0, config_1.registerAs)('redis', () => ({
     host: process.env.REDIS_HOST || '127.0.0.1',
@@ -19,7 +19,9 @@ exports.aiConfig = (0, config_1.registerAs)('ai', () => ({
     apiKey: process.env.AI_API_KEY,
     baseUrl: process.env.AI_BASE_URL || 'https://api.deepseek.com/v1',
     model: process.env.AI_MODEL || 'deepseek-chat',
-    visionModel: process.env.AI_VISION_MODEL || 'deepseek-vl',
+    visionApiKey: process.env.AI_VISION_API_KEY || process.env.AI_API_KEY,
+    visionBaseUrl: process.env.AI_VISION_BASE_URL || process.env.AI_BASE_URL,
+    visionModel: process.env.AI_VISION_MODEL || 'qwen-vl-plus',
 }));
 exports.ossConfig = (0, config_1.registerAs)('oss', () => ({
     endpoint: process.env.OSS_ENDPOINT,

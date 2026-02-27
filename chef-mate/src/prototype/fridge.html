@@ -1,0 +1,489 @@
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>ChefMate 智能冰箱 (录入展开菜单)</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Noto+Sans+SC:wght@400;500;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#FF9F0A",
+              "background-light": "#f8f7f5",
+              "background-dark": "#231b0f",
+            },
+            fontFamily: {
+              display: ["Plus Jakarta Sans", "Noto Sans SC", "sans-serif"],
+              body: ["Noto Sans SC", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              "2xl": "1rem",
+              full: "9999px",
+            },
+            boxShadow: {
+              glass: "0 4px 30px rgba(0, 0, 0, 0.1)",
+              card: "0 2px 12px -2px rgba(0, 0, 0, 0.05)",
+              fab: "0 8px 20px -4px rgba(255, 159, 10, 0.4), 0 4px 8px -4px rgba(255, 159, 10, 0.2)",
+              "fab-sub": "0 4px 12px rgba(0, 0, 0, 0.08)",
+              "ai-glow": "0 0 20px rgba(255, 159, 10, 0.4)",
+              "btn-glow": "0 0 15px rgba(255, 159, 10, 0.4)",
+            },
+          },
+        },
+      };
+    </script>
+    <style type="text/tailwindcss">
+      .glass-effect {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+      }
+      .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+      body {
+        font-family: "Noto Sans SC", sans-serif;
+        background-color: #fcfaf8;
+      }
+      .ai-gradient {
+        background: linear-gradient(135deg, #ff9f0a 0%, #ffcc00 100%);
+      }
+      .ai-shimmer {
+        background: linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0) 0%,
+          rgba(255, 255, 255, 0.3) 50%,
+          rgba(255, 255, 255, 0) 100%
+        );
+        background-size: 200% 100%;
+      }
+      #fab-toggle:checked ~ .menu-overlay {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      #fab-toggle:checked ~ .fab-menu-container {
+        transform: translateY(0);
+        opacity: 1;
+        pointer-events: auto;
+      }
+      #fab-toggle:checked ~ label[for="fab-toggle"] .main-plus {
+        transform: rotate(45deg);
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-background-light text-slate-800 antialiased min-h-screen flex flex-col relative overflow-hidden"
+  >
+    <input class="hidden peer" id="fab-toggle" type="checkbox" />
+    <div
+      class="menu-overlay fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] z-[45] opacity-0 pointer-events-none transition-opacity duration-300"
+    ></div>
+    <header class="sticky top-0 z-30 w-full glass-effect">
+      <div class="flex items-center justify-between px-5 pt-14 pb-4">
+        <div class="flex items-center gap-3">
+          <div class="bg-primary/10 p-2 rounded-full text-primary">
+            <span class="material-symbols-outlined text-2xl">kitchen</span>
+          </div>
+          <div>
+            <h1
+              class="text-xl font-bold text-slate-900 tracking-tight font-display"
+            >
+              ChefMate 智能协作冰箱
+            </h1>
+            <p class="text-xs text-slate-500 font-medium">
+              早上好，Master Chef
+            </p>
+          </div>
+        </div>
+        <button
+          class="relative group overflow-hidden rounded-full w-10 h-10 border-2 border-white shadow-sm"
+        >
+          <img
+            alt="User Profile Avatar"
+            class="w-full h-full object-cover"
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuAbHT1Ezj7taeEwk3fx2F1ABeWPBK17YD0fhIfvRj0ZgwE_KmHMD8ZYbHBxkjKiTnCcWSxoTesyKsbRdzFKVtodcy4Wn66KejJv9fGsTZQtValHhR8mBYi-QIoLcm1ru-yro7SjmGkDShzqf9ysdi1IJcNvyFGrg_cz-HODl5wgl_Cn66PyriVRgrYc-hnenl7_KQNL8UV4yYeO4j2Pg2mIgwcYzKC60d90P4KPyWyngT3HNlRPF0noiJshzPc9ZomN98JkP9iy6Mpx"
+          />
+          <div
+            class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"
+          ></div>
+        </button>
+      </div>
+      <div class="px-5 pb-4">
+        <div class="relative group">
+          <div
+            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors"
+          >
+            <span class="material-symbols-outlined">search</span>
+          </div>
+          <input
+            class="block w-full pl-10 pr-3 py-3 border-none rounded-xl bg-white/60 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:bg-white shadow-sm text-sm transition-all"
+            placeholder="快速查找食材..."
+            type="text"
+          />
+          <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+            <button class="text-slate-400 hover:text-primary transition-colors">
+              <span class="material-symbols-outlined text-[20px]">mic</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="flex overflow-x-auto hide-scrollbar gap-3 px-5 pb-4">
+        <button
+          class="flex-shrink-0 px-5 py-2 rounded-full bg-primary text-white text-sm font-bold shadow-md shadow-primary/30 transition-transform active:scale-95"
+        >
+          全部
+        </button>
+        <button
+          class="flex-shrink-0 px-5 py-2 rounded-full bg-white text-slate-600 text-sm font-medium border border-slate-100 shadow-sm whitespace-nowrap hover:bg-slate-50 transition-colors"
+        >
+          肉禽
+        </button>
+        <button
+          class="flex-shrink-0 px-5 py-2 rounded-full bg-white text-slate-600 text-sm font-medium border border-slate-100 shadow-sm whitespace-nowrap hover:bg-slate-50 transition-colors"
+        >
+          果蔬
+        </button>
+        <button
+          class="flex-shrink-0 px-5 py-2 rounded-full bg-white text-slate-600 text-sm font-medium border border-slate-100 shadow-sm whitespace-nowrap hover:bg-slate-50 transition-colors"
+        >
+          海鲜
+        </button>
+        <button
+          class="flex-shrink-0 px-5 py-2 rounded-full bg-white text-slate-600 text-sm font-medium border border-slate-100 shadow-sm whitespace-nowrap hover:bg-slate-50 transition-colors"
+        >
+          调味
+        </button>
+      </div>
+    </header>
+    <main class="flex-1 px-5 pt-4 pb-32 overflow-y-auto">
+      <div
+        class="mb-6 relative overflow-hidden rounded-2xl ai-gradient shadow-ai-glow p-4 flex items-center justify-between group cursor-pointer transition-transform active:scale-[0.98]"
+      >
+        <div class="absolute inset-0 ai-shimmer opacity-30"></div>
+        <div class="flex items-center gap-3 relative z-10">
+          <div class="bg-white/20 p-2 rounded-xl backdrop-blur-md">
+            <span
+              class="material-symbols-outlined text-white text-2xl"
+              style="font-variation-settings: &quot;FILL&quot; 1"
+              >magic_button</span
+            >
+          </div>
+          <div>
+            <h3 class="text-white font-bold text-base leading-tight">
+              AI 灵感食谱
+            </h3>
+            <p class="text-white/80 text-xs mt-0.5">用现有食材做道菜</p>
+          </div>
+        </div>
+        <span class="material-symbols-outlined text-white relative z-10"
+          >chevron_right</span
+        >
+      </div>
+      <div class="flex justify-between items-center mb-4">
+        <div class="flex items-center gap-3">
+          <h2 class="text-lg font-bold text-slate-800 tracking-tight">
+            当前库存
+          </h2>
+        </div>
+        <button
+          class="text-slate-400 text-sm font-medium flex items-center gap-1"
+        >
+          <span>排序</span>
+          <span class="material-symbols-outlined text-[16px]">sort</span>
+        </button>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div
+          class="bg-white rounded-2xl p-4 shadow-card border border-slate-100 relative group"
+        >
+          <div
+            class="absolute top-3 right-3 w-2 h-2 rounded-full bg-yellow-400"
+          ></div>
+          <div
+            class="aspect-square rounded-xl bg-orange-50 mb-3 overflow-hidden relative"
+          >
+            <img
+              alt="Australian Wagyu Beef"
+              class="w-full h-full object-cover mix-blend-multiply opacity-90"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuB2mQZf9tp-Be0mmY0HTUZUqoK8EhfB7vMxbEYk_mfTSFvq6IA4W-Jrub_sH8K_eXSsaqRuHpdOm1Efv1fZJYXUL8p_de2AS3skGhW7lBte4oFWcocqoNC5GjPeeQj46FCFrzkgcRdRvoh3C7QR_L_PfPIyZ-kks2ufVUUBFIwwSmw7ekE4Qdu9aScl_r80J_V3ll3I3l52Ig-oRW9FBONr03ceLkhrXYGDPQLDU0GD60jw_9mMTY9sT_0GTuyZoTSnxb1moKZwuHCM"
+            />
+          </div>
+          <div class="flex flex-col gap-1">
+            <h3 class="font-bold text-slate-800 text-base">澳洲和牛</h3>
+            <p class="text-slate-400 text-xs">500克</p>
+            <div
+              class="mt-2 flex items-center gap-1.5 text-yellow-600 bg-yellow-50 px-2 py-1 rounded-md w-fit"
+            >
+              <span class="material-symbols-outlined text-[14px]">warning</span>
+              <span class="text-xs font-semibold">还有3天过期</span>
+            </div>
+          </div>
+        </div>
+        <div
+          class="bg-white rounded-2xl p-4 shadow-card border border-slate-100 relative group"
+        >
+          <div
+            class="absolute top-3 right-3 w-2 h-2 rounded-full bg-green-500"
+          ></div>
+          <div
+            class="aspect-square rounded-xl bg-green-50 mb-3 overflow-hidden relative"
+          >
+            <img
+              alt="Fresh Broccoli"
+              class="w-full h-full object-cover mix-blend-multiply opacity-90"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuAytH_-pUDE4pUUN8AKgkPpkmF0bBcgyS3FOiV200pVrzI5T1GAAu61qJ-EHSRPjd8fR9grpns_5w_nvkI8pchZ1CKyOsGv9e4SEumTWwV9ZRwKMXDNHkWEuioZv9D3zXx--cacIQqkLCOdGsF23DvswMtwjw4OHoWJ_c490kR7JEwzwQq5gE_q9OHYGRajU002CI4HjoznVdVs9NV8SyukGWP3xUnWE63rkVpx45AjUBo77bCWiLt9LLV0yE_T1P0GZdPxQxndc9il"
+            />
+          </div>
+          <div class="flex flex-col gap-1">
+            <h3 class="font-bold text-slate-800 text-base">西蓝花</h3>
+            <p class="text-slate-400 text-xs">2个</p>
+            <div
+              class="mt-2 flex items-center gap-1.5 text-green-700 bg-green-50 px-2 py-1 rounded-md w-fit"
+            >
+              <span class="material-symbols-outlined text-[14px]">eco</span>
+              <span class="text-xs font-semibold">建议今日食用</span>
+            </div>
+          </div>
+        </div>
+        <div
+          class="bg-white rounded-2xl p-4 shadow-card border border-slate-100 relative group opacity-90"
+        >
+          <div
+            class="absolute top-3 right-3 w-2 h-2 rounded-full bg-red-500"
+          ></div>
+          <div
+            class="aspect-square rounded-xl bg-red-50 mb-3 overflow-hidden relative"
+          >
+            <img
+              alt="Salmon Fillet"
+              class="w-full h-full object-cover mix-blend-multiply grayscale-[0.3]"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuCpHQbe3NeHZ74wtSSmOrmM8NbOEvnMrc6eRcr-3yXuLWx71jhY9xY9p-VGKvvz4t7mcVtjgCKgmD2jwcoGJ-ARBSdI0qKt4il3YmcnIU7IANSFMA3Pz-jh9LtI4LaZaXWLfWt7FthjnW8yEPKTFwQYZo2yJL8cgixZHJ8GVhkb4D70wFRtOQjrutED4-6dXhIu1IYd4FTwnDExwUeHzA7fAfArixWKlkf87qEvFn6G3PZQdsaS0Fj8pUl2M7f6x-545od8ON5QlbrZ"
+            />
+          </div>
+          <div class="flex flex-col gap-1">
+            <h3 class="font-bold text-slate-700 text-base">三文鱼</h3>
+            <p class="text-slate-400 text-xs">300克</p>
+            <div
+              class="mt-2 flex items-center gap-1.5 text-red-600 bg-red-50 px-2 py-1 rounded-md w-fit"
+            >
+              <span class="material-symbols-outlined text-[14px]">error</span>
+              <span class="text-xs font-semibold">已过期</span>
+            </div>
+          </div>
+        </div>
+        <div
+          class="bg-white rounded-2xl p-4 shadow-card border border-slate-100 relative group"
+        >
+          <div
+            class="absolute top-3 right-3 w-2 h-2 rounded-full bg-green-500"
+          ></div>
+          <div
+            class="aspect-square rounded-xl bg-orange-50 mb-3 overflow-hidden relative"
+          >
+            <img
+              alt="Carton of Eggs"
+              class="w-full h-full object-cover mix-blend-multiply opacity-90"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBuJ-dx7ALlvVqp_6S7UC8GpQws5C9WDFzWRm6_gKaWW_FsgR8tDZijIc1CqgVwCW3FHgEJdYATuVrHcoCpLdGiTPbwkQ-ft9EhlbgrJMm4YHVLMHpcYGqTuIpg2EgM03n_USsYgpGSieqwn87T-cnxWpzTEz6xvpmETdUWgGEHIkXl6xoihMUNlkyiDCv4hFIQj8GIMMhQ_mtqqBl3b0HRVL-egnpvSeRYJSlU0IupbhDiVilfbbtK84Bwa6RTkMeRX1n9nEwT2mcr"
+            />
+          </div>
+          <div class="flex flex-col gap-1">
+            <h3 class="font-bold text-slate-800 text-base">鸡蛋</h3>
+            <p class="text-slate-400 text-xs">12个</p>
+            <div
+              class="mt-2 flex items-center gap-1.5 text-green-700 bg-green-50 px-2 py-1 rounded-md w-fit"
+            >
+              <span class="material-symbols-outlined text-[14px]"
+                >check_circle</span
+              >
+              <span class="text-xs font-semibold">还有10天</span>
+            </div>
+          </div>
+        </div>
+        <div
+          class="bg-white rounded-2xl p-4 shadow-card border border-slate-100 relative group"
+        >
+          <div
+            class="absolute top-3 right-3 w-2 h-2 rounded-full bg-yellow-400"
+          ></div>
+          <div
+            class="aspect-square rounded-xl bg-blue-50 mb-3 overflow-hidden relative"
+          >
+            <img
+              alt="Milk Bottle"
+              class="w-full h-full object-cover mix-blend-multiply opacity-90"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuDrgBv_ih4qxnw1yQOiDptQJ-ivoLVWHA6J1IVNb-Rflen2SzcG5QsSsYXGlZfv9xQjkby2oKzYkgYUtS4aRJE5vBf0XVI_6WhiEPj16SahH8SzF0lGV0-0rKoYJpbIuxyliEBKiLQHejLAMvzbDLzXPf520bTc1w3Xp5DMpPASOxUbVYS5fvUQW2xJc-4UKFZjV9EJQ7R4p9i9ZbfPwyKJioeWL9nUkj1OvfChOV96mB1aFiOqMKzvXF8odGgRMUG9r940JF_w2_q3"
+            />
+          </div>
+          <div class="flex flex-col gap-1">
+            <h3 class="font-bold text-slate-800 text-base">全脂牛奶</h3>
+            <p class="text-slate-400 text-xs">1升</p>
+            <div
+              class="mt-2 flex items-center gap-1.5 text-yellow-600 bg-yellow-50 px-2 py-1 rounded-md w-fit"
+            >
+              <span class="material-symbols-outlined text-[14px]">timer</span>
+              <span class="text-xs font-semibold">还有2天</span>
+            </div>
+          </div>
+        </div>
+        <div
+          class="bg-white rounded-2xl p-4 shadow-card border border-slate-100 relative group"
+        >
+          <div
+            class="absolute top-3 right-3 w-2 h-2 rounded-full bg-green-500"
+          ></div>
+          <div
+            class="aspect-square rounded-xl bg-orange-50 mb-3 overflow-hidden relative"
+          >
+            <img
+              alt="Carrots"
+              class="w-full h-full object-cover mix-blend-multiply opacity-90"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBf-zJ9KYz7FPuaWuEYxDN1MnPGQSnwYpKn5vw2Olq8TzQpz6j3bY6XmAZi0gzzK7GeGGZl1zNZO9E6TusHlpeqwTisGLsYcehWWTgvgNYRoeYE8keneZl0SGTiwyzNPM6abajWXFIRQIfI9JH0s2j1PzVkQk6gEJvwfY1xJ1PZjN4HUepGc7YOSakaVlU6i77xfDlSQD9mHphHOTa2WwHmf0kyN8h0IAWQoskXVS78JhwyyglW40naG_ZcyqhNC-4Ha53G-bfbe0B8"
+            />
+          </div>
+          <div class="flex flex-col gap-1">
+            <h3 class="font-bold text-slate-800 text-base">胡萝卜</h3>
+            <p class="text-slate-400 text-xs">3根</p>
+            <div
+              class="mt-2 flex items-center gap-1.5 text-green-700 bg-green-50 px-2 py-1 rounded-md w-fit"
+            >
+              <span class="material-symbols-outlined text-[14px]"
+                >check_circle</span
+              >
+              <span class="text-xs font-semibold">还有5天</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+    <div
+      class="fab-menu-container fixed bottom-[164px] right-6 z-50 flex flex-col items-end gap-4 opacity-0 pointer-events-none translate-y-4 transition-all duration-300"
+    >
+      <div class="flex items-center gap-3">
+        <span
+          class="text-slate-700 font-medium text-sm bg-white/90 px-3 py-1.5 rounded-lg shadow-sm backdrop-blur-sm"
+          >相机扫码</span
+        >
+        <button
+          class="w-12 h-12 rounded-full bg-white border border-primary/20 flex items-center justify-center text-primary shadow-fab-sub hover:bg-slate-50 transition-all active:scale-95"
+        >
+          <span class="material-symbols-outlined text-[24px]"
+            >photo_camera</span
+          >
+        </button>
+      </div>
+      <div class="flex items-center gap-3">
+        <span
+          class="text-slate-700 font-medium text-sm bg-white/90 px-3 py-1.5 rounded-lg shadow-sm backdrop-blur-sm"
+          >语音录入</span
+        >
+        <button
+          class="w-12 h-12 rounded-full bg-white border border-primary/20 flex items-center justify-center text-primary shadow-fab-sub hover:bg-slate-50 transition-all active:scale-95"
+        >
+          <span class="material-symbols-outlined text-[24px]">mic</span>
+        </button>
+      </div>
+      <div class="flex items-center gap-3">
+        <span
+          class="text-slate-700 font-medium text-sm bg-white/90 px-3 py-1.5 rounded-lg shadow-sm backdrop-blur-sm"
+          >手动输入</span
+        >
+        <button
+          class="w-12 h-12 rounded-full bg-white border border-primary/20 flex items-center justify-center text-primary shadow-fab-sub hover:bg-slate-50 transition-all active:scale-95"
+        >
+          <span class="material-symbols-outlined text-[24px]">edit</span>
+        </button>
+      </div>
+    </div>
+    <label
+      class="fixed bottom-[96px] right-6 z-50 w-14 h-14 rounded-full bg-primary text-white shadow-fab flex items-center justify-center cursor-pointer transition-all active:scale-90 active:shadow-inner"
+      for="fab-toggle"
+    >
+      <span
+        class="main-plus material-symbols-outlined text-[32px] font-bold transition-transform duration-300"
+        >add</span
+      >
+    </label>
+    <nav
+      class="fixed bottom-0 w-full z-40 bg-white/90 backdrop-blur-lg border-t border-slate-100 pb-safe pt-2"
+    >
+      <div class="flex justify-around items-center px-2 pb-4">
+        <a
+          class="flex flex-1 flex-col items-center gap-1 text-slate-400 hover:text-primary transition-colors group"
+          href="#"
+        >
+          <span
+            class="material-symbols-outlined group-hover:scale-110 transition-transform"
+            >home</span
+          >
+          <span class="text-[10px] font-medium">首页</span>
+        </a>
+        <a
+          class="flex flex-1 flex-col items-center gap-1 text-slate-400 hover:text-primary transition-colors group"
+          href="#"
+        >
+          <span
+            class="material-symbols-outlined group-hover:scale-110 transition-transform"
+            >menu_book</span
+          >
+          <span class="text-[10px] font-medium">食谱</span>
+        </a>
+        <a
+          class="flex flex-1 flex-col items-center gap-1 text-primary group"
+          href="#"
+        >
+          <div class="relative">
+            <span
+              class="material-symbols-outlined text-[28px] drop-shadow-sm group-hover:scale-110 transition-transform fill-current"
+              style="font-variation-settings: &quot;FILL&quot; 1"
+              >kitchen</span
+            >
+            <span
+              class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border border-white"
+            ></span>
+          </div>
+          <span class="text-[10px] font-bold">冰箱</span>
+        </a>
+        <a
+          class="flex flex-1 flex-col items-center gap-1 text-slate-400 hover:text-primary transition-colors group"
+          href="#"
+        >
+          <span
+            class="material-symbols-outlined group-hover:scale-110 transition-transform"
+            >person</span
+          >
+          <span class="text-[10px] font-medium">我的</span>
+        </a>
+      </div>
+    </nav>
+  </body>
+</html>

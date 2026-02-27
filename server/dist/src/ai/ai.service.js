@@ -21,6 +21,7 @@ let AiService = AiService_1 = class AiService {
     config;
     logger = new common_1.Logger(AiService_1.name);
     openai;
+    visionClient;
     constructor(config) {
         this.config = config;
         const apiKey = this.config.get('AI_API_KEY');
@@ -35,13 +36,25 @@ let AiService = AiService_1 = class AiService {
         else {
             this.logger.warn('AI Service initialized without API key or base URL');
         }
+        const visionApiKey = this.config.get('AI_VISION_API_KEY') || apiKey;
+        const visionBaseURL = this.config.get('AI_VISION_BASE_URL') || baseURL;
+        if (visionApiKey && visionBaseURL) {
+            this.visionClient = new openai_1.default({
+                apiKey: visionApiKey,
+                baseURL: visionBaseURL,
+            });
+            this.logger.log(`AI Vision Service initialized with base URL: ${visionBaseURL}`);
+        }
+        else {
+            this.visionClient = this.openai;
+        }
     }
-    async generateRecipe(prompt) {
+    async generateRecipe(options) {
         if (!this.openai) {
             throw new common_1.BadRequestException('AI Service is not fully configured');
         }
         const modelOptions = this.config.get('AI_MODEL') || 'deepseek-chat';
-        this.logger.log(`Generating recipe with prompt: ${prompt}`);
+        this.logger.log(`Generating recipe with options: ${JSON.stringify(options)}`);
         const systemPrompt = `
       你是一个专业的厨师和全栈菜谱生成助手。
       请根据用户的输入，生成一份详细的菜谱。
@@ -66,11 +79,20 @@ let AiService = AiService_1 = class AiService {
         ]
       }
     `;
+        let userPromptContent = '请帮我生成一个菜谱。';
+        if (options.prompt)
+            userPromptContent += ` 具体要求是：${options.prompt}。`;
+        if (options.taste)
+            userPromptContent += ` 口味偏好是：${options.taste}。`;
+        if (options.dietary)
+            userPromptContent += ` 饮食偏好或忌口是：${options.dietary}。`;
+        if (options.servings)
+            userPromptContent += ` 建议适用人数是：${options.servings}人份。`;
         try {
             const completion = await this.openai.chat.completions.create({
                 messages: [
                     { role: 'system', content: systemPrompt },
-                    { role: 'user', content: prompt },
+                    { role: 'user', content: userPromptContent },
                 ],
                 model: modelOptions,
                 response_format: { type: 'json_object' },
@@ -123,9 +145,13 @@ let AiService = AiService_1 = class AiService {
         }
     }
     async vision(imageBase64, prompt) {
-        const model = this.config.get('AI_VISION_MODEL') || 'deepseek-vl';
+        const model = this.config.get('AI_VISION_MODEL') || 'qwen-vl-plus';
+        const client = this.visionClient || this.openai;
+        if (!client) {
+            throw new common_1.BadRequestException('AI Vision Service is not configured');
+        }
         try {
-            const completion = await this.openai.chat.completions.create({
+            const completion = await client.chat.completions.create({
                 model,
                 messages: [
                     {

@@ -3,8 +3,14 @@ export declare class AiService {
     private readonly config;
     private readonly logger;
     private openai;
+    private visionClient;
     constructor(config: ConfigService);
-    generateRecipe(prompt: string): Promise<any>;
+    generateRecipe(options: {
+        prompt?: string;
+        taste?: string;
+        dietary?: string;
+        servings?: number;
+    }): Promise<any>;
     chat(messages: Array<{
         role: 'system' | 'user' | 'assistant';
         content: string;

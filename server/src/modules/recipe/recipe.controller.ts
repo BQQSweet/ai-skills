@@ -42,6 +42,13 @@ export class RecipeController {
     return this.recipeService.findAll(query);
   }
 
+  @Get('recommend')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: '首页基于时间的菜谱推荐' })
+  async recommend(@CurrentUser('id') userId: string) {
+    return this.recipeService.recommend(userId);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: '获取食谱详情' })
   async findOne(@Param('id') id: string) {

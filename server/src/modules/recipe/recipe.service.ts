@@ -107,4 +107,89 @@ export class RecipeService {
       data: { deleted_at: new Date() },
     });
   }
+
+  /**
+   * 基于时间与偏好推荐食谱
+   */
+  async recommend(userId?: string) {
+    const currentHour = new Date().getHours();
+    let mealTag = '';
+
+    // 简单时间段划分
+    if (currentHour >= 5 && currentHour < 10) {
+      mealTag = '早餐';
+    } else if (currentHour >= 10 && currentHour < 14) {
+      mealTag = '午餐';
+    } else if (currentHour >= 14 && currentHour < 17) {
+      mealTag = '下午茶';
+    } else if (currentHour >= 17 && currentHour < 21) {
+      mealTag = '晚餐';
+    } else {
+      mealTag = '夜宵';
+    }
+
+    let userTaste = null;
+    let userDietary = null;
+
+    if (userId) {
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { taste_preference: true, dietary_preference: true },
+      });
+      if (user) {
+        userTaste = user.taste_preference;
+        userDietary = user.dietary_preference;
+      }
+    }
+
+    // 收集偏好标签
+    const preferenceTags = [mealTag, userTaste, userDietary].filter(Boolean);
+
+    // 尝试找出包含部分或全部匹配标签的食谱
+    // Prisma 中对于 PostgreSQL 的 String[] 数组字段查询
+    const recipes = await this.prisma.recipe.findMany({
+      where: {
+        status: 'published',
+        deleted_at: null,
+        // 这里使用 array_contains 或者简单起见我们就拉取比较近的随机筛选，或者交由业务逻辑来打分排序
+        // 为了简单高效演示：先查出所有published食谱，在内存中做打分排序并取前5，防止数据量少时查不到
+      },
+      take: 50, // 从最近的50条中选
+      orderBy: { created_at: 'desc' },
+    });
+
+    // 所有可能的时间段标签
+    const ALL_MEAL_TAGS = ['早餐', '午餐', '下午茶', '晚餐', '夜宵'];
+
+    const validRecipes = [];
+
+    // 评分排序并过滤
+    for (const recipe of recipes) {
+      let score = 0;
+      const tags = recipe.tags || [];
+
+      // 选出该食谱包含的餐饮时间段标签
+      const recipeMealTags = tags.filter((tag) => ALL_MEAL_TAGS.includes(tag));
+
+      // 冲突检测：如果食谱包含了带有时间段的标签，但并不包含当前计算出的 mealTag，则过滤掉
+      if (recipeMealTags.length > 0 && !recipeMealTags.includes(mealTag)) {
+        continue; // 比如当前是晚餐，但食谱只有'早餐'或'下午茶'标签
+      }
+
+      if (tags.includes(mealTag)) score += 10;
+      if (userTaste && tags.includes(userTaste)) score += 5;
+      if (userDietary && tags.includes(userDietary)) score += 5;
+
+      // 添加随机扰动，使得每次推荐不一样
+      score += Math.random() * 2;
+      validRecipes.push({ ...recipe, _score: score });
+    }
+
+    // 按分数降序，取前5名
+    validRecipes.sort((a, b) => b._score - a._score);
+    return validRecipes.slice(0, 5).map((r) => {
+      const { _score, ...rest } = r;
+      return rest;
+    });
+  }
 }

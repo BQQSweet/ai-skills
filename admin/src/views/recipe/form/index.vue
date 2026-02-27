@@ -193,23 +193,67 @@
 
     <a-modal
       v-model:visible="aiModalVisible"
-      title="🤖 AI 一键生成食谱"
+      title="🤖 AI 智能食谱生成"
       @ok="handleGenerateAi"
       @cancel="handleCloseAiModal"
       :ok-loading="aiGenerating"
     >
-      <a-form layout="vertical">
+      <a-form :model="aiForm" layout="vertical">
+        <a-row :gutter="16">
+          <a-col :span="12">
+            <a-form-item label="口味偏好">
+              <a-select
+                v-model="aiForm.taste"
+                placeholder="请选择口味"
+                allow-clear
+              >
+                <a-option value="清淡">清淡</a-option>
+                <a-option value="微辣">微辣</a-option>
+                <a-option value="麻辣">麻辣</a-option>
+                <a-option value="酸甜">酸甜</a-option>
+                <a-option value="咸鲜">咸鲜</a-option>
+              </a-select>
+            </a-form-item>
+          </a-col>
+          <a-col :span="12">
+            <a-form-item label="适用人数">
+              <a-input-number
+                v-model="aiForm.servings"
+                placeholder="人数"
+                :min="1"
+                :max="20"
+              />
+            </a-form-item>
+          </a-col>
+        </a-row>
+
+        <a-form-item label="饮食偏好/忌口">
+          <a-select
+            v-model="aiForm.dietary"
+            placeholder="是否有特殊饮食要求"
+            allow-clear
+          >
+            <a-option value="无">无特殊要求</a-option>
+            <a-option value="减脂/低卡">减脂/低卡</a-option>
+            <a-option value="高蛋白">高蛋白</a-option>
+            <a-option value="纯素食">纯素食</a-option>
+            <a-option value="孕妇餐">孕妇餐</a-option>
+            <a-option value="宝宝辅食">宝宝辅食</a-option>
+            <a-option value="不要香菜和葱">不要香菜和葱</a-option>
+          </a-select>
+        </a-form-item>
+
         <a-form-item
-          label="你想做什么菜？"
+          label="补充描述（可选）"
           :help="
             aiGenerating
-              ? 'AI 正在努力思考中，请稍候...'
-              : '例如：低脂水煮鱼、家常番茄炒蛋'
+              ? 'AI 正在努力为您定制食谱中，请稍候...'
+              : '您可以输入想做的具体菜名，或者手头现有的食材'
           "
         >
           <a-textarea
-            v-model="aiPrompt"
-            placeholder="描述你想做的菜品、忌口或特定材料..."
+            v-model="aiForm.prompt"
+            placeholder="例如：低脂水煮鱼、家里只剩下番茄和鸡蛋了..."
             :auto-size="{ minRows: 3, maxRows: 5 }"
           />
         </a-form-item>
@@ -236,7 +280,12 @@ const submitLoading = ref(false);
 
 const aiModalVisible = ref(false);
 const aiGenerating = ref(false);
-const aiPrompt = ref("");
+const aiForm = reactive({
+  prompt: "",
+  taste: "",
+  dietary: "",
+  servings: 2 as number | undefined,
+});
 
 const handleOpenAiModal = () => {
   aiModalVisible.value = true;
@@ -244,18 +293,26 @@ const handleOpenAiModal = () => {
 
 const handleCloseAiModal = () => {
   aiModalVisible.value = false;
-  aiPrompt.value = "";
+  aiForm.prompt = "";
+  aiForm.taste = "";
+  aiForm.dietary = "";
+  aiForm.servings = 2;
 };
 
 const handleGenerateAi = async () => {
-  if (!aiPrompt.value.trim()) {
-    Message.warning("请输入你想做的菜品描述");
+  if (!aiForm.prompt?.trim() && !aiForm.taste && !aiForm.dietary) {
+    Message.warning("请至少填写一项偏好或补充描述");
     return false;
   }
 
   aiGenerating.value = true;
   try {
-    const res = await generateRecipeAi(aiPrompt.value);
+    const res = await generateRecipeAi({
+      prompt: aiForm.prompt,
+      taste: aiForm.taste,
+      dietary: aiForm.dietary,
+      servings: aiForm.servings,
+    });
     const result = res.data;
 
     // 回填表单数据

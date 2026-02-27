@@ -183,13 +183,14 @@
     >
       <text class="material-symbols-outlined text-[180px]">eco</text>
     </view>
-    <!-- 引入 uview-plus 的 up-toast 组件 -->
-    <up-toast ref="uToastRef"></up-toast>
+    <!-- 引入自定义的 CmToast 组件 -->
+    <CmToast ref="uToastRef"></CmToast>
   </view>
 </template>
 
 <script setup lang="ts">
 import CmIcon from "@/components/CmIcon/CmIcon.vue";
+import CmToast from "@/components/CmToast/CmToast.vue";
 import { ref, reactive } from "vue";
 import CmInput from "@/components/CmInput/CmInput.vue";
 import { useUserStore } from "@/stores/user";
@@ -325,25 +326,6 @@ async function handleSubmit() {
 </script>
 
 <style lang="css" scoped>
-@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap");
-
-.material-symbols-outlined {
-  font-family: "Material Symbols Outlined";
-  font-weight: normal;
-  font-style: normal;
-  font-size: 24px;
-  line-height: 1;
-  letter-spacing: normal;
-  text-transform: none;
-  display: inline-block;
-  white-space: nowrap;
-  word-wrap: normal;
-  direction: ltr;
-  font-feature-settings: "liga";
-  -webkit-font-feature-settings: "liga";
-  -webkit-font-smoothing: antialiased;
-}
-
 /* Base font setup */
 .font-sans {
   font-family: "Plus Jakarta Sans", "PingFang SC", "Noto Sans SC", sans-serif;
