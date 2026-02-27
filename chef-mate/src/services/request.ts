@@ -79,6 +79,14 @@ export function request<T = any>(options: RequestOptions): Promise<T> {
       data: options.data,
       header,
       success: async (res) => {
+        if (res.statusCode === 401) {
+          clearAuth();
+          uni.reLaunch({ url: "/pages/login/index" });
+          uni.$u.toast("登录已过期，请重新登录");
+          reject(new Error("登录已过期，请重新登录"));
+          return;
+        }
+
         const data = res.data as ApiResponse<T>;
 
         if (data.code === 0) {

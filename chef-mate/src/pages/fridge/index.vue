@@ -8,7 +8,7 @@
     <!-- Main Content -->
     <main class="flex-1 px-5 pt-4">
       <!-- AI Generative Banner -->
-      <FridgeAiBanner />
+      <FridgeAiBanner :ingredients="selectedIngredients" />
 
       <!-- Inventory List Title -->
       <view class="flex justify-between items-center mb-4">
@@ -216,6 +216,10 @@ const expiredCount = computed(
 
 const selectedCount = computed(
   () => inventoryList.value.filter((i) => i.selected).length,
+);
+
+const selectedIngredients = computed(() =>
+  inventoryList.value.filter((i) => i.selected).map((i) => i.name),
 );
 
 const toggleSelectItem = (item: any) => {

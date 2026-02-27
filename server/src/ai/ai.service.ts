@@ -105,18 +105,67 @@ export class AiService {
       });
 
       const responseContent = completion.choices[0].message.content;
-      if (!responseContent) {
-        throw new Error('No content returned from AI');
-      }
-
-      // try to parse it
-      return JSON.parse(responseContent);
+      this.logger.debug(`AI Response: ${responseContent}`);
+      return JSON.parse(responseContent || '{}');
     } catch (error) {
       this.logger.error(
-        `AI generate recipe error: ${error.message}`,
+        `Failed to generate recipe: ${error.message}`,
         error.stack,
       );
-      throw new BadRequestException('生成食谱失败：' + error.message);
+      throw new BadRequestException('AI 菜谱生成失败，请稍后重试');
+    }
+  }
+
+  async answerStepQuestion(dto: {
+    recipeContext: string;
+    stepInstruction: string;
+    question: string;
+  }): Promise<string> {
+    if (!this.openai) {
+      throw new BadRequestException('AI Service is not fully configured');
+    }
+
+    const modelOptions = this.config.get<string>('AI_MODEL') || 'deepseek-chat';
+
+    const systemPrompt = `
+      你是一个热心、专业的在线主厨助理。此刻用户正在照着菜谱做饭。
+      请解答用户在当前烹饪步骤中遇到的疑问。
+      你的回答需要：
+      1. 简明扼要，直奔主题（用户正在厨房，时间紧迫）。
+      2. 态度亲切鼓励。
+    `;
+
+    const userPromptContent = `
+      我正在做的菜品/整个食谱的上下文是：
+      ${dto.recipeContext}
+
+      我当前正在操作的这一步是：
+      ${dto.stepInstruction}
+
+      我的问题是：
+      ${dto.question}
+    `;
+
+    try {
+      const completion = await this.openai.chat.completions.create({
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPromptContent },
+        ],
+        model: modelOptions,
+        temperature: 0.6,
+      });
+
+      return (
+        completion.choices[0].message.content ||
+        '我暂时没有理解这个问题，能换个说法吗？'
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to answer step question: ${error.message}`,
+        error.stack,
+      );
+      throw new BadRequestException('AI 问答失败，请稍后重试');
     }
   }
 

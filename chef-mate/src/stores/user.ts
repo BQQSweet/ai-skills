@@ -21,7 +21,9 @@ export const useUserStore = defineStore("user", () => {
   const userInfo = ref<UserInfo | null>(
     JSON.parse(getStorage(STORAGE_KEYS.USER_INFO) || "{}"),
   );
-  const currentGroupId = ref<string>("");
+  const currentGroupId = ref<string>(
+    getStorage(STORAGE_KEYS.CURRENT_GROUP_ID) || "",
+  );
 
   // ========== Getters ==========
   const isLoggedIn = computed(() => !!token.value);

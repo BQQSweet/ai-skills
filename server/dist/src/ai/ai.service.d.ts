@@ -11,6 +11,11 @@ export declare class AiService {
         dietary?: string;
         servings?: number;
     }): Promise<any>;
+    answerStepQuestion(dto: {
+        recipeContext: string;
+        stepInstruction: string;
+        question: string;
+    }): Promise<string>;
     chat(messages: Array<{
         role: 'system' | 'user' | 'assistant';
         content: string;

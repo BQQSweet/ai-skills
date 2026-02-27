@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onLaunch, onShow, onHide } from "@dcloudio/uni-app";
+import { useUserStore } from "@/stores/user";
 
 onLaunch(() => {
   console.log("ChefMate App Launch");

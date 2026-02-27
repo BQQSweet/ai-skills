@@ -1,8 +1,17 @@
 import { PrismaService } from '@/common/prisma.service';
+import { AiService } from '@/ai/ai.service';
 import { CreateRecipeDto, UpdateRecipeDto, QueryRecipeDto } from './dto/recipe.dto';
 export declare class RecipeService {
     private readonly prisma;
-    constructor(prisma: PrismaService);
+    private readonly aiService;
+    constructor(prisma: PrismaService, aiService: AiService);
+    generateAiRecipe(params: {
+        ingredients: string[];
+        taste?: string;
+        mealType?: string;
+        servings?: number;
+    }, userId?: string): Promise<any>;
+    askStepQuestion(dto: import('./dto/ask-step.dto').AskStepDto): Promise<string>;
     create(dto: CreateRecipeDto, userId?: string): Promise<{
         id: string;
         created_at: Date;

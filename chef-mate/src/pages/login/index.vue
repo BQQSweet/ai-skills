@@ -192,12 +192,24 @@
 import CmIcon from "@/components/CmIcon/CmIcon.vue";
 import CmToast from "@/components/CmToast/CmToast.vue";
 import { ref, reactive } from "vue";
+import { onShow } from "@dcloudio/uni-app";
 import CmInput from "@/components/CmInput/CmInput.vue";
 import { useUserStore } from "@/stores/user";
 import * as authService from "@/services/auth";
 
 const userStore = useUserStore();
 const uToastRef = ref<any>(null);
+
+onShow(() => {
+  // 登录态拦截：如果已登录，禁止停留在登录页，直接跳转
+  if (userStore.isLoggedIn) {
+    if (userStore.currentGroupId) {
+      uni.switchTab({ url: "/pages/index/index" });
+    } else {
+      uni.reLaunch({ url: "/pages/guide/index" });
+    }
+  }
+});
 
 const loading = ref(false);
 const codeCooldown = ref(0);

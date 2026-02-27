@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>ChefMate AI 灵感食谱 (样式修正版)</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Noto+Sans+SC:wght@400;500;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#ff9d0a",
+              "primary-dark": "#e08a00",
+              "background-light": "#FAFAFA",
+              "background-dark": "#1a1a1a",
+              "surface-light": "#ffffff",
+              "surface-dark": "#2d2d2d",
+              "ai-purple": "#8B5CF6",
+            },
+            fontFamily: {
+              display: ["Plus Jakarta Sans", "Noto Sans SC", "sans-serif"],
+              body: ["Noto Sans SC", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "1rem",
+              lg: "1.5rem",
+              xl: "2rem",
+              "2xl": "2.5rem",
+              full: "9999px",
+            },
+            boxShadow: {
+              soft: "0 4px 20px -2px rgba(0, 0, 0, 0.05)",
+              glow: "0 0 15px rgba(255, 157, 10, 0.3)",
+              "ai-glow": "0 0 20px rgba(139, 92, 246, 0.15)",
+              "btn-glow": "0 4px 15px rgba(255, 159, 10, 0.25)",
+            },
+          },
+        },
+      };
+    </script>
+    <style type="text/tailwindcss">
+      body {
+        font-family: "Noto Sans SC", "Plus Jakarta Sans", sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+      .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+      .aurora-bg {
+        background:
+          radial-gradient(
+            circle at 10% 10%,
+            rgba(255, 157, 10, 0.03) 0%,
+            transparent 40%
+          ),
+          radial-gradient(
+            circle at 90% 60%,
+            rgba(139, 92, 246, 0.04) 0%,
+            transparent 40%
+          );
+      }
+      .ai-btn-gradient {
+        background: linear-gradient(135deg, #ff9f0a 0%, #ffb340 100%);
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen relative aurora-bg overflow-x-hidden pb-32"
+  >
+    <header
+      class="sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-100 dark:border-slate-800"
+    >
+      <div class="flex items-center justify-between px-4 py-3">
+        <button
+          class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+        >
+          <span
+            class="material-symbols-outlined text-slate-700 dark:text-slate-300"
+            >arrow_back</span
+          >
+        </button>
+        <h1
+          class="text-lg font-bold text-slate-800 dark:text-white font-display"
+        >
+          AI 灵感食谱
+        </h1>
+        <button
+          class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors relative"
+        >
+          <span
+            class="material-symbols-outlined text-slate-700 dark:text-slate-300"
+            >history</span
+          >
+          <span
+            class="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full"
+          ></span>
+        </button>
+      </div>
+    </header>
+    <main class="max-w-md mx-auto w-full px-4 pt-4 flex flex-col gap-6">
+      <section class="flex flex-col gap-4">
+        <div>
+          <div class="flex justify-between items-center mb-3">
+            <h2
+              class="text-sm font-bold text-slate-500 uppercase tracking-wider font-display"
+            >
+              已选食材
+            </h2>
+            <button
+              class="text-primary text-sm font-medium flex items-center gap-1"
+            >
+              <span class="material-symbols-outlined text-[16px]">add</span>
+              添加
+            </button>
+          </div>
+          <div class="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
+            <div
+              class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-surface-dark rounded-full border border-slate-100 dark:border-slate-700 shadow-sm shrink-0"
+            >
+              <span class="text-lg">🍅</span>
+              <span
+                class="font-medium text-slate-700 dark:text-slate-200 text-sm"
+                >西红柿</span
+              >
+            </div>
+            <div
+              class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-surface-dark rounded-full border border-slate-100 dark:border-slate-700 shadow-sm shrink-0"
+            >
+              <span class="text-lg">🥚</span>
+              <span
+                class="font-medium text-slate-700 dark:text-slate-200 text-sm"
+                >鸡蛋</span
+              >
+            </div>
+            <div
+              class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-surface-dark rounded-full border border-slate-100 dark:border-slate-700 shadow-sm shrink-0"
+            >
+              <span class="text-lg">🧅</span>
+              <span
+                class="font-medium text-slate-700 dark:text-slate-200 text-sm"
+                >洋葱</span
+              >
+            </div>
+          </div>
+        </div>
+        <button
+          class="w-full ai-btn-gradient text-white rounded-2xl py-4 px-6 font-bold text-base shadow-btn-glow flex items-center justify-center gap-2 transform active:scale-[0.97] transition-all ring-4 ring-primary/10 border border-white/20"
+        >
+          <span class="text-lg">✨</span>
+          <span>重新生成其他灵感</span>
+        </button>
+      </section>
+      <section
+        class="bg-white dark:bg-surface-dark rounded-3xl p-1 shadow-soft ring-1 ring-slate-100 dark:ring-slate-800 relative overflow-hidden"
+      >
+        <div
+          class="absolute -top-10 -right-10 w-32 h-32 bg-ai-purple/20 blur-3xl rounded-full pointer-events-none"
+        ></div>
+        <div class="relative h-64 w-full rounded-2xl overflow-hidden group">
+          <img
+            alt="Close up of a fluffy tomato and egg stir fry dish"
+            class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnin-D3JliT5i0mgmJPO6ZWAB5sVMH4svt_ltm0nKFYiUgR27carzUkj3mo9MAtkeKG4LyDvIr3mw2murw8oWmsK6Wh4OEFJ1GpI2ZVmz22u3T__adrgkZd1JIgwJRUpEK46Yq32VdnvrWlknugBJVq9oLm3YxM29D0-5lXG7R6DAoiFtKDKaTObr3e1okT-71BbvuG07cAKX2dmOhb1YUGnBv_RI-rwA7Wmtxv1zUpqBOzCzUi8uRFnVihAcCF4YNzjDNaf7QaNSU"
+          />
+          <div
+            class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"
+          ></div>
+          <div class="absolute bottom-4 left-4 flex gap-2">
+            <div
+              class="flex items-center gap-1 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10"
+            >
+              <span class="material-symbols-outlined text-white text-[16px]"
+                >schedule</span
+              >
+              <span class="text-xs font-bold text-white">15 分钟</span>
+            </div>
+            <div
+              class="flex items-center gap-1 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10"
+            >
+              <span class="material-symbols-outlined text-primary text-[16px]"
+                >local_fire_department</span
+              >
+              <span class="text-xs font-bold text-white">难度：低</span>
+            </div>
+          </div>
+          <button
+            class="absolute top-4 right-4 bg-white/90 dark:bg-black/60 backdrop-blur-md p-2.5 rounded-full shadow-lg transition-transform active:scale-90"
+          >
+            <span
+              class="material-symbols-outlined text-red-500 text-[22px] block fill-current"
+              >favorite</span
+            >
+          </button>
+        </div>
+        <div class="p-6">
+          <div class="flex justify-between items-start mb-3">
+            <h3
+              class="text-2xl font-bold text-slate-800 dark:text-white font-display tracking-tight"
+            >
+              香滑西红柿厚蛋烧
+            </h3>
+            <div
+              class="flex items-center gap-1 text-yellow-500 bg-yellow-50 dark:bg-yellow-900/20 px-2.5 py-1 rounded-lg"
+            >
+              <span class="material-symbols-outlined text-[16px] fill-current"
+                >star</span
+              >
+              <span class="text-xs font-bold">4.9</span>
+            </div>
+          </div>
+          <p
+            class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-6"
+          >
+            这是一道结合了传统中式番茄炒蛋风味与日式厚蛋烧口感的创新料理。酸甜开胃，蛋香浓郁，非常适合作为快手早餐。
+          </p>
+          <div
+            class="grid grid-cols-3 gap-4 py-4 border-y border-slate-100 dark:border-slate-700"
+          >
+            <div class="text-center">
+              <p
+                class="text-[10px] text-slate-400 uppercase tracking-widest mb-1"
+              >
+                热量
+              </p>
+              <p class="font-bold text-slate-800 dark:text-slate-100 text-lg">
+                230 <span class="text-xs font-normal text-slate-400">kcal</span>
+              </p>
+            </div>
+            <div
+              class="text-center border-x border-slate-100 dark:border-slate-700"
+            >
+              <p
+                class="text-[10px] text-slate-400 uppercase tracking-widest mb-1"
+              >
+                蛋白质
+              </p>
+              <p class="font-bold text-slate-800 dark:text-slate-100 text-lg">
+                12.5 <span class="text-xs font-normal text-slate-400">g</span>
+              </p>
+            </div>
+            <div class="text-center">
+              <p
+                class="text-[10px] text-slate-400 uppercase tracking-widest mb-1"
+              >
+                碳水
+              </p>
+              <p class="font-bold text-slate-800 dark:text-slate-100 text-lg">
+                8.2 <span class="text-xs font-normal text-slate-400">g</span>
+              </p>
+            </div>
+          </div>
+          <div class="mt-8">
+            <button
+              class="w-full bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl p-6 flex flex-col items-center gap-3 group transition-all"
+            >
+              <div
+                class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform"
+              >
+                <span class="material-symbols-outlined text-3xl"
+                  >menu_book</span
+                >
+              </div>
+              <div class="text-center">
+                <span
+                  class="block text-slate-800 dark:text-white font-bold text-lg"
+                  >查看完整烹饪步骤并开始</span
+                >
+                <span class="block text-slate-400 text-xs mt-1"
+                  >共 4 个详细步骤 · 包含 AI 实时辅助</span
+                >
+              </div>
+            </button>
+          </div>
+        </div>
+      </section>
+      <div
+        class="bg-ai-purple/5 dark:bg-ai-purple/10 border border-ai-purple/10 rounded-2xl p-4 flex gap-3 items-start"
+      >
+        <span class="material-symbols-outlined text-ai-purple">info</span>
+        <p class="text-xs text-ai-purple/80 leading-relaxed">
+          <span class="font-bold">AI 建议：</span
+          >这个食谱非常适合使用“语音模式”进行。您可以边做边问我如何控制油温，或者询问食材替代方案。
+        </p>
+      </div>
+    </main>
+    <div class="fixed bottom-0 left-0 right-0 p-6 flex justify-center z-50">
+      <div
+        class="absolute inset-0 bg-gradient-to-t from-background-light dark:from-background-dark via-background-light/95 dark:via-background-dark/95 to-transparent -z-10 h-32 bottom-0"
+      ></div>
+      <button
+        class="bg-primary text-white w-full max-w-sm h-14 rounded-full shadow-xl shadow-primary/30 flex items-center justify-center gap-3 text-lg font-bold hover:scale-[1.02] active:scale-[0.98] transition-all group overflow-hidden relative"
+      >
+        <div
+          class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"
+        ></div>
+        <div
+          class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm"
+        >
+          <span class="material-symbols-outlined text-[22px]">mic</span>
+        </div>
+        <span>开始烹饪 (语音模式)</span>
+        <span class="material-symbols-outlined text-[20px] ml-1 opacity-60"
+          >arrow_forward_ios</span
+        >
+      </button>
+    </div>
+  </body>
+</html>

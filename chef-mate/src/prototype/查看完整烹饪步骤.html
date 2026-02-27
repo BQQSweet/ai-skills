@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>完整烹饪步骤 - ChefMate</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Noto+Sans+SC:wght@400;500;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#FF9F0A",
+              "primary-dark": "#E68F00",
+              "background-light": "#FAFAFA",
+              "background-dark": "#121212",
+              "surface-light": "#ffffff",
+              "surface-dark": "#1E1E1E",
+              "ai-purple": "#8B5CF6",
+            },
+            fontFamily: {
+              display: ["Plus Jakarta Sans", "Noto Sans SC", "sans-serif"],
+              body: ["Noto Sans SC", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "1rem",
+              lg: "1.5rem",
+              xl: "2rem",
+              "2xl": "2.5rem",
+            },
+            boxShadow: {
+              soft: "0 4px 20px -2px rgba(0, 0, 0, 0.04)",
+              glow: "0 0 15px rgba(255, 159, 10, 0.2)",
+              "btn-glow": "0 8px 25px rgba(255, 159, 10, 0.3)",
+            },
+          },
+        },
+      };
+    </script>
+    <style type="text/tailwindcss">
+      body {
+        font-family: "Noto Sans SC", "Plus Jakarta Sans", sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      .step-card {
+        @apply bg-white dark:bg-surface-dark rounded-[16px] p-4 shadow-soft border border-slate-50 dark:border-slate-800 transition-all active:scale-[0.99];
+      }
+      .glass-header {
+        @apply sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-100 dark:border-slate-800;
+      }
+      .action-chip {
+        @apply flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-medium border border-slate-100 dark:border-slate-700 transition-colors active:bg-slate-200;
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen pb-32"
+  >
+    <header class="glass-header">
+      <div class="flex items-center justify-between px-4 py-4">
+        <button
+          class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+        >
+          <span
+            class="material-symbols-outlined text-slate-700 dark:text-slate-300"
+            >arrow_back_ios_new</span
+          >
+        </button>
+        <div class="text-center">
+          <h1 class="text-base font-bold text-slate-900 dark:text-white">
+            香滑西红柿厚蛋烧
+          </h1>
+          <p
+            class="text-[10px] text-slate-400 font-medium uppercase tracking-widest mt-0.5"
+          >
+            完整烹饪步骤
+          </p>
+        </div>
+        <button
+          class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+        >
+          <span
+            class="material-symbols-outlined text-slate-700 dark:text-slate-300"
+            >more_horiz</span
+          >
+        </button>
+      </div>
+    </header>
+    <main class="max-w-md mx-auto w-full px-4 pt-6 flex flex-col gap-5">
+      <div class="step-card">
+        <div class="flex gap-4">
+          <div class="relative shrink-0">
+            <img
+              alt="Step 1"
+              class="w-20 h-20 rounded-xl object-cover shadow-sm"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnin-D3JliT5i0mgmJPO6ZWAB5sVMH4svt_ltm0nKFYiUgR27carzUkj3mo9MAtkeKG4LyDvIr3mw2murw8oWmsK6Wh4OEFJ1GpI2ZVmz22u3T__adrgkZd1JIgwJRUpEK46Yq32VdnvrWlknugBJVq9oLm3YxM29D0-5lXG7R6DAoiFtKDKaTObr3e1okT-71BbvuG07cAKX2dmOhb1YUGnBv_RI-rwA7Wmtxv1zUpqBOzCzUi8uRFnVihAcCF4YNzjDNaf7QaNSU"
+            />
+            <div
+              class="absolute -top-2 -left-2 w-6 h-6 bg-primary text-white text-xs font-bold rounded-full flex items-center justify-center shadow-md"
+            >
+              1
+            </div>
+          </div>
+          <div class="flex-1">
+            <h3 class="font-bold text-slate-800 dark:text-white mb-1">
+              准备食材
+            </h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400 leading-snug">
+              将西红柿切丁，鸡蛋打散备用
+            </p>
+            <div class="flex gap-2 mt-3">
+              <button class="action-chip">
+                <span class="material-symbols-outlined text-ai-purple text-sm"
+                  >chat_bubble</span
+                >
+                有问题问 AI
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="step-card">
+        <div class="flex gap-4">
+          <div class="relative shrink-0">
+            <div
+              class="w-20 h-20 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400"
+            >
+              <span class="material-symbols-outlined text-3xl">skillet</span>
+            </div>
+            <div
+              class="absolute -top-2 -left-2 w-6 h-6 bg-primary text-white text-xs font-bold rounded-full flex items-center justify-center shadow-md"
+            >
+              2
+            </div>
+          </div>
+          <div class="flex-1">
+            <h3 class="font-bold text-slate-800 dark:text-white mb-1">
+              热锅加油
+            </h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400 leading-snug">
+              中小火热锅，倒入适量食用油
+            </p>
+            <div class="flex gap-2 mt-3">
+              <button class="action-chip">
+                <span class="material-symbols-outlined text-ai-purple text-sm"
+                  >chat_bubble</span
+                >
+                有问题问 AI
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="step-card">
+        <div class="flex gap-4">
+          <div class="relative shrink-0">
+            <div
+              class="w-20 h-20 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400"
+            >
+              <span class="material-symbols-outlined text-3xl">cooking</span>
+            </div>
+            <div
+              class="absolute -top-2 -left-2 w-6 h-6 bg-primary text-white text-xs font-bold rounded-full flex items-center justify-center shadow-md"
+            >
+              3
+            </div>
+          </div>
+          <div class="flex-1">
+            <h3 class="font-bold text-slate-800 dark:text-white mb-1">
+              炒制西红柿
+            </h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400 leading-snug">
+              下入西红柿丁炒出汤汁
+            </p>
+            <div class="flex gap-2 mt-3">
+              <button class="action-chip">
+                <span class="material-symbols-outlined text-ai-purple text-sm"
+                  >chat_bubble</span
+                >
+                有问题问 AI
+              </button>
+              <button
+                class="action-chip text-primary border-primary/20 bg-primary/5"
+              >
+                <span class="material-symbols-outlined text-sm">timer</span>
+                02:00
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="step-card border-l-4 border-l-primary">
+        <div class="flex gap-4">
+          <div class="relative shrink-0">
+            <div
+              class="w-20 h-20 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400"
+            >
+              <span class="material-symbols-outlined text-3xl"
+                >restaurant_menu</span
+              >
+            </div>
+            <div
+              class="absolute -top-2 -left-2 w-6 h-6 bg-primary text-white text-xs font-bold rounded-full flex items-center justify-center shadow-md"
+            >
+              4
+            </div>
+          </div>
+          <div class="flex-1">
+            <h3 class="font-bold text-slate-800 dark:text-white mb-1">
+              煎制蛋液
+            </h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400 leading-snug">
+              倒入蛋液，保持中小火煎至微凝固后卷起
+            </p>
+            <div class="flex gap-2 mt-3">
+              <button class="action-chip">
+                <span class="material-symbols-outlined text-ai-purple text-sm"
+                  >chat_bubble</span
+                >
+                有问题问 AI
+              </button>
+              <button
+                class="action-chip text-primary border-primary/20 bg-primary/5"
+              >
+                <span class="material-symbols-outlined text-sm">timer</span>
+                03:00
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-4 p-5 rounded-2xl bg-primary/5 border border-primary/10">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="material-symbols-outlined text-primary text-xl"
+            >lightbulb</span
+          >
+          <h4 class="font-bold text-slate-800 dark:text-white text-sm">
+            大厨贴士
+          </h4>
+        </div>
+        <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+          在卷起蛋液时，如果觉得铲子不好操作，可以借助一双筷子辅助，成型会更漂亮。
+        </p>
+      </div>
+    </main>
+    <div
+      class="fixed bottom-0 left-0 right-0 p-6 flex flex-col items-center z-50"
+    >
+      <div
+        class="absolute inset-0 bg-gradient-to-t from-background-light dark:from-background-dark via-background-light/95 dark:via-background-dark/95 to-transparent -z-10 h-40 bottom-0"
+      ></div>
+      <button
+        class="bg-primary text-white w-full max-w-sm h-14 rounded-full shadow-btn-glow flex items-center justify-center gap-3 text-lg font-bold hover:bg-primary-dark active:scale-[0.97] transition-all group relative overflow-hidden"
+      >
+        <div
+          class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"
+        ></div>
+        <div
+          class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm"
+        >
+          <span class="material-symbols-outlined text-[22px]">mic</span>
+        </div>
+        <span>开始烹饪 (语音模式)</span>
+        <span class="material-symbols-outlined text-[20px] opacity-60 ml-1"
+          >arrow_forward_ios</span
+        >
+      </button>
+      <p class="mt-3 text-[11px] text-slate-400 font-medium">
+        使用语音控制，无需触碰手机
+      </p>
+    </div>
+  </body>
+</html>

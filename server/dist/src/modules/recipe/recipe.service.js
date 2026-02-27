@@ -12,10 +12,42 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.RecipeService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../common/prisma.service");
+const ai_service_1 = require("../../ai/ai.service");
 let RecipeService = class RecipeService {
     prisma;
-    constructor(prisma) {
+    aiService;
+    constructor(prisma, aiService) {
         this.prisma = prisma;
+        this.aiService = aiService;
+    }
+    async generateAiRecipe(params, userId) {
+        let userTaste = params.taste;
+        let userDietary = null;
+        if (userId) {
+            const user = await this.prisma.user.findUnique({
+                where: { id: userId },
+                select: { taste_preference: true, dietary_preference: true },
+            });
+            if (user) {
+                if (!userTaste)
+                    userTaste = user.taste_preference;
+                userDietary = user.dietary_preference;
+            }
+        }
+        const { ingredients = [], mealType = '正餐', servings = 2 } = params;
+        let prompt = ingredients.length > 0
+            ? `请使用以下食材作为主要材料：${ingredients.join('、')}。`
+            : '请随机给我推荐一道应季家常菜。';
+        prompt += `这是一个适合【${mealType}】的菜谱。`;
+        return this.aiService.generateRecipe({
+            prompt,
+            taste: userTaste || undefined,
+            dietary: userDietary || undefined,
+            servings: Number(servings),
+        });
+    }
+    async askStepQuestion(dto) {
+        return this.aiService.answerStepQuestion(dto);
     }
     async create(dto, userId) {
         return this.prisma.recipe.create({
@@ -158,6 +190,7 @@ let RecipeService = class RecipeService {
 exports.RecipeService = RecipeService;
 exports.RecipeService = RecipeService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        ai_service_1.AiService])
 ], RecipeService);
 //# sourceMappingURL=recipe.service.js.map

@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '@/common/prisma.service';
+import { AiService } from '@/ai/ai.service';
 import {
   CreateRecipeDto,
   UpdateRecipeDto,
@@ -8,7 +9,57 @@ import {
 
 @Injectable()
 export class RecipeService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly aiService: AiService,
+  ) {}
+
+  /**
+   * 基于给定的食材列表和用户偏好生成 AI 灵感食谱
+   */
+  async generateAiRecipe(
+    params: {
+      ingredients: string[];
+      taste?: string;
+      mealType?: string;
+      servings?: number;
+    },
+    userId?: string,
+  ) {
+    let userTaste: string | null | undefined = params.taste;
+    let userDietary = null;
+
+    if (userId) {
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { taste_preference: true, dietary_preference: true },
+      });
+      if (user) {
+        if (!userTaste) userTaste = user.taste_preference;
+        userDietary = user.dietary_preference;
+      }
+    }
+
+    const { ingredients = [], mealType = '正餐', servings = 2 } = params;
+
+    let prompt =
+      ingredients.length > 0
+        ? `请使用以下食材作为主要材料：${ingredients.join('、')}。`
+        : '请随机给我推荐一道应季家常菜。';
+
+    prompt += `这是一个适合【${mealType}】的菜谱。`;
+
+    return this.aiService.generateRecipe({
+      prompt,
+      taste: userTaste || undefined,
+      dietary: userDietary || undefined,
+      servings: Number(servings),
+    });
+  }
+
+  async askStepQuestion(dto: import('./dto/ask-step.dto').AskStepDto) {
+    return this.aiService.answerStepQuestion(dto);
+  }
 
   /**
    * 创建食谱

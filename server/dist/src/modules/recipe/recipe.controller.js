@@ -34,6 +34,12 @@ let RecipeController = class RecipeController {
     async recommend(userId) {
         return this.recipeService.recommend(userId);
     }
+    async generateAiRecipe(body, userId) {
+        return this.recipeService.generateAiRecipe(body, userId);
+    }
+    async askStep(body) {
+        return this.recipeService.askStepQuestion(body);
+    }
     async findOne(id) {
         return this.recipeService.findOne(id);
     }
@@ -72,6 +78,25 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], RecipeController.prototype, "recommend", null);
+__decorate([
+    (0, common_1.Post)('ai-generate'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiOperation)({ summary: '基于给定食材生成 AI 食谱' }),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, current_user_decorator_1.CurrentUser)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], RecipeController.prototype, "generateAiRecipe", null);
+__decorate([
+    (0, common_1.Post)('ask-step'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiOperation)({ summary: '针对某一个烹饪步骤向 AI 提问' }),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], RecipeController.prototype, "askStep", null);
 __decorate([
     (0, common_1.Get)(':id'),
     (0, swagger_1.ApiOperation)({ summary: '获取食谱详情' }),

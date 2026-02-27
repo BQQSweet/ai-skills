@@ -68,6 +68,13 @@ export declare class RecipeController {
         source_url: string | null;
         created_by: string | null;
     }[]>;
+    generateAiRecipe(body: {
+        ingredients: string[];
+        taste?: string;
+        mealType?: string;
+        servings?: number;
+    }, userId: string): Promise<any>;
+    askStep(body: import('./dto/ask-step.dto').AskStepDto): Promise<string>;
     findOne(id: string): Promise<{
         id: string;
         created_at: Date;

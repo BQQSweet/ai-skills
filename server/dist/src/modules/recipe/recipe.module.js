@@ -15,12 +15,14 @@ const recipe_service_1 = require("./recipe.service");
 const prisma_service_1 = require("../../common/prisma.service");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
 const admin_guard_1 = require("../../common/guards/admin.guard");
+const ai_module_1 = require("../../ai/ai.module");
 let RecipeModule = class RecipeModule {
 };
 exports.RecipeModule = RecipeModule;
 exports.RecipeModule = RecipeModule = __decorate([
     (0, common_1.Module)({
         imports: [
+            ai_module_1.AiModule,
             jwt_1.JwtModule.registerAsync({
                 inject: [config_1.ConfigService],
                 useFactory: (config) => ({

@@ -39,7 +39,7 @@
       }"
       @click="handleClick"
       @touchstart="onTouchStart"
-      @touchmove="onTouchMove"
+      @touchmove.stop.prevent="onTouchMove"
       @touchend="onTouchEnd"
     >
       <view class="absolute top-2 left-2 z-10">

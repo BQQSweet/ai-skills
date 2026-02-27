@@ -10,6 +10,13 @@
   },
   "pages": [
     {
+      "path": "pages/splash/index",
+      "style": {
+        "navigationBarTitleText": "ChefMate",
+        "navigationStyle": "custom"
+      }
+    },
+    {
       "path": "pages/login/index",
       "style": {
         "navigationBarTitleText": "登录",
@@ -34,6 +41,20 @@
       "path": "pages/index/index",
       "style": {
         "navigationBarTitleText": "ChefMate",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/fridge/ai-recipe",
+      "style": {
+        "navigationBarTitleText": "AI 灵感食谱",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/recipe/cooking-steps",
+      "style": {
+        "navigationBarTitleText": "完整烹饪步骤",
         "navigationStyle": "custom"
       }
     }

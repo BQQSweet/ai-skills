@@ -71,37 +71,27 @@
             <!-- 生产日期 -->
             <view class="flex flex-col gap-1.5">
               <text class="text-sm font-semibold text-slate-700">生产日期</text>
-              <picker
-                mode="date"
-                :value="form.production_date"
-                @change="form.production_date = $event.detail.value"
+              <view
+                class="h-14 px-5 bg-white border border-gray-100 rounded-[20rpx] flex items-center text-md"
+                :class="
+                  form.production_date ? 'text-slate-800' : 'text-gray-400'
+                "
+                @click="openPicker('production_date')"
               >
-                <view
-                  class="h-14 px-5 bg-white border border-gray-100 rounded-[20rpx] flex items-center text-md"
-                  :class="
-                    form.production_date ? 'text-slate-800' : 'text-gray-400'
-                  "
-                >
-                  {{ form.production_date || "请选择生产日期" }}
-                </view>
-              </picker>
+                {{ form.production_date || "请选择生产日期" }}
+              </view>
             </view>
 
             <!-- 过期日期 -->
             <view class="flex flex-col gap-1.5">
               <text class="text-sm font-semibold text-slate-700">过期日期</text>
-              <picker
-                mode="date"
-                :value="form.expire_date"
-                @change="form.expire_date = $event.detail.value"
+              <view
+                class="h-14 px-5 bg-white border border-gray-100 rounded-[20rpx] flex items-center text-md"
+                :class="form.expire_date ? 'text-slate-800' : 'text-gray-400'"
+                @click="openPicker('expire_date')"
               >
-                <view
-                  class="h-14 px-5 bg-white border border-gray-100 rounded-[20rpx] flex items-center text-md"
-                  :class="form.expire_date ? 'text-slate-800' : 'text-gray-400'"
-                >
-                  {{ form.expire_date || "请选择过期日期" }}
-                </view>
-              </picker>
+                {{ form.expire_date || "请选择过期日期" }}
+              </view>
             </view>
           </view>
         </scroll-view>
@@ -119,6 +109,14 @@
         </view>
       </view>
     </u-popup>
+
+    <up-datetime-picker
+      :show="showDatePicker"
+      v-model="pickerValue"
+      mode="date"
+      @confirm="onDatePickerConfirm"
+      @cancel="showDatePicker = false"
+    ></up-datetime-picker>
 
     <up-toast ref="uToastRef"></up-toast>
   </view>
@@ -160,6 +158,31 @@ const form = reactive({
   production_date: "",
   expire_date: "",
 });
+
+const showDatePicker = ref(false);
+const currentPickerField = ref<"production_date" | "expire_date">(
+  "expire_date",
+);
+const pickerValue = ref(Number(new Date()));
+
+const openPicker = (field: "production_date" | "expire_date") => {
+  currentPickerField.value = field;
+  if (form[field]) {
+    pickerValue.value = Number(new Date(form[field]));
+  } else {
+    pickerValue.value = Number(new Date());
+  }
+  showDatePicker.value = true;
+};
+
+const onDatePickerConfirm = (e: any) => {
+  const date = new Date(e.value);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  form[currentPickerField.value] = `${year}-${month}-${day}`;
+  showDatePicker.value = false;
+};
 
 // 当识别数据变化时，填充表单
 watch(

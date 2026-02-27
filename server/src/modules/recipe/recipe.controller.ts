@@ -49,6 +49,29 @@ export class RecipeController {
     return this.recipeService.recommend(userId);
   }
 
+  @Post('ai-generate')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: '基于给定食材生成 AI 食谱' })
+  async generateAiRecipe(
+    @Body()
+    body: {
+      ingredients: string[];
+      taste?: string;
+      mealType?: string;
+      servings?: number;
+    },
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.recipeService.generateAiRecipe(body, userId);
+  }
+
+  @Post('ask-step')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: '针对某一个烹饪步骤向 AI 提问' })
+  async askStep(@Body() body: import('./dto/ask-step.dto').AskStepDto) {
+    return this.recipeService.askStepQuestion(body);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: '获取食谱详情' })
   async findOne(@Param('id') id: string) {
