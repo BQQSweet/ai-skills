@@ -69,7 +69,7 @@ const greeting = computed(() => {
 
 const handleProfileClick = () => {
   // TODO: 跳转到个人信息页
-  uni.navigateTo({ url: "/pages/my/index" });
+  uni.navigateTo({ url: "/pages/profile/index" });
 };
 
 const handleNotification = () => {

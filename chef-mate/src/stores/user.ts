@@ -50,6 +50,27 @@ export const useUserStore = defineStore("user", () => {
     }
   }
 
+  // ========== Preferences ==========
+  const defaultPrefs = {
+    allergies: ["花生", "坚果"],
+    habits: ["vegetarian"],
+    dislikes: ["香菜", "折耳根", "苦瓜"],
+    taste: {
+      spicy: 66,
+      sweet: 50,
+      salty: 50,
+    },
+  };
+
+  const dietaryPreferences = ref(
+    JSON.parse(getStorage("DIETARY_PREFS") || JSON.stringify(defaultPrefs)),
+  );
+
+  function setDietaryPreferences(prefs: any) {
+    dietaryPreferences.value = prefs;
+    setStorage("DIETARY_PREFS", JSON.stringify(prefs));
+  }
+
   /** 退出登录 */
   function logout() {
     token.value = "";
@@ -72,8 +93,10 @@ export const useUserStore = defineStore("user", () => {
     isLoggedIn,
     userId,
     nickname,
+    dietaryPreferences,
     login,
     logout,
     setCurrentGroupId,
+    setDietaryPreferences,
   };
 });

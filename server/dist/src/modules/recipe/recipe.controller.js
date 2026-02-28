@@ -14,6 +14,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RecipeController = void 0;
 const common_1 = require("@nestjs/common");
+const platform_express_1 = require("@nestjs/platform-express");
 const swagger_1 = require("@nestjs/swagger");
 const recipe_service_1 = require("./recipe.service");
 const recipe_dto_1 = require("./dto/recipe.dto");
@@ -39,6 +40,21 @@ let RecipeController = class RecipeController {
     }
     async askStep(body) {
         return this.recipeService.askStepQuestion(body);
+    }
+    async generateVoice(body) {
+        if (!body.text) {
+            throw new common_1.BadRequestException('text is required');
+        }
+        return { audioBase64: await this.recipeService.generateTts(body.text) };
+    }
+    async parseIntent(body) {
+        if (!body.text) {
+            throw new common_1.BadRequestException('text is required');
+        }
+        return this.recipeService.parseCommandIntent(body.text);
+    }
+    async processVoiceCommand(file) {
+        return this.recipeService.processVoiceCommand(file);
     }
     async findOne(id) {
         return this.recipeService.findOne(id);
@@ -97,6 +113,54 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], RecipeController.prototype, "askStep", null);
+__decorate([
+    (0, common_1.Post)('tts'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiOperation)({ summary: '将给定的步骤文本转换为语音 (返回 Base64)' }),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], RecipeController.prototype, "generateVoice", null);
+__decorate([
+    (0, common_1.Post)('parse-intent'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiOperation)({ summary: '解析本地语音识别的文本指令意图' }),
+    (0, swagger_1.ApiBody)({
+        schema: {
+            type: 'object',
+            properties: {
+                text: { type: 'string' },
+            },
+        },
+    }),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], RecipeController.prototype, "parseIntent", null);
+__decorate([
+    (0, common_1.Post)('voice-command'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file')),
+    (0, swagger_1.ApiOperation)({ summary: '处理语音流，提取控制意图' }),
+    (0, swagger_1.ApiConsumes)('multipart/form-data'),
+    (0, swagger_1.ApiBody)({
+        schema: {
+            type: 'object',
+            properties: {
+                file: {
+                    type: 'string',
+                    format: 'binary',
+                },
+            },
+        },
+    }),
+    __param(0, (0, common_1.UploadedFile)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], RecipeController.prototype, "processVoiceCommand", null);
 __decorate([
     (0, common_1.Get)(':id'),
     (0, swagger_1.ApiOperation)({ summary: '获取食谱详情' }),

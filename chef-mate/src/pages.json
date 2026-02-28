@@ -57,6 +57,35 @@
         "navigationBarTitleText": "完整烹饪步骤",
         "navigationStyle": "custom"
       }
+    },
+    {
+      "path": "pages/recipe/cooking-guide",
+      "style": {
+        "navigationBarTitleText": "烹饪指引",
+        "navigationStyle": "custom",
+        "disableScroll": true
+      }
+    },
+    {
+      "path": "pages/profile/index",
+      "style": {
+        "navigationBarTitleText": "个人中心",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/profile/speech-language",
+      "style": {
+        "navigationBarTitleText": "语音设置",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/profile/dietary-preferences",
+      "style": {
+        "navigationBarTitleText": "饮食偏好设置",
+        "navigationStyle": "custom"
+      }
     }
   ],
   "tabBar": {
@@ -82,6 +111,12 @@
         "iconPath": "static/logo.png",
         "selectedIconPath": "static/logo.png",
         "text": "指引"
+      },
+      {
+        "pagePath": "pages/profile/index",
+        "iconPath": "static/logo.png",
+        "selectedIconPath": "static/logo.png",
+        "text": "我的"
       }
     ]
   },

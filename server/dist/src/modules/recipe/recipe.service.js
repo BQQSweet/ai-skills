@@ -8,14 +8,16 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var RecipeService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RecipeService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../common/prisma.service");
 const ai_service_1 = require("../../ai/ai.service");
-let RecipeService = class RecipeService {
+let RecipeService = RecipeService_1 = class RecipeService {
     prisma;
     aiService;
+    logger = new common_1.Logger(RecipeService_1.name);
     constructor(prisma, aiService) {
         this.prisma = prisma;
         this.aiService = aiService;
@@ -48,6 +50,9 @@ let RecipeService = class RecipeService {
     }
     async askStepQuestion(dto) {
         return this.aiService.answerStepQuestion(dto);
+    }
+    async generateTts(text) {
+        return this.aiService.generateSpeech(text);
     }
     async create(dto, userId) {
         return this.prisma.recipe.create({
@@ -186,9 +191,40 @@ let RecipeService = class RecipeService {
             return rest;
         });
     }
+    async processVoiceCommand(file) {
+        if (!file || !file.buffer) {
+            throw new common_1.BadRequestException('未接收到有效的音频文件');
+        }
+        try {
+            this.logger.log(`Received voice command audio, size: ${file.size} bytes`);
+            const transcribedText = await this.aiService.transcribeAudio(file);
+            this.logger.log(`Transcribed text: ${transcribedText}`);
+            if (!transcribedText || transcribedText.trim() === '') {
+                return { command: 'UNKNOWN', confidence: 1, original_text: '' };
+            }
+            const intent = await this.aiService.parseCommandIntent(transcribedText);
+            return intent;
+        }
+        catch (error) {
+            this.logger.error('Failed to process voice command', error);
+            throw new common_1.BadRequestException('语音指令处理失败');
+        }
+    }
+    async parseCommandIntent(text) {
+        try {
+            if (!text || text.trim() === '') {
+                return { command: 'UNKNOWN', confidence: 1, original_text: '' };
+            }
+            return await this.aiService.parseCommandIntent(text);
+        }
+        catch (error) {
+            this.logger.error('Failed to parse intent', error);
+            throw new common_1.BadRequestException('文本意图解析失败');
+        }
+    }
 };
 exports.RecipeService = RecipeService;
-exports.RecipeService = RecipeService = __decorate([
+exports.RecipeService = RecipeService = RecipeService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
         ai_service_1.AiService])

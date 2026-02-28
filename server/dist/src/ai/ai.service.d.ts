@@ -28,4 +28,11 @@ export declare class AiService {
         content: string;
     }>): AsyncGenerator<string>;
     vision(imageBase64: string, prompt: string): Promise<string>;
+    generateSpeech(text: string): Promise<string>;
+    transcribeAudio(file: Express.Multer.File): Promise<string>;
+    parseCommandIntent(text: string): Promise<{
+        command: string;
+        confidence: number;
+        original_text: string;
+    }>;
 }

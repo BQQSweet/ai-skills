@@ -8,8 +8,18 @@ import {
   Param,
   Query,
   UseGuards,
+  BadRequestException,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiBody,
+} from '@nestjs/swagger';
 import { RecipeService } from './recipe.service';
 import {
   CreateRecipeDto,
@@ -70,6 +80,54 @@ export class RecipeController {
   @ApiOperation({ summary: '针对某一个烹饪步骤向 AI 提问' })
   async askStep(@Body() body: import('./dto/ask-step.dto').AskStepDto) {
     return this.recipeService.askStepQuestion(body);
+  }
+
+  @Post('tts')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: '将给定的步骤文本转换为语音 (返回 Base64)' })
+  async generateVoice(@Body() body: { text: string }) {
+    if (!body.text) {
+      throw new BadRequestException('text is required');
+    }
+    return { audioBase64: await this.recipeService.generateTts(body.text) };
+  }
+
+  @Post('parse-intent')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: '解析本地语音识别的文本指令意图' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        text: { type: 'string' },
+      },
+    },
+  })
+  async parseIntent(@Body() body: { text: string }) {
+    if (!body.text) {
+      throw new BadRequestException('text is required');
+    }
+    return this.recipeService.parseCommandIntent(body.text);
+  }
+
+  @Post('voice-command')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiOperation({ summary: '处理语音流，提取控制意图' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  async processVoiceCommand(@UploadedFile() file: Express.Multer.File) {
+    return this.recipeService.processVoiceCommand(file);
   }
 
   @Get(':id')

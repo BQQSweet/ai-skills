@@ -17,6 +17,7 @@ exports.AiService = void 0;
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const openai_1 = __importDefault(require("openai"));
+const FormData = require("form-data");
 let AiService = AiService_1 = class AiService {
     config;
     logger = new common_1.Logger(AiService_1.name);
@@ -212,6 +213,135 @@ let AiService = AiService_1 = class AiService {
         catch (e) {
             this.logger.error('AI vision error', e);
             throw e;
+        }
+    }
+    async generateSpeech(text) {
+        const appId = this.config.get('AI_SPEECH_APP_ID');
+        const token = this.config.get('AI_SPEECH_ACCESS_TOKEN');
+        const baseUrl = this.config.get('AI_SPEECH_BASE_URL');
+        if (!appId || !token || !baseUrl) {
+            throw new common_1.BadRequestException('Speech Service is not fully configured');
+        }
+        try {
+            const axios = require('axios');
+            const payload = {
+                user: {
+                    uid: 'chefmate_user',
+                },
+                req_params: {
+                    text: text,
+                    speaker: 'zh_female_santongyongns_saturn_bigtts',
+                    audio_params: {
+                        format: 'mp3',
+                    },
+                },
+            };
+            const res = await axios.post(baseUrl, payload, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Api-App-Id': appId,
+                    'X-Api-Access-Key': token,
+                    'X-Api-Resource-Id': 'seed-tts-2.0',
+                },
+                responseType: 'arraybuffer',
+            });
+            const bufferStr = Buffer.from(res.data).toString('utf8');
+            const lines = bufferStr.split('\n').filter((line) => line.trim() !== '');
+            const audioBuffers = [];
+            for (const line of lines) {
+                try {
+                    const parsed = JSON.parse(line);
+                    if (parsed.data) {
+                        audioBuffers.push(Buffer.from(parsed.data, 'base64'));
+                    }
+                }
+                catch (err) {
+                }
+            }
+            if (audioBuffers.length > 0) {
+                return Buffer.concat(audioBuffers).toString('base64');
+            }
+            this.logger.error(`TTS API returned unexpected structure: ${bufferStr}`);
+            throw new common_1.BadRequestException('语音生成异常，请稍后再试');
+        }
+        catch (error) {
+            this.logger.error(`Failed to generate speech: ${error.message}`, error.response?.data || error.stack);
+            throw new common_1.BadRequestException('语音生成请求失败');
+        }
+    }
+    async transcribeAudio(file) {
+        const apiKey = this.config.get('AI_SILICONFLOW_API_KEY');
+        const model = this.config.get('AI_SILICONFLOW_MODEL') ||
+            'FunAudioLLM/SenseVoiceSmall';
+        const baseUrl = this.config.get('AI_SILICONFLOW_BASE_URL') ||
+            'https://api.siliconflow.cn/v1/audio/transcriptions';
+        if (!apiKey) {
+            throw new common_1.BadRequestException('SiliconFlow API Key is not configured in .env');
+        }
+        try {
+            const axios = require('axios');
+            const form = new FormData();
+            form.append('file', file.buffer, {
+                filename: file.originalname || 'audio.mp3',
+                contentType: file.mimetype || 'audio/mpeg',
+            });
+            form.append('model', model);
+            const res = await axios.post(baseUrl, form, {
+                headers: {
+                    Authorization: `Bearer ${apiKey}`,
+                },
+            });
+            if (res.data && res.data.text) {
+                return res.data.text;
+            }
+            this.logger.error(`SiliconFlow ASR returned unexpected format: ${JSON.stringify(res.data)}`);
+            throw new common_1.BadRequestException('语音识别返回格式异常');
+        }
+        catch (error) {
+            this.logger.error(`Failed to transcribe audio: ${error.message}`, error.response?.data || error.stack);
+            throw new common_1.BadRequestException('语音识别请求失败');
+        }
+    }
+    async parseCommandIntent(text) {
+        if (!this.openai) {
+            throw new common_1.BadRequestException('AI Service is not fully configured');
+        }
+        const modelOptions = this.config.get('AI_MODEL') || 'deepseek-chat';
+        const systemPrompt = `
+      你是一个专门解析厨房烹饪语音指令的智能助手。
+      用户正在照着菜谱做菜时按住了语音按钮并说了一句话，这段话已被系统转为了文本。
+      请分析用户的意图，并必须返回固定的 JSON 格式。返回的 command 必须是以下之一：
+      - "NEXT" : 去下一页、进行下一步、完成、好的、跳过
+      - "PREV" : 上一步、回退、看前面的
+      - "START_TIMER" || "PAUSE_TIMER" : 开始计时、暂停计时、计时、停一下
+      - "QUESTION" : 用户没有发出以上指令，而是在提问（如“豆瓣酱放多少？”）
+      - "UNKNOWN" : 杂音、没有意义的短语、或者无法判断的意图
+
+      输出 JSON 格式要求：
+      {
+        "command": "NEXT", // 必须在枚举值内
+        "confidence": 0.95, // 置信度 0-1
+        "original_text": "刚才用户说的完整原话"
+      }
+      请绝对不要包含 markdown 代码块和额外解释，只输出原始 JSON 即可。
+    `;
+        try {
+            const completion = await this.openai.chat.completions.create({
+                messages: [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: `用户的语音转写结果是：\n"${text}"` },
+                ],
+                model: modelOptions,
+                response_format: { type: 'json_object' },
+                temperature: 0.1,
+            });
+            const responseContent = completion.choices[0].message.content;
+            this.logger.debug(`Intent parsing response: ${responseContent}`);
+            return JSON.parse(responseContent || '{}');
+        }
+        catch (error) {
+            this.logger.error(`Failed to parse command intent: ${error.message}`, error.stack);
+            throw new common_1.BadRequestException('语义解析失败，请稍后重试');
         }
     }
 };

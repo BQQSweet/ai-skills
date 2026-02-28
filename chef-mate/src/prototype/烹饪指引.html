@@ -1,0 +1,210 @@
+<!doctype html>
+
+<html class="dark" lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#ff9d0a",
+              "background-light": "#f8f7f5",
+              "background-dark": "#0a0a0a",
+            },
+            fontFamily: {
+              display: ["Plus Jakarta Sans", "Noto Sans SC", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "1rem",
+              lg: "2rem",
+              xl: "3rem",
+              full: "9999px",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .steam-gradient {
+        background: radial-gradient(
+          circle at 50% 120%,
+          rgba(255, 157, 10, 0.08) 0%,
+          rgba(10, 10, 10, 0) 70%
+        );
+      }
+      .voice-wave {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+      }
+      .wave-bar {
+        width: 3px;
+        background-color: #ff9d0a;
+        border-radius: 99px;
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-background-light dark:bg-background-dark font-display text-white selection:bg-primary/30 overflow-hidden"
+  >
+    <!-- Main Container -->
+    <div
+      class="relative flex h-screen w-full flex-col bg-background-light dark:bg-background-dark steam-gradient"
+    >
+      <!-- Header Navigation -->
+      <header class="flex items-center justify-between p-6 pt-12">
+        <button
+          class="flex items-center gap-1 text-white/60 hover:text-white transition-colors"
+        >
+          <span class="material-symbols-outlined text-2xl">close</span>
+          <span class="text-lg font-medium">退出</span>
+        </button>
+        <div class="flex flex-col items-center gap-2">
+          <span class="text-primary text-xl font-bold tracking-widest"
+            >1 / 8</span
+          >
+          <div class="w-32 h-1.5 bg-white/10 rounded-full overflow-hidden">
+            <div
+              class="h-full bg-primary rounded-full"
+              style="width: 12.5%"
+            ></div>
+          </div>
+        </div>
+        <button
+          class="flex items-center gap-1 text-primary hover:text-primary/80 transition-colors"
+        >
+          <span class="text-lg font-bold">上一步</span>
+          <span class="material-symbols-outlined text-2xl">chevron_right</span>
+        </button>
+      </header>
+      <!-- Main Content Area -->
+      <main class="flex-1 flex flex-col items-center justify-between px-6 py-4">
+        <!-- Instruction Card (60% Height Design) -->
+        <div
+          class="w-full h-[55%] bg-white rounded-xl p-8 flex flex-col items-center justify-center text-center shadow-2xl shadow-primary/10 relative overflow-hidden"
+        >
+          <!-- Instruction Text -->
+          <h1
+            class="text-[#1a1a1a] text-4xl md:text-5xl font-black leading-tight tracking-tight mb-8"
+          >
+            第一步：下入排骨，大火煎至两面金黄
+          </h1>
+          <!-- Voice Feedback Icon -->
+          <div
+            class="flex items-center gap-4 bg-primary/10 px-6 py-3 rounded-full"
+          >
+            <div class="voice-wave h-6">
+              <div class="wave-bar h-3"></div>
+              <div class="wave-bar h-5"></div>
+              <div class="wave-bar h-4"></div>
+              <div class="wave-bar h-6"></div>
+              <div class="wave-bar h-3"></div>
+            </div>
+            <span class="text-primary font-bold text-lg">正在聆听指令...</span>
+          </div>
+          <!-- Subtle Decorative Element -->
+          <div
+            class="absolute -bottom-10 -right-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl"
+          ></div>
+        </div>
+        <!-- Timer & Control Section -->
+        <div
+          class="flex-1 w-full flex flex-col items-center justify-center gap-8 py-6"
+        >
+          <!-- Giant Circular Timer -->
+          <div class="relative flex items-center justify-center">
+            <!-- Progress Ring (SVG) -->
+            <svg class="w-64 h-64 -rotate-90">
+              <circle
+                class="text-white/5"
+                cx="128"
+                cy="128"
+                fill="transparent"
+                r="120"
+                stroke="currentColor"
+                stroke-width="8"
+              ></circle>
+              <circle
+                class="text-primary"
+                cx="128"
+                cy="128"
+                fill="transparent"
+                r="120"
+                stroke="currentColor"
+                stroke-dasharray="753.6"
+                stroke-dashoffset="188.4"
+                stroke-width="8"
+              ></circle>
+            </svg>
+            <!-- Timer Text & Play Button Container -->
+            <div
+              class="absolute inset-0 flex flex-col items-center justify-center gap-2"
+            >
+              <span class="text-6xl font-black tracking-tighter text-white"
+                >03:00</span
+              >
+              <button
+                class="mt-2 w-20 h-20 bg-primary rounded-full flex items-center justify-center shadow-lg shadow-primary/40 active:scale-95 transition-transform"
+              >
+                <span
+                  class="material-symbols-outlined text-background-dark text-5xl fill-1"
+                  >play_arrow</span
+                >
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+      <!-- Fixed Bottom Action Button -->
+      <footer class="p-6 pb-12">
+        <button
+          class="w-full bg-primary hover:bg-primary/90 text-background-dark text-2xl font-black py-6 rounded-xl shadow-xl shadow-primary/20 transition-all flex items-center justify-center gap-3 active:scale-[0.98]"
+        >
+          <span>下一步</span>
+          <span class="material-symbols-outlined text-3xl font-bold"
+            >arrow_forward</span
+          >
+        </button>
+      </footer>
+      <!-- Background Steam/Smoke Effect (Visual Decoration) -->
+      <div
+        class="absolute top-0 left-0 w-full h-full pointer-events-none opacity-20 overflow-hidden -z-10"
+      >
+        <div
+          class="absolute top-[20%] -left-[10%] w-[120%] h-[60%] bg-gradient-to-b from-transparent via-white/5 to-transparent blur-3xl transform rotate-12"
+        ></div>
+        <div
+          class="absolute top-[40%] -right-[10%] w-[100%] h-[40%] bg-gradient-to-t from-transparent via-primary/5 to-transparent blur-3xl transform -rotate-6"
+        ></div>
+      </div>
+    </div>
+    <!-- Image for Context (Not rendered directly but for metadata) -->
+    <div class="hidden">
+      <img
+        data-alt="Close up of sizzling golden brown pork ribs in a pan"
+        src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrei8UCfE-R26U1U-KAW1WFJH2DsXZnmeoSKFx5jqsluA-nfPGrPw7iey3GSp6BCKQydu_zW0tNj78DV3GK7z9hKmaVoqEtx2anjCkMqAwYf1GROfpVX1n7iUEwHBaMQ73ANI0eFLmLSkbhnD5eNJIZTNhUFcMAALLJsQ73ZYorYbDgsH3ZR8QffYATjTvTQ1tuJi4owNuKfAhmRKKc2M1rYviJ2X237iWBG7dAuNREV5VAbLeziQEOd-hgR5AK5uQSu-sGRa5jPO3"
+      />
+    </div>
+  </body>
+</html>

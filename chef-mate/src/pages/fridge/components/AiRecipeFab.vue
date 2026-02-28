@@ -6,6 +6,7 @@
       class="absolute inset-0 bg-gradient-to-t from-background-light dark:from-background-dark via-background-light/95 dark:via-background-dark/95 to-transparent -z-10 h-32 bottom-0"
     ></view>
     <button
+      @click="$emit('start')"
       class="bg-primary text-white w-full max-w-sm h-14 rounded-full shadow-[0_10px_20px_-5px_rgba(255,159,10,0.4)] flex items-center justify-center gap-3 active:scale-[0.98] transition-transform m-0 after:hidden pointer-events-auto border-none mb-6 relative overflow-hidden"
     >
       <!-- Shine effect -->
@@ -33,7 +34,11 @@
   </view>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+defineEmits<{
+  (e: "start"): void;
+}>();
+</script>
 
 <style scoped>
 .pb-safe {

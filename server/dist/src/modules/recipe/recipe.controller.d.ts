@@ -75,6 +75,23 @@ export declare class RecipeController {
         servings?: number;
     }, userId: string): Promise<any>;
     askStep(body: import('./dto/ask-step.dto').AskStepDto): Promise<string>;
+    generateVoice(body: {
+        text: string;
+    }): Promise<{
+        audioBase64: string;
+    }>;
+    parseIntent(body: {
+        text: string;
+    }): Promise<{
+        command: string;
+        confidence: number;
+        original_text: string;
+    }>;
+    processVoiceCommand(file: Express.Multer.File): Promise<{
+        command: string;
+        confidence: number;
+        original_text: string;
+    }>;
     findOne(id: string): Promise<{
         id: string;
         created_at: Date;

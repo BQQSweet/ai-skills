@@ -86,6 +86,7 @@
         class="absolute inset-0 bg-gradient-to-t from-background-light dark:from-background-dark via-background-light/95 dark:via-background-dark/95 to-transparent -z-10 h-40 bottom-0 pointer-events-none"
       ></view>
       <button
+        @click="startGuide"
         class="m-0 pointer-events-auto bg-primary text-white w-full max-w-sm h-14 rounded-full shadow-[0_8px_25px_rgba(255,159,10,0.3)] flex items-center justify-center gap-3 text-lg font-bold active:scale-[0.97] transition-all group relative overflow-hidden after:hidden border-none text-[17px]"
       >
         <view
@@ -297,6 +298,12 @@ const submitQuestion = async () => {
 
 const goBack = () => {
   uni.navigateBack();
+};
+
+const startGuide = () => {
+  uni.navigateTo({
+    url: "/pages/recipe/cooking-guide",
+  });
 };
 </script>
 

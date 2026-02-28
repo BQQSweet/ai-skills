@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  Logger,
+} from '@nestjs/common';
 import { PrismaService } from '@/common/prisma.service';
 import { AiService } from '@/ai/ai.service';
 import {
@@ -9,6 +14,8 @@ import {
 
 @Injectable()
 export class RecipeService {
+  private readonly logger = new Logger(RecipeService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly aiService: AiService,
@@ -59,6 +66,10 @@ export class RecipeService {
 
   async askStepQuestion(dto: import('./dto/ask-step.dto').AskStepDto) {
     return this.aiService.answerStepQuestion(dto);
+  }
+
+  async generateTts(text: string) {
+    return this.aiService.generateSpeech(text);
   }
 
   /**
@@ -242,5 +253,51 @@ export class RecipeService {
       const { _score, ...rest } = r;
       return rest;
     });
+  }
+
+  /**
+   * 处理从前端过来的语音指令
+   */
+  async processVoiceCommand(
+    file: Express.Multer.File,
+  ): Promise<{ command: string; confidence: number; original_text: string }> {
+    if (!file || !file.buffer) {
+      throw new BadRequestException('未接收到有效的音频文件');
+    }
+
+    try {
+      this.logger.log(`Received voice command audio, size: ${file.size} bytes`);
+      // 1. 将音频流交给 DashScope 进行转写
+      const transcribedText = await this.aiService.transcribeAudio(file);
+      this.logger.log(`Transcribed text: ${transcribedText}`);
+
+      if (!transcribedText || transcribedText.trim() === '') {
+        return { command: 'UNKNOWN', confidence: 1, original_text: '' };
+      }
+
+      // 2. 将转写文本交给 DeepSeek 提取固定操作意图
+      const intent = await this.aiService.parseCommandIntent(transcribedText);
+      return intent;
+    } catch (error) {
+      this.logger.error('Failed to process voice command', error);
+      throw new BadRequestException('语音指令处理失败');
+    }
+  }
+
+  /**
+   * 仅解析指令意图（用于前端端侧或 H5 离线识别后）
+   */
+  async parseCommandIntent(
+    text: string,
+  ): Promise<{ command: string; confidence: number; original_text: string }> {
+    try {
+      if (!text || text.trim() === '') {
+        return { command: 'UNKNOWN', confidence: 1, original_text: '' };
+      }
+      return await this.aiService.parseCommandIntent(text);
+    } catch (error) {
+      this.logger.error('Failed to parse intent', error);
+      throw new BadRequestException('文本意图解析失败');
+    }
   }
 }

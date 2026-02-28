@@ -12,9 +12,20 @@ export const useRecipeStore = defineStore("recipe", () => {
     currentRecipe.value = null;
   };
 
+  const speechLanguage = ref<string>(
+    uni.getStorageSync("speechLanguage") || "zh-cn",
+  );
+
+  const setSpeechLanguage = (lang: string) => {
+    speechLanguage.value = lang;
+    uni.setStorageSync("speechLanguage", lang);
+  };
+
   return {
     currentRecipe,
+    speechLanguage,
     setCurrentRecipe,
     clearCurrentRecipe,
+    setSpeechLanguage,
   };
 });

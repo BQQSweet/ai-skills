@@ -89,7 +89,7 @@ const tabList = ref([
   { text: "菜单", icon: "menu_book", path: "/pages/menu/index" },
   { text: "发布", icon: "add", path: "" }, // 占位
   { text: "冰箱", icon: "kitchen", path: "/pages/fridge/index" },
-  { text: "我的", icon: "person", path: "/pages/my/index" },
+  { text: "我的", icon: "person", path: "/pages/profile/index" },
 ]);
 
 const switchTab = (index: number, item: any) => {

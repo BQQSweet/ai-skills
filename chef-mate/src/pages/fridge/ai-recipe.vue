@@ -44,7 +44,7 @@
     </scroll-view>
 
     <!-- Fixed Bottom Action Bar -->
-    <AiRecipeFab />
+    <AiRecipeFab @start="startCookingVoice" />
 
     <!-- 全局提示 (加载/错误) -->
     <CmToast ref="uToastRef" />
@@ -56,6 +56,7 @@ import { ref } from "vue";
 import { onLoad } from "@dcloudio/uni-app";
 import CmToast from "@/components/CmToast/CmToast.vue";
 import { generateAiRecipe } from "@/services/recipe";
+import { useRecipeStore } from "@/stores/recipe";
 
 import AiRecipeHeader from "./components/AiRecipeHeader.vue";
 import AiRecipeIngredients from "./components/AiRecipeIngredients.vue";
@@ -125,6 +126,14 @@ const goBack = () => {
     fail: () => {
       uni.switchTab({ url: "/pages/fridge/index" });
     },
+  });
+};
+
+const startCookingVoice = () => {
+  if (isLoading.value || !recipeData.value) return;
+  useRecipeStore().setCurrentRecipe(recipeData.value);
+  uni.navigateTo({
+    url: "/pages/recipe/cooking-guide",
   });
 };
 </script>

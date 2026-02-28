@@ -4,6 +4,7 @@ import { CreateRecipeDto, UpdateRecipeDto, QueryRecipeDto } from './dto/recipe.d
 export declare class RecipeService {
     private readonly prisma;
     private readonly aiService;
+    private readonly logger;
     constructor(prisma: PrismaService, aiService: AiService);
     generateAiRecipe(params: {
         ingredients: string[];
@@ -12,6 +13,7 @@ export declare class RecipeService {
         servings?: number;
     }, userId?: string): Promise<any>;
     askStepQuestion(dto: import('./dto/ask-step.dto').AskStepDto): Promise<string>;
+    generateTts(text: string): Promise<string>;
     create(dto: CreateRecipeDto, userId?: string): Promise<{
         id: string;
         created_at: Date;
@@ -137,4 +139,14 @@ export declare class RecipeService {
         source_url: string | null;
         created_by: string | null;
     }[]>;
+    processVoiceCommand(file: Express.Multer.File): Promise<{
+        command: string;
+        confidence: number;
+        original_text: string;
+    }>;
+    parseCommandIntent(text: string): Promise<{
+        command: string;
+        confidence: number;
+        original_text: string;
+    }>;
 }
