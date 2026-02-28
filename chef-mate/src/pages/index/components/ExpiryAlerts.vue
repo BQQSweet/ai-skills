@@ -41,7 +41,7 @@
           <view class="w-2 h-2 rounded-full" :class="item.dotColor"></view>
         </view>
         <!-- Icon -->
-        <view
+        <!-- <view
           class="w-10 h-10 rounded-xl flex items-center justify-center"
           :class="item.iconBg"
         >
@@ -50,7 +50,7 @@
             :class="item.iconColor"
             >{{ item.icon }}</text
           >
-        </view>
+        </view> -->
         <!-- Text -->
         <view>
           <text
@@ -84,41 +84,107 @@ export interface ExpiryAlert {
 
 const props = withDefaults(
   defineProps<{
-    alerts?: ExpiryAlert[];
+    items?: any[];
   }>(),
   {
-    alerts: () => [
+    items: () => [],
+  },
+);
+
+// Map items to alerts based on expiry logic
+const alerts = computed<ExpiryAlert[]>(() => {
+  if (!props.items || props.items.length === 0) {
+    return [
       {
-        icon: "set_meal",
-        title: "肉类即将到期",
-        subtitle: "请尽快使用",
-        iconBg: "bg-red-50 dark:bg-red-900/20",
-        iconColor: "text-red-500",
-        dotColor: "bg-red-500",
-        subtitleColor: "text-red-500",
-      },
-      {
-        icon: "eco",
-        title: "蔬菜存放3天",
-        subtitle: "建议尽快烹饪",
-        iconBg: "bg-orange-50 dark:bg-orange-900/20",
-        iconColor: "text-amber-500",
-        dotColor: "bg-amber-500",
-      },
-      {
-        icon: "egg",
-        title: "鸡蛋库存充足",
-        subtitle: "保质期良好",
+        icon: "inventory_2",
+        title: "冰箱暂无食材",
+        subtitle: "快去录入吧",
         iconBg: "bg-gray-50 dark:bg-gray-800",
         iconColor: "text-gray-400",
         dimmed: true,
       },
-    ],
-  },
-);
+    ];
+  }
+
+  // Calculate days difference
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  const processed: ExpiryAlert[] = [];
+
+  for (const item of props.items) {
+    const expireDate = new Date(item.expire_date);
+    const expDay = new Date(
+      expireDate.getFullYear(),
+      expireDate.getMonth(),
+      expireDate.getDate(),
+    );
+    const diffTime = expDay.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    const createdDate = new Date(item.created_at || now);
+    const storedTime =
+      today.getTime() -
+      new Date(
+        createdDate.getFullYear(),
+        createdDate.getMonth(),
+        createdDate.getDate(),
+      ).getTime();
+    const storedDays = Math.floor(storedTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0 || item.status === "expired") {
+      processed.push({
+        icon: "set_meal",
+        title: `${item.name}已过期`,
+        subtitle: "建议立即清理",
+        iconBg: "bg-red-50 dark:bg-red-900/20",
+        iconColor: "text-red-500",
+        dotColor: "bg-red-500",
+        subtitleColor: "text-red-500",
+        days: diffDays,
+      } as ExpiryAlert & { days: number });
+    } else if (diffDays <= 3 || item.status === "expiring") {
+      processed.push({
+        icon: "eco",
+        title: `${item.name}即将到期`,
+        subtitle: `剩余 ${diffDays} 天`,
+        iconBg: "bg-orange-50 dark:bg-orange-900/20",
+        iconColor: "text-amber-500",
+        dotColor: "bg-amber-500",
+        days: diffDays,
+      } as ExpiryAlert & { days: number });
+    } else if (storedDays >= 3) {
+      processed.push({
+        icon: "kitchen",
+        title: `${item.name}存放较久`,
+        subtitle: `已存放 ${storedDays} 天`,
+        iconBg: "bg-blue-50 dark:bg-blue-900/20",
+        iconColor: "text-blue-500",
+        dotColor: "bg-blue-500",
+        days: diffDays, // Use diffDays for sorting priority (expiring > stored long)
+      } as ExpiryAlert & { days: number });
+    }
+  }
+
+  if (processed.length === 0) {
+    return [
+      {
+        icon: "eco",
+        title: "全部食材保鲜中",
+        subtitle: "继续保持哦",
+        iconBg: "bg-green-50 dark:bg-green-900/20",
+        iconColor: "text-green-500",
+        dimmed: true,
+      },
+    ];
+  }
+
+  // Sort by urgency: shortest days first
+  return processed.sort((a: any, b: any) => a.days - b.days);
+});
 
 const hasUrgent = computed(() =>
-  props.alerts.some((a) => a.dotColor?.includes("red")),
+  alerts.value.some((a) => a.dotColor?.includes("red")),
 );
 
 const handleViewAll = () => {
@@ -127,8 +193,8 @@ const handleViewAll = () => {
 };
 
 const handleAlertClick = (alert: ExpiryAlert) => {
-  // TODO: 跳转到对应食材详情
-  uni.$u.toast(`${alert.title}（开发中）`);
+  // Try to redirect to fridge root since we don't have individual detail pages
+  uni.switchTab({ url: "/pages/fridge/index" });
 };
 </script>
 

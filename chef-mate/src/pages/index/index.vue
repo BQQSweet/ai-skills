@@ -27,7 +27,7 @@
         <text class="text-sm text-gray-400">正在为您推荐今日菜单...</text>
       </view>
 
-      <ExpiryAlerts />
+      <ExpiryAlerts :items="fridgeItems" />
       <FamilyFeed />
       <!-- Safe Area Spacing + Tab bar height -->
       <view class="h-10"></view>
@@ -48,6 +48,7 @@ import FamilyFeed from "./components/FamilyFeed.vue";
 import CmTabBar from "@/components/CmTabBar/CmTabBar.vue";
 import { useUserStore } from "@/stores/user";
 import { getRecommendedRecipes, type Recipe } from "@/services/recipe";
+import { getFridgeItems } from "@/services/fridge";
 
 const userStore = useUserStore();
 
@@ -59,12 +60,24 @@ const avatarUrl = computed(() => userStore.userInfo?.avatarUrl);
 const recommendedRecipes = ref<Recipe[]>([]);
 const mealTag = ref("今日推荐");
 
+// 冰箱食材
+const fridgeItems = ref<any[]>([]);
+
 onShow(async () => {
   try {
-    const res = await getRecommendedRecipes();
-    if (res && res.length > 0) {
+    const [recipeRes, fridgeRes] = await Promise.all([
+      getRecommendedRecipes(),
+      getFridgeItems(),
+    ]);
+
+    // Assigned fridge data to ref
+    if (fridgeRes) {
+      fridgeItems.value = (fridgeRes as any).data || fridgeRes;
+    }
+
+    if (recipeRes && recipeRes.length > 0) {
       // 传递整个数组给轮播组件
-      recommendedRecipes.value = res;
+      recommendedRecipes.value = recipeRes;
 
       // 简单的时间段处理标签
       const hour = new Date().getHours();

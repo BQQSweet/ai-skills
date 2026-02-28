@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>ChefMate - 过期预警全部列表</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Noto+Sans+SC:wght@400;500;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#FF9F0A",
+              "background-base": "#FAFAFA",
+              "surface-light": "#ffffff",
+              "text-main": "#1d160c",
+              "text-sub": "#a17c45",
+              "danger-soft": "#FEF2F2",
+              "danger-border": "#FEE2E2",
+              "danger-text": "#EF4444",
+              "warning-soft": "#FFFBEB",
+              "warning-border": "#FEF3C7",
+              "warning-text": "#D97706",
+            },
+            fontFamily: {
+              display: ["Plus Jakarta Sans", "Noto Sans SC", "sans-serif"],
+              body: ["Noto Sans SC", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "1rem",
+              lg: "1.5rem",
+              xl: "2rem",
+            },
+            boxShadow: {
+              soft: "0 4px 20px -2px rgba(29, 22, 12, 0.04)",
+              glow: "0 4px 20px -2px rgba(255, 159, 10, 0.2)",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      body {
+        font-family: "Plus Jakarta Sans", "Noto Sans SC", sans-serif;
+        -webkit-font-smoothing: antialiased;
+        background-color: #fafafa;
+      }
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+      .sticky-bottom-fade {
+        background: linear-gradient(to top, #fafafa 80%, transparent);
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body class="bg-background-base text-text-main">
+    <div
+      class="relative flex min-h-screen w-full flex-col mx-auto max-w-md bg-background-base shadow-2xl overflow-hidden border-x border-slate-100"
+    >
+      <header
+        class="sticky top-0 z-30 bg-background-base/80 backdrop-blur-lg px-6 pt-12 pb-4"
+      >
+        <div class="flex items-center justify-between mb-6">
+          <button
+            class="size-10 rounded-full flex items-center justify-center hover:bg-slate-100 transition-colors"
+          >
+            <span class="material-symbols-outlined text-text-main"
+              >arrow_back_ios_new</span
+            >
+          </button>
+          <h1 class="text-xl font-bold tracking-tight text-text-main">
+            过期预警
+          </h1>
+          <div class="size-10"></div>
+        </div>
+        <div class="relative group">
+          <span
+            class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-text-sub text-[20px]"
+            >search</span
+          >
+          <input
+            class="w-full bg-white border-none rounded-2xl py-3 pl-12 pr-4 text-sm shadow-soft focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-text-sub/50"
+            placeholder="搜索食材名称..."
+            type="text"
+          />
+        </div>
+        <div class="flex gap-2 mt-6 overflow-x-auto no-scrollbar">
+          <button
+            class="whitespace-nowrap px-5 py-2 rounded-full bg-primary text-white text-sm font-bold shadow-glow"
+          >
+            已过期 (4)
+          </button>
+          <button
+            class="whitespace-nowrap px-5 py-2 rounded-full bg-white text-text-sub text-sm font-medium hover:bg-orange-50 transition-colors"
+          >
+            即将到期 (12)
+          </button>
+          <button
+            class="whitespace-nowrap px-5 py-2 rounded-full bg-white text-text-sub text-sm font-medium hover:bg-orange-50 transition-colors"
+          >
+            新鲜 (28)
+          </button>
+        </div>
+      </header>
+      <main class="flex-1 px-6 pb-32 overflow-y-auto no-scrollbar space-y-4">
+        <div class="space-y-3">
+          <div class="flex items-center justify-between px-1">
+            <span
+              class="text-xs font-bold text-danger-text uppercase tracking-wider"
+              >已过期</span
+            >
+          </div>
+          <div
+            class="bg-danger-soft border border-danger-border rounded-2xl p-4 flex gap-4 relative overflow-hidden group"
+          >
+            <div
+              class="size-14 rounded-xl bg-white flex items-center justify-center shadow-sm"
+            >
+              <span class="material-symbols-outlined text-danger-text text-3xl"
+                >set_meal</span
+              >
+            </div>
+            <div class="flex-1">
+              <div class="flex justify-between items-start">
+                <div>
+                  <h3 class="font-bold text-text-main">澳洲黑安格斯和牛</h3>
+                  <p class="text-[10px] text-text-sub mt-0.5">剩余：约 450g</p>
+                </div>
+                <span
+                  class="text-[11px] font-bold text-danger-text bg-white px-2 py-0.5 rounded-full shadow-sm"
+                  >已过期 2 天</span
+                >
+              </div>
+              <div class="flex items-center justify-between mt-3">
+                <span class="text-[10px] text-text-sub font-medium"
+                  >过期日期：2023.10.22</span
+                >
+                <button
+                  class="flex items-center gap-1 text-[11px] font-bold text-white bg-danger-text px-3 py-1.5 rounded-lg shadow-sm active:scale-95 transition-transform"
+                >
+                  <span class="material-symbols-outlined text-[14px]"
+                    >delete_sweep</span
+                  >
+                  <span>一键清理</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div
+            class="bg-danger-soft border border-danger-border rounded-2xl p-4 flex gap-4 relative overflow-hidden group"
+          >
+            <div
+              class="size-14 rounded-xl bg-white flex items-center justify-center shadow-sm"
+            >
+              <span class="material-symbols-outlined text-danger-text text-3xl"
+                >egg</span
+              >
+            </div>
+            <div class="flex-1">
+              <div class="flex justify-between items-start">
+                <div>
+                  <h3 class="font-bold text-text-main">兰皇鸡蛋</h3>
+                  <p class="text-[10px] text-text-sub mt-0.5">剩余：4 枚</p>
+                </div>
+                <span
+                  class="text-[11px] font-bold text-danger-text bg-white px-2 py-0.5 rounded-full shadow-sm"
+                  >已过期 1 天</span
+                >
+              </div>
+              <div class="flex items-center justify-between mt-3">
+                <span class="text-[10px] text-text-sub font-medium"
+                  >过期日期：2023.10.23</span
+                >
+                <button
+                  class="flex items-center gap-1 text-[11px] font-bold text-white bg-danger-text px-3 py-1.5 rounded-lg shadow-sm active:scale-95 transition-transform"
+                >
+                  <span class="material-symbols-outlined text-[14px]"
+                    >delete_sweep</span
+                  >
+                  <span>一键清理</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="space-y-3 pt-4">
+          <div class="flex items-center justify-between px-1">
+            <span
+              class="text-xs font-bold text-warning-text uppercase tracking-wider"
+              >即将到期</span
+            >
+          </div>
+          <div
+            class="bg-warning-soft border border-warning-border rounded-2xl p-4 flex gap-4 relative overflow-hidden group"
+          >
+            <div
+              class="size-14 rounded-xl bg-white flex items-center justify-center shadow-sm text-warning-text"
+            >
+              <span class="material-symbols-outlined text-3xl">eco</span>
+            </div>
+            <div class="flex-1">
+              <div class="flex justify-between items-start">
+                <div>
+                  <h3 class="font-bold text-text-main">有机奶油生菜</h3>
+                  <p class="text-[10px] text-text-sub mt-0.5">剩余：2 颗</p>
+                </div>
+                <span
+                  class="text-[11px] font-bold text-warning-text bg-white px-2 py-0.5 rounded-full shadow-sm"
+                  >还有 1 天过期</span
+                >
+              </div>
+              <div class="flex items-center justify-between mt-3">
+                <span class="text-[10px] text-text-sub font-medium"
+                  >过期日期：2023.10.26</span
+                >
+                <button
+                  class="flex items-center gap-1 text-[11px] font-bold text-white bg-primary px-3 py-1.5 rounded-lg shadow-sm active:scale-95 transition-transform"
+                >
+                  <span class="material-symbols-outlined text-[14px]"
+                    >auto_awesome</span
+                  >
+                  <span>AI 建议</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div
+            class="bg-warning-soft border border-warning-border rounded-2xl p-4 flex gap-4 relative overflow-hidden group"
+          >
+            <div
+              class="size-14 rounded-xl bg-white flex items-center justify-center shadow-sm text-warning-text"
+            >
+              <span class="material-symbols-outlined text-3xl"
+                >soup_kitchen</span
+              >
+            </div>
+            <div class="flex-1">
+              <div class="flex justify-between items-start">
+                <div>
+                  <h3 class="font-bold text-text-main">自制番茄底料</h3>
+                  <p class="text-[10px] text-text-sub mt-0.5">剩余：1 罐</p>
+                </div>
+                <span
+                  class="text-[11px] font-bold text-warning-text bg-white px-2 py-0.5 rounded-full shadow-sm"
+                  >还有 3 天过期</span
+                >
+              </div>
+              <div class="flex items-center justify-between mt-3">
+                <span class="text-[10px] text-text-sub font-medium"
+                  >过期日期：2023.10.28</span
+                >
+                <button
+                  class="flex items-center gap-1 text-[11px] font-bold text-white bg-primary px-3 py-1.5 rounded-lg shadow-sm active:scale-95 transition-transform"
+                >
+                  <span class="material-symbols-outlined text-[14px]"
+                    >auto_awesome</span
+                  >
+                  <span>AI 建议</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+      <div
+        class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md px-6 py-6 sticky-bottom-fade z-40"
+      >
+        <button
+          class="w-full bg-white border border-slate-100 py-4 rounded-2xl shadow-soft flex items-center justify-center gap-3 active:scale-[0.98] transition-all group"
+        >
+          <span class="material-symbols-outlined text-danger-text"
+            >delete_outline</span
+          >
+          <span class="font-bold text-text-main">清理全部过期食材</span>
+        </button>
+      </div>
+    </div>
+  </body>
+</html>
