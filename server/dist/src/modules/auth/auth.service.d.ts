@@ -10,6 +10,7 @@ export declare class AuthService {
     constructor(prisma: PrismaService, jwtService: JwtService, configService: ConfigService);
     sendSmsCode(dto: SendSmsDto): Promise<void>;
     login(dto: LoginDto): Promise<any>;
+    logout(): Promise<null>;
     private verifyCodeAndGetUser;
     private verifyPasswordAndGetUser;
 }

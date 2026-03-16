@@ -1,7 +1,5 @@
 <template>
-  <view
-    class="w-full flex-1 flex flex-col items-center justify-center min-h-0"
-  >
+  <view class="w-full flex-1 flex flex-col items-center justify-center min-h-0">
     <template v-if="showTimer">
       <!-- Giant Circular Timer -->
       <view
@@ -42,7 +40,6 @@
             >
               <text
                 class="material-symbols-outlined text-background-dark text-4xl"
-                :style="{ fontVariationSettings: '\\'FILL\\' 1' }"
                 >{{ isRunning ? "pause" : "play_arrow" }}</text
               >
             </view>

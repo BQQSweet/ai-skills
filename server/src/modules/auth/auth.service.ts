@@ -119,6 +119,14 @@ export class AuthService {
   }
 
   /**
+   * 退出登录
+   * 当前版本仅提供服务端占位接口，便于前后端流程对齐。
+   */
+  async logout(): Promise<null> {
+    return null;
+  }
+
+  /**
    * 验证验证码并获取/创建用户
    */
   private async verifyCodeAndGetUser(phone: string, code: string) {

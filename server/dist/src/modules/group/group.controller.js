@@ -34,14 +34,20 @@ let GroupController = class GroupController {
     async getMyGroups(userId) {
         return this.groupService.getMyGroups(userId);
     }
-    async getGroupDetail(groupId) {
-        return this.groupService.getGroupDetail(groupId);
+    async getGroupDetail(groupId, userId) {
+        return this.groupService.getGroupDetail(groupId, userId);
     }
-    async getGroupMembers(groupId) {
-        return this.groupService.getGroupMembers(groupId);
+    async getGroupMembers(groupId, userId) {
+        return this.groupService.getGroupMembers(groupId, userId);
     }
     async refreshInviteCode(groupId, userId) {
         return this.groupService.refreshInviteCode(groupId, userId);
+    }
+    async leaveGroup(groupId, userId) {
+        return this.groupService.leaveGroup(groupId, userId);
+    }
+    async disbandGroup(groupId, userId) {
+        return this.groupService.disbandGroup(groupId, userId);
     }
 };
 exports.GroupController = GroupController;
@@ -81,8 +87,9 @@ __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, group_guard_1.GroupGuard),
     (0, swagger_1.ApiOperation)({ summary: '获取家庭组详情' }),
     __param(0, (0, common_1.Param)('groupId')),
+    __param(1, (0, current_user_decorator_1.CurrentUser)('id')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
 ], GroupController.prototype, "getGroupDetail", null);
 __decorate([
@@ -90,8 +97,9 @@ __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, group_guard_1.GroupGuard),
     (0, swagger_1.ApiOperation)({ summary: '获取家庭组成员列表' }),
     __param(0, (0, common_1.Param)('groupId')),
+    __param(1, (0, current_user_decorator_1.CurrentUser)('id')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
 ], GroupController.prototype, "getGroupMembers", null);
 __decorate([
@@ -104,6 +112,28 @@ __decorate([
     __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
 ], GroupController.prototype, "refreshInviteCode", null);
+__decorate([
+    (0, common_1.Delete)(':groupId/members/me'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, group_guard_1.GroupGuard),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, swagger_1.ApiOperation)({ summary: '退出家庭组（普通成员）' }),
+    __param(0, (0, common_1.Param)('groupId')),
+    __param(1, (0, current_user_decorator_1.CurrentUser)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", Promise)
+], GroupController.prototype, "leaveGroup", null);
+__decorate([
+    (0, common_1.Delete)(':groupId'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, group_guard_1.GroupGuard),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, swagger_1.ApiOperation)({ summary: '解散家庭组（仅组长且仅剩本人）' }),
+    __param(0, (0, common_1.Param)('groupId')),
+    __param(1, (0, current_user_decorator_1.CurrentUser)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", Promise)
+], GroupController.prototype, "disbandGroup", null);
 exports.GroupController = GroupController = __decorate([
     (0, swagger_1.ApiTags)('group'),
     (0, common_1.Controller)('api/group'),

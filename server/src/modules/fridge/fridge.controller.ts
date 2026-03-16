@@ -5,7 +5,7 @@ import {
   Delete,
   Body,
   Param,
-  Req,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
@@ -13,6 +13,7 @@ import { FridgeService } from './fridge.service';
 import { CreateFridgeItemDto } from './dto/create-fridge-item.dto';
 import { RecognizeLabelDto } from './dto/recognize-label.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { GroupGuard } from '@/common/guards/group.guard';
 
 @ApiTags('fridge')
 @ApiBearerAuth()
@@ -28,29 +29,30 @@ export class FridgeController {
   }
 
   @Post('items')
+  @UseGuards(GroupGuard)
   @ApiOperation({ summary: '添加食材到冰箱' })
-  async addItem(@Body() dto: CreateFridgeItemDto, @Req() req: any) {
-    const groupId = await this.fridgeService.getUserGroupId(req.user.id);
-    return this.fridgeService.addItem(groupId, dto);
+  async addItem(@Body() dto: CreateFridgeItemDto) {
+    return this.fridgeService.addItem(dto.groupId, dto);
   }
 
   @Get('items')
+  @UseGuards(GroupGuard)
   @ApiOperation({ summary: '查询冰箱食材列表' })
-  async listItems(@Req() req: any) {
-    const groupId = await this.fridgeService.getUserGroupId(req.user.id);
+  async listItems(@Query('groupId') groupId: string) {
     return this.fridgeService.listItems(groupId);
   }
 
   @Delete('items/expired')
+  @UseGuards(GroupGuard)
   @ApiOperation({ summary: '一键清理过期食材' })
-  async clearExpired(@Req() req: any) {
-    const groupId = await this.fridgeService.getUserGroupId(req.user.id);
+  async clearExpired(@Query('groupId') groupId: string) {
     return this.fridgeService.clearExpired(groupId);
   }
 
   @Delete('items/:id')
+  @UseGuards(GroupGuard)
   @ApiOperation({ summary: '删除冰箱食材（软删除）' })
-  async deleteItem(@Param('id') id: string) {
-    return this.fridgeService.deleteItem(id);
+  async deleteItem(@Param('id') id: string, @Query('groupId') groupId: string) {
+    return this.fridgeService.deleteItem(id, groupId);
   }
 }

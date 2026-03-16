@@ -157,6 +157,7 @@
             >当前厨房成员</text
           >
           <view
+            v-if="isOwner"
             @click="handleRefreshCode"
             class="flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
           >
@@ -222,19 +223,44 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
+import { onShow } from "@dcloudio/uni-app";
 import { useGroupStore } from "@/stores/group";
-import * as groupApi from "@/services/group";
 
 const groupStore = useGroupStore();
 const uToastRef = ref();
 const showRefreshModal = ref(false);
+const isOwner = computed(() => groupStore.currentGroup?.role === "owner");
+
+onShow(async () => {
+  if (!groupStore.currentGroup) {
+    await groupStore.fetchMyGroups();
+  }
+
+  if (!groupStore.currentGroup) {
+    uni.reLaunch({ url: "/pages/guide/index" });
+    return;
+  }
+
+  await groupStore.fetchGroupDetail(groupStore.currentGroup.id);
+
+  if (!isOwner.value) {
+    uToastRef.value?.show({
+      type: "error",
+      message: "只有组长可以邀请成员",
+    });
+    setTimeout(() => {
+      uni.navigateBack();
+    }, 800);
+  }
+});
 
 function handleCopyInviteCode() {
   if (!groupStore.currentGroup) return;
 
   uni.setClipboardData({
     data: groupStore.currentGroup.inviteCode,
+    showToast: false,
     success: () => {
       uToastRef.value?.show({
         type: "success",
@@ -271,6 +297,7 @@ function handleShareToWechat() {
       // 降级为复制
       uni.setClipboardData({
         data: shareText,
+        showToast: false,
         success: () => {
           uToastRef.value?.show({
             type: "success",
@@ -316,6 +343,7 @@ function handleShareMore() {
   // 直接复制到剪贴板
   uni.setClipboardData({
     data: shareText,
+    showToast: false,
     success: () => {
       uToastRef.value?.show({
         type: "success",
@@ -333,14 +361,7 @@ async function confirmRefreshCode() {
   if (!groupStore.currentGroup) return;
 
   try {
-    const result = await groupApi.refreshInviteCode(
-      groupStore.currentGroup.id
-    );
-
-    // 更新本地存储的邀请码
-    if (groupStore.currentGroup) {
-      groupStore.currentGroup.inviteCode = result.inviteCode;
-    }
+    await groupStore.refreshInviteCode(groupStore.currentGroup.id);
 
     showRefreshModal.value = false;
     uToastRef.value?.show({

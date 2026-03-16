@@ -11,6 +11,21 @@ import { CreateGroupDto, JoinGroupDto } from './dto/group.dto';
 export class GroupService {
   constructor(private readonly prisma: PrismaService) {}
 
+  private async getActiveGroupById(groupId: string) {
+    const group = await this.prisma.group.findFirst({
+      where: {
+        id: groupId,
+        deleted_at: null,
+      },
+    });
+
+    if (!group) {
+      throw new NotFoundException('家庭组不存在');
+    }
+
+    return group;
+  }
+
   /**
    * 生成 6 位随机邀请码（大写字母 + 数字）
    */
@@ -71,6 +86,8 @@ export class GroupService {
       name: group.name,
       inviteCode: group.invite_code,
       ownerId: group.owner_id,
+      role: 'owner',
+      memberCount: 1,
       createdAt: group.created_at,
     };
   }
@@ -79,8 +96,11 @@ export class GroupService {
    * 通过邀请码加入家庭组
    */
   async joinByInviteCode(userId: string, dto: JoinGroupDto) {
-    const group = await this.prisma.group.findUnique({
-      where: { invite_code: dto.inviteCode },
+    const group = await this.prisma.group.findFirst({
+      where: {
+        invite_code: dto.inviteCode,
+        deleted_at: null,
+      },
     });
 
     if (!group) {
@@ -140,7 +160,9 @@ export class GroupService {
       },
     });
 
-    return memberships.map((m) => ({
+    return memberships
+      .filter((m) => m.group.deleted_at === null)
+      .map((m) => ({
       id: m.group.id,
       name: m.group.name,
       inviteCode: m.group.invite_code,
@@ -153,15 +175,18 @@ export class GroupService {
         role: mem.role,
       })),
       createdAt: m.group.created_at,
-    }));
+      }));
   }
 
   /**
    * 获取单个家庭组详情
    */
-  async getGroupDetail(groupId: string) {
-    const group = await this.prisma.group.findUnique({
-      where: { id: groupId },
+  async getGroupDetail(groupId: string, userId: string) {
+    const group = await this.prisma.group.findFirst({
+      where: {
+        id: groupId,
+        deleted_at: null,
+      },
       include: {
         members: {
           include: {
@@ -182,11 +207,14 @@ export class GroupService {
       throw new NotFoundException('家庭组不存在');
     }
 
+    const currentMember = group.members.find((member) => member.user_id === userId);
+
     return {
       id: group.id,
       name: group.name,
       inviteCode: group.invite_code,
       ownerId: group.owner_id,
+      role: currentMember?.role || 'member',
       memberCount: group.members.length,
       members: group.members.map((m) => ({
         id: m.user.id,
@@ -202,9 +230,12 @@ export class GroupService {
   /**
    * 获取家庭组成员列表
    */
-  async getGroupMembers(groupId: string) {
-    const group = await this.prisma.group.findUnique({
-      where: { id: groupId },
+  async getGroupMembers(groupId: string, userId: string) {
+    const group = await this.prisma.group.findFirst({
+      where: {
+        id: groupId,
+        deleted_at: null,
+      },
       include: {
         members: {
           include: {
@@ -224,16 +255,22 @@ export class GroupService {
       throw new NotFoundException('家庭组不存在');
     }
 
+    const currentMember = group.members.find((member) => member.user_id === userId);
+
     return {
       id: group.id,
       name: group.name,
       inviteCode: group.invite_code,
+      ownerId: group.owner_id,
+      role: currentMember?.role || 'member',
+      memberCount: group.members.length,
       members: group.members.map((m) => ({
         id: m.user.id,
         nickname: m.user.nickname,
         avatarUrl: m.user.avatar_url,
         role: m.role,
       })),
+      createdAt: group.created_at,
     };
   }
 
@@ -241,13 +278,7 @@ export class GroupService {
    * 刷新邀请码（仅 owner 可操作）
    */
   async refreshInviteCode(groupId: string, userId: string) {
-    const group = await this.prisma.group.findUnique({
-      where: { id: groupId },
-    });
-
-    if (!group) {
-      throw new NotFoundException('家庭组不存在');
-    }
+    const group = await this.getActiveGroupById(groupId);
 
     if (group.owner_id !== userId) {
       throw new BadRequestException('只有组长可以刷新邀请码');
@@ -270,5 +301,65 @@ export class GroupService {
     });
 
     return { inviteCode: updated.invite_code };
+  }
+
+  /**
+   * 退出家庭组
+   */
+  async leaveGroup(groupId: string, userId: string) {
+    await this.getActiveGroupById(groupId);
+
+    const membership = await this.prisma.groupMember.findUnique({
+      where: {
+        user_id_group_id: { user_id: userId, group_id: groupId },
+      },
+    });
+
+    if (!membership) {
+      throw new NotFoundException('家庭组成员关系不存在');
+    }
+
+    if (membership.role === 'owner') {
+      throw new BadRequestException('组长不能退出家庭组，请解散家庭组');
+    }
+
+    await this.prisma.groupMember.delete({
+      where: {
+        user_id_group_id: { user_id: userId, group_id: groupId },
+      },
+    });
+
+    return { success: true };
+  }
+
+  /**
+   * 解散家庭组（仅剩组长时）
+   */
+  async disbandGroup(groupId: string, userId: string) {
+    const group = await this.getActiveGroupById(groupId);
+
+    if (group.owner_id !== userId) {
+      throw new BadRequestException('只有组长可以解散家庭组');
+    }
+
+    const memberCount = await this.prisma.groupMember.count({
+      where: { group_id: groupId },
+    });
+
+    if (memberCount > 1) {
+      throw new BadRequestException('请先让其他成员退出后再解散家庭组');
+    }
+
+    await this.prisma.$transaction([
+      this.prisma.group.update({
+        where: { id: groupId },
+        data: { deleted_at: new Date() },
+      }),
+      this.prisma.groupMember.deleteMany({
+        where: { group_id: groupId },
+      }),
+    ]);
+
+    return { success: true };
   }
 }

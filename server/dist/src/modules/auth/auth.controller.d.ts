@@ -5,4 +5,5 @@ export declare class AuthController {
     constructor(authService: AuthService);
     sendSmsCode(sendSmsDto: SendSmsDto): Promise<null>;
     login(loginDto: LoginDto): Promise<any>;
+    logout(): Promise<null>;
 }

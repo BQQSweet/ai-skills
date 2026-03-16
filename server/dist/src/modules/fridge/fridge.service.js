@@ -108,16 +108,6 @@ let FridgeService = FridgeService_1 = class FridgeService {
             throw new common_1.BadRequestException('食材识别失败：' + error.message);
         }
     }
-    async getUserGroupId(userId) {
-        const membership = await this.prisma.groupMember.findFirst({
-            where: { user_id: userId },
-            select: { group_id: true },
-        });
-        if (!membership) {
-            throw new common_1.BadRequestException('您还没有加入任何家庭组');
-        }
-        return membership.group_id;
-    }
     async addItem(groupId, dto) {
         let photoUrl = dto.photo_url || null;
         if (dto.photo_base64) {
@@ -187,7 +177,18 @@ let FridgeService = FridgeService_1 = class FridgeService {
         });
         return { cleared: result.count };
     }
-    async deleteItem(id) {
+    async deleteItem(id, groupId) {
+        const item = await this.prisma.fridgeItem.findFirst({
+            where: {
+                id,
+                group_id: groupId,
+                deleted_at: null,
+            },
+            select: { id: true },
+        });
+        if (!item) {
+            throw new common_1.NotFoundException('食材不存在');
+        }
         return this.prisma.fridgeItem.update({
             where: { id },
             data: { deleted_at: new Date() },

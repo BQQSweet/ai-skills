@@ -8,6 +8,7 @@ export function recognizeLabel(image: string) {
 
 /** 添加食材到冰箱 */
 export interface AddFridgeItemParams {
+  groupId: string;
   name: string;
   category: string;
   quantity: number;
@@ -24,16 +25,16 @@ export function addFridgeItem(data: AddFridgeItemParams) {
 }
 
 /** 查询冰箱食材列表 */
-export function getFridgeItems() {
-  return get<FridgeItem[]>("/api/fridge/items");
+export function getFridgeItems(groupId: string) {
+  return get<FridgeItem[]>("/api/fridge/items", { groupId });
 }
 
 /** 删除冰箱食材 */
-export function deleteFridgeItem(id: string) {
-  return del(`/api/fridge/items/${id}`);
+export function deleteFridgeItem(id: string, groupId: string) {
+  return del(`/api/fridge/items/${id}`, { groupId });
 }
 
 /** 一键清理过期食材 */
-export function clearExpiredItems() {
-  return del<{ cleared: number }>("/api/fridge/items/expired");
+export function clearExpiredItems(groupId: string) {
+  return del<{ cleared: number }>("/api/fridge/items/expired", { groupId });
 }

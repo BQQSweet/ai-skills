@@ -46,7 +46,7 @@ export const useUserStore = defineStore("user", () => {
       const { useGroupStore } = await import("@/stores/group");
       const groupStore = useGroupStore();
       groupStore.initFromLogin(res.groups);
-      setCurrentGroupId(res.groups[0].groupId);
+      setCurrentGroupId(groupStore.currentGroup?.id || res.groups[0].groupId);
     }
   }
 
@@ -72,10 +72,12 @@ export const useUserStore = defineStore("user", () => {
   }
 
   /** 退出登录 */
-  function logout() {
+  async function logout() {
     token.value = "";
     userInfo.value = null;
-    currentGroupId.value = "";
+    setCurrentGroupId("");
+    const { useGroupStore } = await import("@/stores/group");
+    useGroupStore().clearGroups();
     clearAuth();
     uni.reLaunch({ url: "/pages/login/index" });
   }

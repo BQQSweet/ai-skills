@@ -1,4 +1,9 @@
-import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../common/prisma.service';
 import { AiService } from '../../ai/ai.service';
@@ -71,20 +76,6 @@ export class FridgeService {
       );
       throw new BadRequestException('食材识别失败：' + error.message);
     }
-  }
-
-  /**
-   * 获取用户所属的第一个家庭组 ID
-   */
-  async getUserGroupId(userId: string): Promise<string> {
-    const membership = await this.prisma.groupMember.findFirst({
-      where: { user_id: userId },
-      select: { group_id: true },
-    });
-    if (!membership) {
-      throw new BadRequestException('您还没有加入任何家庭组');
-    }
-    return membership.group_id;
   }
 
   /**
@@ -180,7 +171,20 @@ export class FridgeService {
   /**
    * 删除冰箱食材（软删除）
    */
-  async deleteItem(id: string) {
+  async deleteItem(id: string, groupId: string) {
+    const item = await this.prisma.fridgeItem.findFirst({
+      where: {
+        id,
+        group_id: groupId,
+        deleted_at: null,
+      },
+      select: { id: true },
+    });
+
+    if (!item) {
+      throw new NotFoundException('食材不存在');
+    }
+
     return this.prisma.fridgeItem.update({
       where: { id },
       data: { deleted_at: new Date() },

@@ -8,6 +8,8 @@ export declare class GroupController {
         name: string;
         inviteCode: string;
         ownerId: string;
+        role: string;
+        memberCount: number;
         createdAt: Date;
     }>;
     joinGroup(userId: string, dto: JoinGroupDto): Promise<{
@@ -30,11 +32,12 @@ export declare class GroupController {
         }[];
         createdAt: Date;
     }[]>;
-    getGroupDetail(groupId: string): Promise<{
+    getGroupDetail(groupId: string, userId: string): Promise<{
         id: string;
         name: string;
         inviteCode: string;
         ownerId: string;
+        role: string;
         memberCount: number;
         members: {
             id: string;
@@ -45,18 +48,28 @@ export declare class GroupController {
         }[];
         createdAt: Date;
     }>;
-    getGroupMembers(groupId: string): Promise<{
+    getGroupMembers(groupId: string, userId: string): Promise<{
         id: string;
         name: string;
         inviteCode: string;
+        ownerId: string;
+        role: string;
+        memberCount: number;
         members: {
             id: string;
             nickname: string;
             avatarUrl: string | null;
             role: string;
         }[];
+        createdAt: Date;
     }>;
     refreshInviteCode(groupId: string, userId: string): Promise<{
         inviteCode: string;
+    }>;
+    leaveGroup(groupId: string, userId: string): Promise<{
+        success: boolean;
+    }>;
+    disbandGroup(groupId: string, userId: string): Promise<{
+        success: boolean;
     }>;
 }

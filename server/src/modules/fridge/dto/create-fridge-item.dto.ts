@@ -2,6 +2,10 @@ import { IsString, IsNumber, IsOptional, IsDateString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateFridgeItemDto {
+  @ApiProperty({ description: '家庭组 ID' })
+  @IsString()
+  groupId: string;
+
   @ApiProperty({ description: '食材名称', example: '澳洲和牛' })
   @IsString()
   name: string;

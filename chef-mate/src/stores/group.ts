@@ -1,7 +1,9 @@
+import { computed, ref } from "vue";
 import { defineStore } from "pinia";
-import { ref, computed } from "vue";
-import type { GroupInfo, GroupBrief } from "@/types/group";
 import * as groupApi from "@/services/group";
+import { STORAGE_KEYS, getStorage } from "@/utils/storage";
+import { useUserStore } from "@/stores/user";
+import type { GroupBrief, GroupInfo } from "@/types/group";
 
 export const useGroupStore = defineStore("group", () => {
   /** 用户所属的所有家庭组列表 */
@@ -13,20 +15,55 @@ export const useGroupStore = defineStore("group", () => {
   /** 是否已有家庭组 */
   const hasGroup = computed(() => groupList.value.length > 0);
 
+  function getPreferredGroupId() {
+    return (
+      currentGroup.value?.id ||
+      getStorage<string>(STORAGE_KEYS.CURRENT_GROUP_ID) ||
+      ""
+    );
+  }
+
+  function syncCurrentGroup(group: GroupInfo | null) {
+    currentGroup.value = group;
+    const userStore = useUserStore();
+    userStore.setCurrentGroupId(group?.id || "");
+  }
+
+  function replaceOrAppendGroup(group: GroupInfo) {
+    const index = groupList.value.findIndex((item) => item.id === group.id);
+
+    if (index === -1) {
+      groupList.value.push(group);
+      return group;
+    }
+
+    const mergedGroup = {
+      ...groupList.value[index],
+      ...group,
+      role: group.role || groupList.value[index].role,
+    };
+    groupList.value[index] = mergedGroup;
+    return mergedGroup;
+  }
+
+  function pickCurrentGroup(list: GroupInfo[]) {
+    if (list.length === 0) return null;
+
+    const preferredId = getPreferredGroupId();
+    return list.find((group) => group.id === preferredId) || list[0];
+  }
+
   /**
    * 从登录响应中初始化组信息
    */
   function initFromLogin(groups: GroupBrief[]) {
-    groupList.value = groups.map((g) => ({
-      id: g.groupId,
-      name: g.name,
-      inviteCode: g.inviteCode,
-      role: g.role,
+    groupList.value = groups.map((group) => ({
+      id: group.groupId,
+      name: group.name,
+      inviteCode: group.inviteCode,
+      role: group.role,
     }));
-    // 默认选中第一个组
-    if (groupList.value.length > 0 && !currentGroup.value) {
-      currentGroup.value = groupList.value[0];
-    }
+    syncCurrentGroup(pickCurrentGroup(groupList.value));
   }
 
   /**
@@ -35,10 +72,22 @@ export const useGroupStore = defineStore("group", () => {
   async function fetchMyGroups() {
     const list = await groupApi.getMyGroups();
     groupList.value = list;
-    if (list.length > 0 && !currentGroup.value) {
-      currentGroup.value = list[0];
-    }
+    syncCurrentGroup(pickCurrentGroup(list));
     return list;
+  }
+
+  /**
+   * 获取家庭组详情
+   */
+  async function fetchGroupDetail(groupId: string) {
+    const groupDetail = await groupApi.getGroupDetail(groupId);
+    const mergedGroup = replaceOrAppendGroup(groupDetail);
+
+    if (currentGroup.value?.id === groupId) {
+      syncCurrentGroup(mergedGroup);
+    }
+
+    return mergedGroup;
   }
 
   /**
@@ -46,15 +95,13 @@ export const useGroupStore = defineStore("group", () => {
    */
   async function fetchGroupMembers(groupId: string) {
     const groupDetail = await groupApi.getGroupMembers(groupId);
-    // 更新当前组的成员信息
-    const index = groupList.value.findIndex((g) => g.id === groupId);
-    if (index !== -1) {
-      groupList.value[index] = groupDetail;
-    }
+    const mergedGroup = replaceOrAppendGroup(groupDetail);
+
     if (currentGroup.value?.id === groupId) {
-      currentGroup.value = groupDetail;
+      syncCurrentGroup(mergedGroup);
     }
-    return groupDetail;
+
+    return mergedGroup;
   }
 
   /**
@@ -62,9 +109,8 @@ export const useGroupStore = defineStore("group", () => {
    */
   async function createGroup(name: string) {
     const group = await groupApi.createGroup({ name });
-    groupList.value.push(group);
-    currentGroup.value = group;
-    return group;
+    await fetchMyGroups();
+    return switchGroup(group.id);
   }
 
   /**
@@ -72,16 +118,96 @@ export const useGroupStore = defineStore("group", () => {
    */
   async function joinGroup(inviteCode: string) {
     const group = await groupApi.joinGroup({ inviteCode });
-    groupList.value.push(group);
-    currentGroup.value = group;
-    return group;
+    await fetchMyGroups();
+    return switchGroup(group.id);
   }
 
   /**
    * 切换当前选中的组
    */
-  function setCurrentGroup(group: GroupInfo) {
-    currentGroup.value = group;
+  function setCurrentGroup(group: GroupInfo | null) {
+    if (!group) {
+      syncCurrentGroup(null);
+      return;
+    }
+
+    const mergedGroup = replaceOrAppendGroup(group);
+    syncCurrentGroup(mergedGroup);
+  }
+
+  /**
+   * 切换并加载当前家庭组
+   */
+  async function switchGroup(groupId: string) {
+    let targetGroup = groupList.value.find((group) => group.id === groupId) || null;
+
+    if (!targetGroup) {
+      await fetchMyGroups();
+      targetGroup = groupList.value.find((group) => group.id === groupId) || null;
+    }
+
+    if (!targetGroup) {
+      throw new Error("家庭组不存在");
+    }
+
+    syncCurrentGroup(targetGroup);
+    return fetchGroupDetail(groupId);
+  }
+
+  /**
+   * 刷新邀请码
+   */
+  async function refreshInviteCode(groupId: string) {
+    const result = await groupApi.refreshInviteCode(groupId);
+    const targetGroup = groupList.value.find((group) => group.id === groupId);
+
+    if (targetGroup) {
+      replaceOrAppendGroup({
+        ...targetGroup,
+        inviteCode: result.inviteCode,
+      });
+    }
+
+    if (currentGroup.value?.id === groupId) {
+      syncCurrentGroup({
+        ...currentGroup.value,
+        inviteCode: result.inviteCode,
+      });
+    }
+
+    return result;
+  }
+
+  /**
+   * 退出家庭组
+   */
+  async function leaveGroup(groupId: string) {
+    await groupApi.leaveGroup(groupId);
+    groupList.value = groupList.value.filter((group) => group.id !== groupId);
+
+    if (currentGroup.value?.id === groupId) {
+      const nextGroup = pickCurrentGroup(groupList.value);
+      syncCurrentGroup(nextGroup);
+      if (nextGroup) {
+        await fetchGroupDetail(nextGroup.id);
+      }
+    }
+  }
+
+  /**
+   * 解散家庭组
+   */
+  async function disbandGroup(groupId: string) {
+    await groupApi.disbandGroup(groupId);
+    groupList.value = groupList.value.filter((group) => group.id !== groupId);
+
+    if (currentGroup.value?.id === groupId) {
+      const nextGroup = pickCurrentGroup(groupList.value);
+      syncCurrentGroup(nextGroup);
+      if (nextGroup) {
+        await fetchGroupDetail(nextGroup.id);
+      }
+    }
   }
 
   /**
@@ -89,7 +215,7 @@ export const useGroupStore = defineStore("group", () => {
    */
   function clearGroups() {
     groupList.value = [];
-    currentGroup.value = null;
+    syncCurrentGroup(null);
   }
 
   return {
@@ -98,10 +224,15 @@ export const useGroupStore = defineStore("group", () => {
     hasGroup,
     initFromLogin,
     fetchMyGroups,
+    fetchGroupDetail,
     fetchGroupMembers,
     createGroup,
     joinGroup,
     setCurrentGroup,
+    switchGroup,
+    refreshInviteCode,
+    leaveGroup,
+    disbandGroup,
     clearGroups,
   };
 });

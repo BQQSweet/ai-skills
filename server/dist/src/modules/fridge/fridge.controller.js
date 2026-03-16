@@ -19,6 +19,7 @@ const fridge_service_1 = require("./fridge.service");
 const create_fridge_item_dto_1 = require("./dto/create-fridge-item.dto");
 const recognize_label_dto_1 = require("./dto/recognize-label.dto");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
+const group_guard_1 = require("../../common/guards/group.guard");
 let FridgeController = class FridgeController {
     fridgeService;
     constructor(fridgeService) {
@@ -27,20 +28,17 @@ let FridgeController = class FridgeController {
     async recognizeLabel(dto) {
         return this.fridgeService.recognizeLabel(dto.image);
     }
-    async addItem(dto, req) {
-        const groupId = await this.fridgeService.getUserGroupId(req.user.id);
-        return this.fridgeService.addItem(groupId, dto);
+    async addItem(dto) {
+        return this.fridgeService.addItem(dto.groupId, dto);
     }
-    async listItems(req) {
-        const groupId = await this.fridgeService.getUserGroupId(req.user.id);
+    async listItems(groupId) {
         return this.fridgeService.listItems(groupId);
     }
-    async clearExpired(req) {
-        const groupId = await this.fridgeService.getUserGroupId(req.user.id);
+    async clearExpired(groupId) {
         return this.fridgeService.clearExpired(groupId);
     }
-    async deleteItem(id) {
-        return this.fridgeService.deleteItem(id);
+    async deleteItem(id, groupId) {
+        return this.fridgeService.deleteItem(id, groupId);
     }
 };
 exports.FridgeController = FridgeController;
@@ -54,35 +52,39 @@ __decorate([
 ], FridgeController.prototype, "recognizeLabel", null);
 __decorate([
     (0, common_1.Post)('items'),
+    (0, common_1.UseGuards)(group_guard_1.GroupGuard),
     (0, swagger_1.ApiOperation)({ summary: '添加食材到冰箱' }),
     __param(0, (0, common_1.Body)()),
-    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [create_fridge_item_dto_1.CreateFridgeItemDto, Object]),
+    __metadata("design:paramtypes", [create_fridge_item_dto_1.CreateFridgeItemDto]),
     __metadata("design:returntype", Promise)
 ], FridgeController.prototype, "addItem", null);
 __decorate([
     (0, common_1.Get)('items'),
+    (0, common_1.UseGuards)(group_guard_1.GroupGuard),
     (0, swagger_1.ApiOperation)({ summary: '查询冰箱食材列表' }),
-    __param(0, (0, common_1.Req)()),
+    __param(0, (0, common_1.Query)('groupId')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], FridgeController.prototype, "listItems", null);
 __decorate([
     (0, common_1.Delete)('items/expired'),
+    (0, common_1.UseGuards)(group_guard_1.GroupGuard),
     (0, swagger_1.ApiOperation)({ summary: '一键清理过期食材' }),
-    __param(0, (0, common_1.Req)()),
+    __param(0, (0, common_1.Query)('groupId')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], FridgeController.prototype, "clearExpired", null);
 __decorate([
     (0, common_1.Delete)('items/:id'),
+    (0, common_1.UseGuards)(group_guard_1.GroupGuard),
     (0, swagger_1.ApiOperation)({ summary: '删除冰箱食材（软删除）' }),
     __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Query)('groupId')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
 ], FridgeController.prototype, "deleteItem", null);
 exports.FridgeController = FridgeController = __decorate([

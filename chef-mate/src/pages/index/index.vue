@@ -47,11 +47,15 @@ import ExpiryAlerts from "./components/ExpiryAlerts.vue";
 import FamilyFeed from "./components/FamilyFeed.vue";
 import CmTabBar from "@/components/CmTabBar/CmTabBar.vue";
 import { useUserStore } from "@/stores/user";
+import { useFeedStore } from "@/stores/feed";
+import { useGroupStore } from "@/stores/group";
 import { getRecommendedRecipes, type Recipe } from "@/services/recipe";
 import { getFridgeItems } from "@/services/fridge";
 import type { FridgeItem } from "@/types/fridge";
 
 const userStore = useUserStore();
+const groupStore = useGroupStore();
+const feedStore = useFeedStore();
 
 // TODO: 从 userStore 获取
 const nickname = computed(() => userStore.userInfo?.nickname || "Chef");
@@ -66,10 +70,22 @@ const fridgeItems = ref<FridgeItem[]>([]);
 
 onShow(async () => {
   try {
+    if (!groupStore.currentGroup) {
+      await groupStore.fetchMyGroups();
+    }
+
     const [recipeRes, fridgeRes] = await Promise.all([
       getRecommendedRecipes(),
-      getFridgeItems(),
+      groupStore.currentGroup
+        ? getFridgeItems(groupStore.currentGroup.id)
+        : Promise.resolve([] as FridgeItem[]),
     ]);
+
+    if (groupStore.currentGroup) {
+      await feedStore.fetchFeedList(groupStore.currentGroup.id, true);
+    } else {
+      feedStore.clearFeed();
+    }
 
     // Assigned fridge data to ref
     if (fridgeRes) {

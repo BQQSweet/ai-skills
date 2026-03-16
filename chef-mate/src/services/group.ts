@@ -1,7 +1,7 @@
 /**
  * 家庭组相关 API
  */
-import { get, post, put } from "./request";
+import { del, get, post, put } from "./request";
 import type {
   GroupInfo,
   CreateGroupParams,
@@ -38,4 +38,14 @@ export function refreshInviteCode(
   groupId: string,
 ): Promise<{ inviteCode: string }> {
   return put<{ inviteCode: string }>(`/api/group/${groupId}/invite-code`);
+}
+
+/** 退出家庭组 */
+export function leaveGroup(groupId: string): Promise<{ success: boolean }> {
+  return del<{ success: boolean }>(`/api/group/${groupId}/members/me`);
+}
+
+/** 解散家庭组 */
+export function disbandGroup(groupId: string): Promise<{ success: boolean }> {
+  return del<{ success: boolean }>(`/api/group/${groupId}`);
 }

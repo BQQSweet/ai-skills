@@ -69,6 +69,14 @@ If the task is about:
 - prefer following existing uni-app patterns instead of introducing web-only assumptions
 - check mobile, H5, and upload-related behavior before changing platform-sensitive code
 
+## Stitch Workflow
+
+- when adding a new page, always provide a Stitch design prompt
+- ask the user for the related Stitch prototype or page ID before implementation planning is treated as final
+- if a Stitch page already exists, anchor the page plan and implementation to that prototype instead of inventing a new layout
+- if no Stitch prototype exists yet, propose creating or selecting one before implementation starts
+- when documenting or planning a new page, include the Stitch page ID once the user provides it
+
 ## Validation
 
 Useful commands:

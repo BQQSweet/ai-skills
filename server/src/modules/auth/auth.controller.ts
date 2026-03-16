@@ -24,4 +24,12 @@ export class AuthController {
   async login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
   }
+
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '退出登录（预留服务端注销入口）' })
+  @ApiResponse({ status: 200, description: '退出成功' })
+  async logout() {
+    return this.authService.logout();
+  }
 }

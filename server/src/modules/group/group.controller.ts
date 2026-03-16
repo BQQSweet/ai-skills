@@ -3,6 +3,7 @@ import {
   Post,
   Get,
   Put,
+  Delete,
   Body,
   Param,
   UseGuards,
@@ -54,15 +55,21 @@ export class GroupController {
   @Get(':groupId')
   @UseGuards(JwtAuthGuard, GroupGuard)
   @ApiOperation({ summary: '获取家庭组详情' })
-  async getGroupDetail(@Param('groupId') groupId: string) {
-    return this.groupService.getGroupDetail(groupId);
+  async getGroupDetail(
+    @Param('groupId') groupId: string,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.groupService.getGroupDetail(groupId, userId);
   }
 
   @Get(':groupId/members')
   @UseGuards(JwtAuthGuard, GroupGuard)
   @ApiOperation({ summary: '获取家庭组成员列表' })
-  async getGroupMembers(@Param('groupId') groupId: string) {
-    return this.groupService.getGroupMembers(groupId);
+  async getGroupMembers(
+    @Param('groupId') groupId: string,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.groupService.getGroupMembers(groupId, userId);
   }
 
   @Put(':groupId/invite-code')
@@ -73,5 +80,27 @@ export class GroupController {
     @CurrentUser('id') userId: string,
   ) {
     return this.groupService.refreshInviteCode(groupId, userId);
+  }
+
+  @Delete(':groupId/members/me')
+  @UseGuards(JwtAuthGuard, GroupGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '退出家庭组（普通成员）' })
+  async leaveGroup(
+    @Param('groupId') groupId: string,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.groupService.leaveGroup(groupId, userId);
+  }
+
+  @Delete(':groupId')
+  @UseGuards(JwtAuthGuard, GroupGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '解散家庭组（仅组长且仅剩本人）' })
+  async disbandGroup(
+    @Param('groupId') groupId: string,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.groupService.disbandGroup(groupId, userId);
   }
 }

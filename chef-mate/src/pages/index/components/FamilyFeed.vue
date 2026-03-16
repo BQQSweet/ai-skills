@@ -80,7 +80,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from "vue";
+import { computed, watch } from "vue";
 import { useFeedStore } from "@/stores/feed";
 import { useGroupStore } from "@/stores/group";
 import type { FeedItem, FeedActionType } from "@/types/feed";
@@ -140,11 +140,17 @@ function formatTime(dateStr: string) {
   return date.toLocaleDateString("zh-CN");
 }
 
-onMounted(async () => {
-  if (groupStore.currentGroup) {
-    await feedStore.fetchFeedList(groupStore.currentGroup.id, true);
-  }
-});
+watch(
+  () => groupStore.currentGroup?.id,
+  async (groupId) => {
+    if (!groupId) {
+      feedStore.clearFeed();
+      return;
+    }
+
+    await feedStore.fetchFeedList(groupId, true);
+  },
+);
 
 const handleFeedClick = (item: FeedItem) => {
   // TODO: 根据动作类型跳转到对应页面

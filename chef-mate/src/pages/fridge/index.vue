@@ -108,7 +108,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { computed, ref } from "vue";
+import { onShow } from "@dcloudio/uni-app";
 import FridgeHeader from "./components/FridgeHeader.vue";
 import FridgeAiBanner from "./components/FridgeAiBanner.vue";
 import FridgeItemCard from "./components/FridgeItemCard.vue";
@@ -119,11 +120,13 @@ import {
   clearExpiredItems,
 } from "@/services/fridge";
 import { BASE_URL } from "@/utils/env";
+import { useGroupStore } from "@/stores/group";
 import type { FridgeItem, FridgeItemUI } from "@/types/fridge";
 import { getExpiryStatus } from "@/utils/expiry";
 
 const searchKeyword = ref("");
 const uToastRef = ref();
+const groupStore = useGroupStore();
 
 // ---------- 分类 → 样式映射 ----------
 const categoryStyleMap: Record<string, { bgClass: string; emoji: string }> = {
@@ -166,16 +169,25 @@ function transformItem(raw: FridgeItem): FridgeItemUI {
 const inventoryList = ref<FridgeItemUI[]>([]);
 
 const loadItems = async () => {
+  if (!groupStore.currentGroup) {
+    await groupStore.fetchMyGroups();
+  }
+
+  if (!groupStore.currentGroup) {
+    inventoryList.value = [];
+    return;
+  }
+
   try {
-    const res = await getFridgeItems();
+    const res = await getFridgeItems(groupStore.currentGroup.id);
     inventoryList.value = (res as FridgeItem[]).map(transformItem);
   } catch (e: unknown) {
     console.error("Failed to load fridge items:", e);
   }
 };
 
-onMounted(() => {
-  loadItems();
+onShow(() => {
+  void loadItems();
 });
 
 const expiredCount = computed(
@@ -228,9 +240,9 @@ const handleDeleteItem = (item: FridgeItemUI) => {
 const confirmDelete = async () => {
   showDeleteModal.value = false;
   const item = pendingDeleteItem.value;
-  if (!item) return;
+  if (!item || !groupStore.currentGroup) return;
   try {
-    await deleteFridgeItem(item.id);
+    await deleteFridgeItem(item.id, groupStore.currentGroup.id);
     inventoryList.value = inventoryList.value.filter((i) => i.id !== item.id);
     uToastRef.value?.show({ type: "success", message: `${item.name} 已出库` });
   } catch (e: unknown) {
@@ -244,8 +256,9 @@ const showClearExpiredModal = ref(false);
 
 const confirmClearExpired = async () => {
   showClearExpiredModal.value = false;
+  if (!groupStore.currentGroup) return;
   try {
-    const res = await clearExpiredItems();
+    const res = await clearExpiredItems(groupStore.currentGroup.id);
     const count = (res as { cleared: number })?.cleared || 0;
     inventoryList.value = inventoryList.value.filter(
       (i) => i.statusType !== "error",

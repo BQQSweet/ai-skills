@@ -17,6 +17,18 @@ let GroupService = class GroupService {
     constructor(prisma) {
         this.prisma = prisma;
     }
+    async getActiveGroupById(groupId) {
+        const group = await this.prisma.group.findFirst({
+            where: {
+                id: groupId,
+                deleted_at: null,
+            },
+        });
+        if (!group) {
+            throw new common_1.NotFoundException('家庭组不存在');
+        }
+        return group;
+    }
     generateInviteCode() {
         const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
         let code = '';
@@ -62,12 +74,17 @@ let GroupService = class GroupService {
             name: group.name,
             inviteCode: group.invite_code,
             ownerId: group.owner_id,
+            role: 'owner',
+            memberCount: 1,
             createdAt: group.created_at,
         };
     }
     async joinByInviteCode(userId, dto) {
-        const group = await this.prisma.group.findUnique({
-            where: { invite_code: dto.inviteCode },
+        const group = await this.prisma.group.findFirst({
+            where: {
+                invite_code: dto.inviteCode,
+                deleted_at: null,
+            },
         });
         if (!group) {
             throw new common_1.NotFoundException('邀请码无效或已失效');
@@ -115,7 +132,9 @@ let GroupService = class GroupService {
                 },
             },
         });
-        return memberships.map((m) => ({
+        return memberships
+            .filter((m) => m.group.deleted_at === null)
+            .map((m) => ({
             id: m.group.id,
             name: m.group.name,
             inviteCode: m.group.invite_code,
@@ -130,9 +149,12 @@ let GroupService = class GroupService {
             createdAt: m.group.created_at,
         }));
     }
-    async getGroupDetail(groupId) {
-        const group = await this.prisma.group.findUnique({
-            where: { id: groupId },
+    async getGroupDetail(groupId, userId) {
+        const group = await this.prisma.group.findFirst({
+            where: {
+                id: groupId,
+                deleted_at: null,
+            },
             include: {
                 members: {
                     include: {
@@ -151,11 +173,13 @@ let GroupService = class GroupService {
         if (!group) {
             throw new common_1.NotFoundException('家庭组不存在');
         }
+        const currentMember = group.members.find((member) => member.user_id === userId);
         return {
             id: group.id,
             name: group.name,
             inviteCode: group.invite_code,
             ownerId: group.owner_id,
+            role: currentMember?.role || 'member',
             memberCount: group.members.length,
             members: group.members.map((m) => ({
                 id: m.user.id,
@@ -167,9 +191,12 @@ let GroupService = class GroupService {
             createdAt: group.created_at,
         };
     }
-    async getGroupMembers(groupId) {
-        const group = await this.prisma.group.findUnique({
-            where: { id: groupId },
+    async getGroupMembers(groupId, userId) {
+        const group = await this.prisma.group.findFirst({
+            where: {
+                id: groupId,
+                deleted_at: null,
+            },
             include: {
                 members: {
                     include: {
@@ -187,25 +214,25 @@ let GroupService = class GroupService {
         if (!group) {
             throw new common_1.NotFoundException('家庭组不存在');
         }
+        const currentMember = group.members.find((member) => member.user_id === userId);
         return {
             id: group.id,
             name: group.name,
             inviteCode: group.invite_code,
+            ownerId: group.owner_id,
+            role: currentMember?.role || 'member',
+            memberCount: group.members.length,
             members: group.members.map((m) => ({
                 id: m.user.id,
                 nickname: m.user.nickname,
                 avatarUrl: m.user.avatar_url,
                 role: m.role,
             })),
+            createdAt: group.created_at,
         };
     }
     async refreshInviteCode(groupId, userId) {
-        const group = await this.prisma.group.findUnique({
-            where: { id: groupId },
-        });
-        if (!group) {
-            throw new common_1.NotFoundException('家庭组不存在');
-        }
+        const group = await this.getActiveGroupById(groupId);
         if (group.owner_id !== userId) {
             throw new common_1.BadRequestException('只有组长可以刷新邀请码');
         }
@@ -225,6 +252,48 @@ let GroupService = class GroupService {
             data: { invite_code: newCode },
         });
         return { inviteCode: updated.invite_code };
+    }
+    async leaveGroup(groupId, userId) {
+        await this.getActiveGroupById(groupId);
+        const membership = await this.prisma.groupMember.findUnique({
+            where: {
+                user_id_group_id: { user_id: userId, group_id: groupId },
+            },
+        });
+        if (!membership) {
+            throw new common_1.NotFoundException('家庭组成员关系不存在');
+        }
+        if (membership.role === 'owner') {
+            throw new common_1.BadRequestException('组长不能退出家庭组，请解散家庭组');
+        }
+        await this.prisma.groupMember.delete({
+            where: {
+                user_id_group_id: { user_id: userId, group_id: groupId },
+            },
+        });
+        return { success: true };
+    }
+    async disbandGroup(groupId, userId) {
+        const group = await this.getActiveGroupById(groupId);
+        if (group.owner_id !== userId) {
+            throw new common_1.BadRequestException('只有组长可以解散家庭组');
+        }
+        const memberCount = await this.prisma.groupMember.count({
+            where: { group_id: groupId },
+        });
+        if (memberCount > 1) {
+            throw new common_1.BadRequestException('请先让其他成员退出后再解散家庭组');
+        }
+        await this.prisma.$transaction([
+            this.prisma.group.update({
+                where: { id: groupId },
+                data: { deleted_at: new Date() },
+            }),
+            this.prisma.groupMember.deleteMany({
+                where: { group_id: groupId },
+            }),
+        ]);
+        return { success: true };
     }
 };
 exports.GroupService = GroupService;

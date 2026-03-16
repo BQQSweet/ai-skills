@@ -95,6 +95,13 @@
       }
     },
     {
+      "path": "pages/group/index",
+      "style": {
+        "navigationBarTitleText": "我的家庭组",
+        "navigationStyle": "custom"
+      }
+    },
+    {
       "path": "pages/group/invite",
       "style": {
         "navigationBarTitleText": "邀请家人",

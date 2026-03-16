@@ -5,7 +5,7 @@ export declare class FridgeController {
     private readonly fridgeService;
     constructor(fridgeService: FridgeService);
     recognizeLabel(dto: RecognizeLabelDto): Promise<any>;
-    addItem(dto: CreateFridgeItemDto, req: any): Promise<{
+    addItem(dto: CreateFridgeItemDto): Promise<{
         name: string;
         id: string;
         created_at: Date;
@@ -21,7 +21,7 @@ export declare class FridgeController {
         source: string;
         status: string;
     }>;
-    listItems(req: any): Promise<{
+    listItems(groupId: string): Promise<{
         name: string;
         id: string;
         created_at: Date;
@@ -37,10 +37,10 @@ export declare class FridgeController {
         source: string;
         status: string;
     }[]>;
-    clearExpired(req: any): Promise<{
+    clearExpired(groupId: string): Promise<{
         cleared: number;
     }>;
-    deleteItem(id: string): Promise<{
+    deleteItem(id: string, groupId: string): Promise<{
         name: string;
         id: string;
         created_at: Date;

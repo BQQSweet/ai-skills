@@ -36,6 +36,7 @@ There is no single root package manager workspace. Each subproject has its own `
 
 Useful documents:
 
+- `task_plan.md`: current delivery priorities, completed items, and follow-up sequencing
 - `docs/ChefMate-需求设计文档.md`: product goals, user stories, feature list
 - `docs/ChefMate-前端开发设计文档.md`: frontend page flows and component ideas
 - `docs/ChefMate-后端开发设计文档.md`: backend architecture, API conventions, AI module design
@@ -158,6 +159,13 @@ Behavioral conventions:
 - auth token is injected automatically in `src/services/request.ts`
 - if token expires, client clears auth and redirects to the login page
 - some file upload flows use `uni.uploadFile` or `fetch` directly instead of the generic request wrapper
+
+Frontend prototype workflow:
+
+- for new frontend pages, provide a Stitch design prompt before implementation planning
+- ask the user for the target Stitch prototype or page ID before treating the page spec as final
+- if the user already has a Stitch page ID, treat that prototype as the primary design reference
+- if no Stitch prototype exists yet, propose creating or selecting one before implementation starts
 
 ### 4.3 `admin`
 

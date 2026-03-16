@@ -131,7 +131,7 @@
           </view>
         </view>
         <view
-          @click="navToGroupInvite"
+          @click="navToGroupManage"
           class="flex items-center gap-4 p-4 bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700 active:bg-slate-50 dark:active:bg-slate-800 cursor-pointer"
         >
           <view
@@ -240,11 +240,44 @@
       </view>
     </view>
 
+    <view class="px-6 pt-8 pb-4">
+      <view
+        class="flex items-center justify-center rounded-2xl border border-red-100 bg-red-50/80 py-4 text-red-500 active:opacity-70"
+        :class="loggingOut ? 'opacity-70' : ''"
+        @click="openLogoutConfirm"
+      >
+        <text class="material-symbols-outlined text-lg">logout</text>
+        <text class="ml-2 text-sm font-bold">
+          {{ loggingOut ? "退出中..." : "退出登录" }}
+        </text>
+      </view>
+    </view>
+
+    <up-modal
+      :show="showLogoutModal"
+      title="退出登录"
+      content="退出后需要重新登录才能继续使用 ChefMate，确定退出吗？"
+      showCancelButton
+      confirmText="退出"
+      confirmColor="#ef4444"
+      @confirm="handleLogout"
+      @cancel="showLogoutModal = false"
+      @close="showLogoutModal = false"
+    ></up-modal>
+
     <CmTabBar :current="4" />
   </view>
 </template>
 
 <script setup lang="ts">
+import { ref } from "vue";
+import * as authService from "@/services/auth";
+import { useUserStore } from "@/stores/user";
+
+const userStore = useUserStore();
+const showLogoutModal = ref(false);
+const loggingOut = ref(false);
+
 const navToLanguageSettings = () => {
   uni.navigateTo({
     url: "/pages/profile/speech-language",
@@ -257,9 +290,30 @@ const navToDietaryPreferences = () => {
   });
 };
 
-const navToGroupInvite = () => {
+const navToGroupManage = () => {
   uni.navigateTo({
-    url: "/pages/group/invite",
+    url: "/pages/group/index",
   });
+};
+
+const openLogoutConfirm = () => {
+  if (loggingOut.value) return;
+  showLogoutModal.value = true;
+};
+
+const handleLogout = async () => {
+  if (loggingOut.value) return;
+
+  loggingOut.value = true;
+  showLogoutModal.value = false;
+
+  try {
+    await authService.logout();
+  } catch (error) {
+    console.error("[profile] 服务端退出失败，继续执行本地退出", error);
+  } finally {
+    await userStore.logout();
+    loggingOut.value = false;
+  }
 };
 </script>

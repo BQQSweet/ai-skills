@@ -20,16 +20,29 @@ let GroupGuard = class GroupGuard {
     async canActivate(context) {
         const request = context.switchToHttp().getRequest();
         const user = request.user;
-        const groupId = request.params.groupId || request.body.groupId || request.query.groupId;
+        const groupId = request.params?.groupId ||
+            request.body?.groupId ||
+            request.query?.groupId;
+        if (!user?.id) {
+            throw new common_1.ForbiddenException('无权限访问');
+        }
         if (!groupId) {
             throw new common_1.ForbiddenException('缺少家庭组 ID');
         }
-        const member = await this.prisma.groupMember.findUnique({
+        const member = await this.prisma.groupMember.findFirst({
             where: {
-                user_id_group_id: { user_id: user.id, group_id: groupId },
+                user_id: user.id,
+                group_id: groupId,
+            },
+            include: {
+                group: {
+                    select: {
+                        deleted_at: true,
+                    },
+                },
             },
         });
-        if (!member) {
+        if (!member || member.group.deleted_at) {
             throw new common_1.ForbiddenException('非组内成员，无权操作');
         }
         request.groupRole = member.role;

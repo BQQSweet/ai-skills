@@ -125,6 +125,7 @@
 <script setup lang="ts">
 import { ref, reactive, watch } from "vue";
 import { addFridgeItem } from "@/services/fridge";
+import { useGroupStore } from "@/stores/group";
 import type { RecognizedFridgeData } from "@/types/fridge";
 
 const props = defineProps<{
@@ -138,6 +139,7 @@ const emit = defineEmits(["update:show", "added"]);
 const uToastRef = ref();
 const isLoading = ref(false);
 const isSubmitting = ref(false);
+const groupStore = useGroupStore();
 
 const categories = [
   "肉禽",
@@ -208,6 +210,10 @@ const close = () => {
 };
 
 const handleSubmit = async () => {
+  if (!groupStore.currentGroup) {
+    uToastRef.value?.show({ message: "请先加入家庭组", type: "error" });
+    return;
+  }
   if (!form.name.trim()) {
     uToastRef.value?.show({ message: "请输入食材名称", type: "error" });
     return;
@@ -220,6 +226,7 @@ const handleSubmit = async () => {
   isSubmitting.value = true;
   try {
     await addFridgeItem({
+      groupId: groupStore.currentGroup.id,
       name: form.name,
       category: form.category,
       quantity: Number(form.quantity) || 1,

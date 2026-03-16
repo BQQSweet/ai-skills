@@ -66,6 +66,7 @@ pnpm run dev:h5
 ## 文档说明
 
 - `PROJECT_CONTEXT.zh-CN.md`：最完整的仓库上下文地图，适合人和模型做深入理解
+- `PROJECT_CONTEXT.zh-CN.md` 也记录了新增前端页面时的 Stitch 原型协作流程
 - `LLM_HANDOFF.zh-CN.md`：最短可用的速读版
 - `THREAD_START_PROMPT.md`：给新线程或新模型直接复用的标准启动提示词
 - `docs/ChefMate-需求设计文档.md`：产品目标、用户故事、功能范围

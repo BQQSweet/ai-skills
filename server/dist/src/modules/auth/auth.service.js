@@ -132,6 +132,9 @@ let AuthService = class AuthService {
             })),
         };
     }
+    async logout() {
+        return null;
+    }
     async verifyCodeAndGetUser(phone, code) {
         const storedCode = await this.redisClient.get(`auth:code:${phone}`);
         if (!storedCode || storedCode !== code) {
