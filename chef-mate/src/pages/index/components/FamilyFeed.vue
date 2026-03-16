@@ -58,9 +58,20 @@
         </view>
         <view class="flex-1">
           <view class="text-sm text-text-main dark:text-white leading-normal">
-            <text class="font-bold">{{ item.userName }}</text> {{ item.action }}
-            <text class="font-bold text-primary">{{ item.target }}</text>
-            {{ item.actionSuffix }}
+            <text class="font-bold">{{ item.userName }}</text>
+            {{ item.action || "" }}
+            <text
+              class="font-bold"
+              :class="
+                canOpenShoppingList(item)
+                  ? 'text-primary cursor-pointer active:opacity-70'
+                  : 'text-primary'
+              "
+              @click.stop="openShoppingList(item)"
+            >
+              {{ item.target }}
+            </text>
+            {{ item.actionSuffix || "" }}
           </view>
           <text class="block text-xs text-text-muted mt-1">{{
             formatTime(item.createdAt)
@@ -155,6 +166,17 @@ watch(
 const handleFeedClick = (item: FeedItem) => {
   // TODO: 根据动作类型跳转到对应页面
   console.log("Feed item clicked:", item);
+};
+
+const canOpenShoppingList = (item: FeedItem) =>
+  item.actionType === "shopping_added" && Boolean(item.targetId);
+
+const openShoppingList = (item: FeedItem) => {
+  if (!canOpenShoppingList(item)) return;
+
+  uni.navigateTo({
+    url: `/pages/shopping/index?listId=${encodeURIComponent(item.targetId || "")}`,
+  });
 };
 
 const handleGoShopping = () => {

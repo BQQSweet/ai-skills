@@ -5,6 +5,38 @@ import { PrismaService } from '@/common/prisma.service';
 export class FeedService {
   constructor(private readonly prisma: PrismaService) {}
 
+  private mapActionText(actionType: string) {
+    const actionMap: Record<string, { action: string; actionSuffix: string }> = {
+      shopping_added: {
+        action: '新增了',
+        actionSuffix: '待采购',
+      },
+      shopping_purchased: {
+        action: '购买了',
+        actionSuffix: '已买到',
+      },
+      recipe_cooked: {
+        action: '完成了',
+        actionSuffix: '今日下厨',
+      },
+      fridge_added: {
+        action: '放入了',
+        actionSuffix: '冰箱',
+      },
+      fridge_expired: {
+        action: '清理了',
+        actionSuffix: '已过期',
+      },
+    };
+
+    return (
+      actionMap[actionType] || {
+        action: '更新了',
+        actionSuffix: '',
+      }
+    );
+  }
+
   /**
    * 获取家庭组动态列表
    * 自动清理 7 天前的数据
@@ -52,6 +84,7 @@ export class FeedService {
     // 组装返回数据
     const items = feeds.map((feed: any) => {
       const user = userMap.get(feed.user_id);
+      const { action, actionSuffix } = this.mapActionText(feed.action_type);
       return {
         id: feed.id,
         groupId: feed.group_id,
@@ -59,9 +92,11 @@ export class FeedService {
         userName: user?.nickname || '未知用户',
         avatarUrl: user?.avatar_url,
         actionType: feed.action_type,
+        action,
         target: feed.target,
+        actionSuffix,
         targetId: feed.target_id,
-        createdAt: feed.created_at.toISOString(),
+        createdAt: feed.created_at,
       };
     });
 

@@ -151,7 +151,16 @@ const handleShare = () => {
 };
 
 const handleStartCooking = (recipe: Recipe) => {
-  // TODO: 跳转到烹饪引导页
-  uni.$u.toast(`开始下厨: ${recipe.title}`);
+  const query = [
+    `recipeId=${encodeURIComponent(recipe.id || "")}`,
+    `recipeTitle=${encodeURIComponent(recipe.title || "")}`,
+    `ingredients=${encodeURIComponent(
+      JSON.stringify(recipe.ingredients || []),
+    )}`,
+  ].join("&");
+
+  uni.navigateTo({
+    url: `/pages/shopping/index?${query}`,
+  });
 };
 </script>

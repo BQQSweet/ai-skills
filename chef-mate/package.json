@@ -4,7 +4,7 @@
   "scripts": {
     "update-ip": "./scripts/update-ip.sh",
     "dev:custom": "uni -p",
-    "dev:h5": "pnpm run update-ip && uni",
+    "dev:h5": "pnpm run update-ip && uni --host",
     "dev:h5:ssr": "uni --ssr",
     "dev:mp-alipay": "uni -p mp-alipay",
     "dev:mp-baidu": "uni -p mp-baidu",

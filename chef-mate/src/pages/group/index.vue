@@ -40,12 +40,13 @@
                   {{ currentGroup.memberCount || memberList.length }} 位成员正在协作
                 </text>
               </view>
-              <text
-                class="rounded-full px-3 py-1 text-xs font-bold"
-                :class="isOwner ? 'bg-primary text-white' : 'bg-slate-100 text-slate-500'"
+              <CmTag
+                :tone="isOwner ? 'primary' : 'neutral'"
+                :variant="isOwner ? 'solid' : 'soft'"
+                size="xs"
               >
                 {{ currentRoleLabel }}
-              </text>
+              </CmTag>
             </view>
 
             <view
@@ -109,12 +110,13 @@
                   {{ member.phone || "ChefMate 家庭成员" }}
                 </text>
               </view>
-              <text
-                class="rounded-full px-2.5 py-1 text-[10px] font-bold"
-                :class="roleBadgeClass(member.role)"
+              <CmTag
+                :tone="roleTagTone(member.role)"
+                :variant="member.role === 'owner' ? 'solid' : 'soft'"
+                size="xs"
               >
                 {{ roleLabelMap[member.role] }}
-              </text>
+              </CmTag>
             </view>
           </view>
         </view>
@@ -424,10 +426,10 @@ const currentRoleLabel = computed(() => {
   return roleLabelMap[currentGroup.value.role];
 });
 
-function roleBadgeClass(role: GroupRole) {
-  if (role === "owner") return "bg-primary text-white";
-  if (role === "admin") return "bg-blue-100 text-blue-600";
-  return "bg-slate-100 text-slate-500";
+function roleTagTone(role: GroupRole) {
+  if (role === "owner") return "primary";
+  if (role === "admin") return "info";
+  return "neutral";
 }
 
 function toggleAddGroupPanel() {

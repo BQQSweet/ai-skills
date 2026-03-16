@@ -5,6 +5,7 @@ import {
   CallHandler,
 } from '@nestjs/common';
 import { Observable, map } from 'rxjs';
+import dayjs from 'dayjs';
 
 export interface ApiResponse<T> {
   code: number;
@@ -24,6 +25,27 @@ export class TransformInterceptor<T> implements NestInterceptor<
   T,
   ApiResponse<T>
 > {
+  private formatDateValue(value: unknown): unknown {
+    if (value instanceof Date) {
+      return dayjs(value).format('YYYY-MM-DD HH:mm:ss');
+    }
+
+    if (Array.isArray(value)) {
+      return value.map((item) => this.formatDateValue(item));
+    }
+
+    if (value && typeof value === 'object') {
+      return Object.fromEntries(
+        Object.entries(value).map(([key, nestedValue]) => [
+          key,
+          this.formatDateValue(nestedValue),
+        ]),
+      );
+    }
+
+    return value;
+  }
+
   intercept(
     context: ExecutionContext,
     next: CallHandler,
@@ -32,7 +54,7 @@ export class TransformInterceptor<T> implements NestInterceptor<
     return next.handle().pipe(
       map((data) => ({
         code: 0,
-        data,
+        data: this.formatDateValue(data) as T,
         msg: 'success',
       })),
     );

@@ -16,6 +16,8 @@ import {
   CreateShoppingListDto,
   AddShoppingItemDto,
   UpdateShoppingItemDto,
+  GenerateShoppingListFromRecipeDto,
+  AssignShoppingItemDto,
 } from './dto/shopping.dto';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
@@ -26,6 +28,21 @@ import { CurrentUser } from '@/common/decorators/current-user.decorator';
 @UseGuards(JwtAuthGuard)
 export class ShoppingController {
   constructor(private readonly shoppingService: ShoppingService) {}
+
+  @Post(':groupId/from-recipe')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '基于食谱生成协作采购清单' })
+  async createShoppingListFromRecipe(
+    @Param('groupId') groupId: string,
+    @CurrentUser('id') userId: string,
+    @Body() dto: GenerateShoppingListFromRecipeDto,
+  ) {
+    return this.shoppingService.createShoppingListFromRecipe(
+      groupId,
+      userId,
+      dto,
+    );
+  }
 
   @Post(':groupId')
   @HttpCode(HttpStatus.OK)
@@ -94,6 +111,16 @@ export class ShoppingController {
     @CurrentUser('id') userId: string,
   ) {
     return this.shoppingService.claimShoppingItem(itemId, userId);
+  }
+
+  @Put('item/:itemId/assign')
+  @ApiOperation({ summary: '组长分配购物任务' })
+  async assignShoppingItem(
+    @Param('itemId') itemId: string,
+    @CurrentUser('id') userId: string,
+    @Body() dto: AssignShoppingItemDto,
+  ) {
+    return this.shoppingService.assignShoppingItem(itemId, userId, dto);
   }
 
   @Put('item/:itemId/purchase')
