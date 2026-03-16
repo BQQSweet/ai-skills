@@ -58,6 +58,13 @@ export class GroupController {
     return this.groupService.getGroupDetail(groupId);
   }
 
+  @Get(':groupId/members')
+  @UseGuards(JwtAuthGuard, GroupGuard)
+  @ApiOperation({ summary: '获取家庭组成员列表' })
+  async getGroupMembers(@Param('groupId') groupId: string) {
+    return this.groupService.getGroupMembers(groupId);
+  }
+
   @Put(':groupId/invite-code')
   @UseGuards(JwtAuthGuard, GroupGuard)
   @ApiOperation({ summary: '刷新邀请码（仅组长）' })

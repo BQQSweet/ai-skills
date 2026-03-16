@@ -119,6 +119,8 @@ import {
   clearExpiredItems,
 } from "@/services/fridge";
 import { BASE_URL } from "@/utils/env";
+import type { FridgeItem, FridgeItemUI } from "@/types/fridge";
+import { getExpiryStatus } from "@/utils/expiry";
 
 const searchKeyword = ref("");
 const uToastRef = ref();
@@ -137,46 +139,12 @@ const categoryStyleMap: Record<string, { bgClass: string; emoji: string }> = {
 };
 
 // ---------- 过期状态计算 ----------
-function calcExpireStatus(expireDateStr: string) {
-  const now = new Date();
-  const expire = new Date(expireDateStr);
-  const diffDays = Math.ceil(
-    (expire.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
-  );
-
-  if (diffDays < 0) {
-    return {
-      statusType: "error",
-      statusText: "已过期",
-      statusIcon: "error",
-      customImageStyle: "filter: grayscale(0.3)",
-    };
-  }
-  if (diffDays === 0) {
-    return {
-      statusType: "warning",
-      statusText: "今日到期",
-      statusIcon: "warning",
-    };
-  }
-  if (diffDays <= 3) {
-    return {
-      statusType: "warning",
-      statusText: `还有${diffDays}天过期`,
-      statusIcon: "warning",
-    };
-  }
-  return {
-    statusType: "success",
-    statusText: `还有${diffDays}天`,
-    statusIcon: "check_circle",
-  };
-}
+// 已迁移到 @/utils/expiry.ts
 
 // ---------- API → UI 数据转换 ----------
-function transformItem(raw: any) {
+function transformItem(raw: FridgeItem): FridgeItemUI {
   const style = categoryStyleMap[raw.category] || categoryStyleMap["其他"];
-  const expire = calcExpireStatus(raw.expire_date);
+  const expire = getExpiryStatus(raw.expire_date);
 
   return {
     id: raw.id,
@@ -195,13 +163,13 @@ function transformItem(raw: any) {
 }
 
 // ---------- 数据 ----------
-const inventoryList = ref<any[]>([]);
+const inventoryList = ref<FridgeItemUI[]>([]);
 
 const loadItems = async () => {
   try {
     const res = await getFridgeItems();
-    inventoryList.value = (res as any[]).map(transformItem);
-  } catch (e: any) {
+    inventoryList.value = (res as FridgeItem[]).map(transformItem);
+  } catch (e: unknown) {
     console.error("Failed to load fridge items:", e);
   }
 };
@@ -222,7 +190,7 @@ const selectedIngredients = computed(() =>
   inventoryList.value.filter((i) => i.selected).map((i) => i.name),
 );
 
-const toggleSelectItem = (item: any) => {
+const toggleSelectItem = (item: FridgeItemUI) => {
   item.selected = !item.selected;
 };
 
@@ -242,7 +210,7 @@ const handleSort = () => {
   });
 };
 
-const handleEditItem = (item: any) => {
+const handleEditItem = (item: FridgeItemUI) => {
   uToastRef.value?.show({
     type: "default",
     message: "编辑功能开发中",
@@ -250,9 +218,9 @@ const handleEditItem = (item: any) => {
 };
 
 const showDeleteModal = ref(false);
-const pendingDeleteItem = ref<any>(null);
+const pendingDeleteItem = ref<FridgeItemUI | null>(null);
 
-const handleDeleteItem = (item: any) => {
+const handleDeleteItem = (item: FridgeItemUI) => {
   pendingDeleteItem.value = item;
   showDeleteModal.value = true;
 };
@@ -265,7 +233,7 @@ const confirmDelete = async () => {
     await deleteFridgeItem(item.id);
     inventoryList.value = inventoryList.value.filter((i) => i.id !== item.id);
     uToastRef.value?.show({ type: "success", message: `${item.name} 已出库` });
-  } catch (e: any) {
+  } catch (e: unknown) {
     uToastRef.value?.show({ type: "error", message: "出库失败" });
   } finally {
     pendingDeleteItem.value = null;
@@ -278,7 +246,7 @@ const confirmClearExpired = async () => {
   showClearExpiredModal.value = false;
   try {
     const res = await clearExpiredItems();
-    const count = (res as any)?.cleared || 0;
+    const count = (res as { cleared: number })?.cleared || 0;
     inventoryList.value = inventoryList.value.filter(
       (i) => i.statusType !== "error",
     );
@@ -286,7 +254,7 @@ const confirmClearExpired = async () => {
       type: "success",
       message: `已清理 ${count} 件过期食材`,
     });
-  } catch (e: any) {
+  } catch (e: unknown) {
     uToastRef.value?.show({ type: "error", message: "清理失败" });
   }
 };

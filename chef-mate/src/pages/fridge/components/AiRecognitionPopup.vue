@@ -107,18 +107,12 @@
       </view>
 
       <view class="p-6 bg-white border-t border-slate-100 pb-safe shrink-0">
-        <view class="relative">
-          <view
-            class="absolute inset-y-0 left-4 flex items-center pointer-events-none text-slate-400 z-10"
-          >
-            <text class="material-symbols-outlined">edit</text>
-          </view>
-          <input
-            class="block w-full pl-12 pr-4 py-4 rounded-2xl bg-slate-50 border-none text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-primary/50 text-base box-border"
-            placeholder="手动输入食材名称"
-            type="text"
-          />
-        </view>
+        <CmInput
+          v-model="manualInput"
+          icon="edit"
+          placeholder="手动输入食材名称"
+          type="text"
+        />
         <button
           class="w-full mt-4 m-0 border-none after:hidden bg-primary text-white h-[56px] flex justify-center items-center rounded-2xl font-bold text-[17px] shadow-[0_10px_15px_-3px_rgba(255,159,10,0.3)] active:scale-[0.98] transition-transform"
           @click="$emit('update:show', false)"
@@ -131,9 +125,14 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from "vue";
+import CmInput from "@/components/CmInput/CmInput.vue";
+
 defineProps<{
   show: boolean;
 }>();
 
 defineEmits(["update:show"]);
+
+const manualInput = ref("");
 </script>

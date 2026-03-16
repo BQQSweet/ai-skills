@@ -86,6 +86,20 @@
         "navigationBarTitleText": "饮食偏好设置",
         "navigationStyle": "custom"
       }
+    },
+    {
+      "path": "pages/shopping/index",
+      "style": {
+        "navigationBarTitleText": "购物清单",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/group/invite",
+      "style": {
+        "navigationBarTitleText": "邀请家人",
+        "navigationStyle": "custom"
+      }
     }
   ],
   "tabBar": {

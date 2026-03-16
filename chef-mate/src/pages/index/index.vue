@@ -1,6 +1,6 @@
 <template>
   <view
-    class="relative flex flex-col min-h-screen w-full bg-background-light dark:bg-[#231b0f] text-text-main dark:text-white font-sans transition-colors duration-200 overflow-hidden"
+    class="relative flex flex-col min-h-screen w-full bg-background-light dark:bg-background-dark text-text-main dark:text-white font-sans transition-colors duration-200 overflow-hidden"
   >
     <!-- Header -->
     <HomeHeader
@@ -49,6 +49,7 @@ import CmTabBar from "@/components/CmTabBar/CmTabBar.vue";
 import { useUserStore } from "@/stores/user";
 import { getRecommendedRecipes, type Recipe } from "@/services/recipe";
 import { getFridgeItems } from "@/services/fridge";
+import type { FridgeItem } from "@/types/fridge";
 
 const userStore = useUserStore();
 
@@ -61,7 +62,7 @@ const recommendedRecipes = ref<Recipe[]>([]);
 const mealTag = ref("今日推荐");
 
 // 冰箱食材
-const fridgeItems = ref<any[]>([]);
+const fridgeItems = ref<FridgeItem[]>([]);
 
 onShow(async () => {
   try {
@@ -72,7 +73,7 @@ onShow(async () => {
 
     // Assigned fridge data to ref
     if (fridgeRes) {
-      fridgeItems.value = (fridgeRes as any).data || fridgeRes;
+      fridgeItems.value = (fridgeRes as FridgeItem[] & { data?: FridgeItem[] })?.data || fridgeRes as FridgeItem[];
     }
 
     if (recipeRes && recipeRes.length > 0) {

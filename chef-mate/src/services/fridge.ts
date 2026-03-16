@@ -1,4 +1,5 @@
 import { post, get, del } from "./request";
+import type { FridgeItem } from "@/types/fridge";
 
 /** AI 识别食材标签图片 */
 export function recognizeLabel(image: string) {
@@ -19,12 +20,12 @@ export interface AddFridgeItemParams {
 }
 
 export function addFridgeItem(data: AddFridgeItemParams) {
-  return post("/api/fridge/items", data);
+  return post<FridgeItem>("/api/fridge/items", data);
 }
 
 /** 查询冰箱食材列表 */
 export function getFridgeItems() {
-  return get("/api/fridge/items");
+  return get<FridgeItem[]>("/api/fridge/items");
 }
 
 /** 删除冰箱食材 */
@@ -34,5 +35,5 @@ export function deleteFridgeItem(id: string) {
 
 /** 一键清理过期食材 */
 export function clearExpiredItems() {
-  return del("/api/fridge/items/expired");
+  return del<{ cleared: number }>("/api/fridge/items/expired");
 }

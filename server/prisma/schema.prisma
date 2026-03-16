@@ -144,31 +144,44 @@ model CookingHistory {
 // ========== 购物与协作 ==========
 
 model ShoppingList {
-  id         String   @id @default(uuid()) @db.Uuid
-  group_id   String   @db.Uuid
-  title      String   @db.VarChar(100)
-  status     String   @default("active") @db.VarChar(20)
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  id         String    @id @default(uuid()) @db.Uuid
+  group_id   String    @db.Uuid
+  title      String    @db.VarChar(100)
+  status     String    @default("active") @db.VarChar(20) // active | completed | archived
+  created_by String    @db.Uuid // 创建者（菜谱添加人）
+  recipe_id  String?   @db.Uuid // 关联的菜谱ID（如果是从菜谱生成）
+  source     String    @default("manual") @db.VarChar(20) // manual | recipe
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
 
   group Group          @relation(fields: [group_id], references: [id])
   items ShoppingItem[]
 
+  @@index([group_id, status])
   @@map("shopping_list")
 }
 
 model ShoppingItem {
-  id          String    @id @default(uuid()) @db.Uuid
-  list_id     String    @db.Uuid
-  name        String    @db.VarChar(100)
-  quantity    Float
-  unit        String    @db.VarChar(20)
-  assigned_to String?   @db.Uuid
-  is_bought   Boolean   @default(false)
-  bought_at   DateTime?
+  id           String    @id @default(uuid()) @db.Uuid
+  list_id      String    @db.Uuid
+  name         String    @db.VarChar(100)
+  category     String    @default("其他") @db.VarChar(50) // 蔬菜、肉类、调料等
+  quantity     Float
+  unit         String    @db.VarChar(20)
+  note         String?   @db.VarChar(200) // 备注
+  status       String    @default("pending") @db.VarChar(20) // pending | claimed | purchased
+  added_by     String    @db.Uuid // 添加者
+  assigned_to  String?   @db.Uuid // 领取者
+  purchased_by String?   @db.Uuid // 购买者
+  is_bought    Boolean   @default(false)
+  bought_at    DateTime?
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
 
   list ShoppingList @relation(fields: [list_id], references: [id])
 
+  @@index([list_id, status])
   @@map("shopping_item")
 }
 
@@ -205,4 +218,19 @@ model Notification {
 
   @@index([user_id, is_read])
   @@map("notification")
+}
+
+// ========== 家庭动态 ==========
+
+model Feed {
+  id          String   @id @default(uuid()) @db.Uuid
+  group_id    String   @db.Uuid
+  user_id     String   @db.Uuid
+  action_type String   @db.VarChar(50) // shopping_purchased | shopping_added | recipe_cooked | fridge_added | fridge_expired
+  target      String   @db.VarChar(200) // 目标对象名称
+  target_id   String?  @db.Uuid // 目标对象ID
+  created_at  DateTime @default(now())
+
+  @@index([group_id, created_at])
+  @@map("feed")
 }

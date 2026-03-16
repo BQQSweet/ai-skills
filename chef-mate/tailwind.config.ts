@@ -28,11 +28,21 @@ const theme: Config["theme"] = {
       },
       background: {
         light: "#fafafa",
+        dark: "#231b0f",
+        input: "#f8f7f5",
+        cooking: "#0a0a0a",
+      },
+      surface: {
+        dark: "#1a150e",
+      },
+      card: {
+        dark: "#2d2418",
       },
       text: {
         main: "#1d160c",
         muted: "#a17c45",
       },
+      wechat: "#07c160",
     },
   },
 };

@@ -129,6 +129,7 @@
 import { ref, watch } from "vue";
 import { recognizeLabel } from "@/services/fridge";
 import ScanResultEditor from "./ScanResultEditor.vue";
+import type { RecognizedFridgeData } from "@/types/fridge";
 
 const props = defineProps<{
   show: boolean;
@@ -152,7 +153,7 @@ const uToastRef = ref();
 const isCapturing = ref(false);
 const capturedImage = ref("");
 const showEditor = ref(false);
-const recognizedData = ref<Record<string, any> | null>(null);
+const recognizedData = ref<RecognizedFridgeData | null>(null);
 const imageBase64 = ref("");
 
 const close = () => {

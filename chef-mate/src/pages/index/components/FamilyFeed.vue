@@ -8,30 +8,51 @@
     <view
       class="rounded-[24rpx] bg-white dark:bg-[#2d2418] shadow-[0_4px_20px_-2px_rgba(29,22,12,0.06)] p-1 overflow-hidden"
     >
+      <!-- Loading State -->
       <view
-        v-for="(item, index) in feedItems"
-        :key="index"
+        v-if="feedStore.loading && feedStore.feedList.length === 0"
+        class="flex items-center justify-center py-12"
+      >
+        <text class="text-text-muted">加载中...</text>
+      </view>
+
+      <!-- Empty State -->
+      <view
+        v-else-if="feedStore.feedList.length === 0"
+        class="flex flex-col items-center justify-center py-12"
+      >
+        <text class="material-symbols-outlined text-4xl text-gray-300 dark:text-gray-600 mb-2">
+          family_restroom
+        </text>
+        <text class="text-text-muted text-sm">暂无家庭动态</text>
+      </view>
+
+      <!-- Feed Items -->
+      <view
+        v-else
+        v-for="(item, index) in displayItems"
+        :key="item.id"
         class="flex items-center gap-4 p-4"
         :class="{
           'border-b border-gray-50 dark:border-slate-800/50':
-            index < feedItems.length - 1,
+            index < displayItems.length - 1,
         }"
         @click="handleFeedClick(item)"
       >
         <view class="relative">
           <image
             class="w-10 h-10 rounded-full object-cover bg-gray-100"
-            :src="item.avatarUrl"
+            :src="item.avatarUrl || 'https://via.placeholder.com/40'"
             mode="aspectFill"
           />
           <view
             class="absolute -bottom-1 -right-1 border-2 p-2.5 border-white dark:border-[#2d2418] rounded-full w-4 h-4 flex items-center justify-center"
-            :class="item.badgeBg"
+            :class="getBadgeStyle(item.actionType).bg"
           >
             <text
               class="material-symbols-outlined text-[10px] font-bold"
-              :class="item.badgeIconColor"
-              >{{ item.badgeIcon }}</text
+              :class="getBadgeStyle(item.actionType).iconColor"
+              >{{ getBadgeStyle(item.actionType).icon }}</text
             >
           </view>
         </view>
@@ -42,7 +63,7 @@
             {{ item.actionSuffix }}
           </view>
           <text class="block text-xs text-text-muted mt-1">{{
-            item.time
+            formatTime(item.createdAt)
           }}</text>
         </view>
       </view>
@@ -59,59 +80,80 @@
 </template>
 
 <script setup lang="ts">
-export interface FeedItem {
-  userName: string;
-  avatarUrl: string;
-  action: string;
-  target: string;
-  actionSuffix: string;
-  time: string;
-  badgeIcon: string;
-  badgeBg: string;
-  badgeIconColor: string;
+import { computed, onMounted } from "vue";
+import { useFeedStore } from "@/stores/feed";
+import { useGroupStore } from "@/stores/group";
+import type { FeedItem, FeedActionType } from "@/types/feed";
+
+const feedStore = useFeedStore();
+const groupStore = useGroupStore();
+
+// 只显示前5条动态
+const displayItems = computed(() => feedStore.feedList.slice(0, 5));
+
+// 根据动作类型获取徽章样式
+function getBadgeStyle(actionType: FeedActionType) {
+  const styles = {
+    shopping_purchased: {
+      icon: "check",
+      bg: "bg-green-100 dark:bg-green-900",
+      iconColor: "text-green-600 dark:text-green-300",
+    },
+    shopping_added: {
+      icon: "add",
+      bg: "bg-blue-100 dark:bg-blue-900",
+      iconColor: "text-blue-600 dark:text-blue-300",
+    },
+    recipe_cooked: {
+      icon: "restaurant",
+      bg: "bg-orange-100 dark:bg-orange-900",
+      iconColor: "text-orange-600 dark:text-orange-300",
+    },
+    fridge_added: {
+      icon: "inventory_2",
+      bg: "bg-purple-100 dark:bg-purple-900",
+      iconColor: "text-purple-600 dark:text-purple-300",
+    },
+    fridge_expired: {
+      icon: "warning",
+      bg: "bg-red-100 dark:bg-red-900",
+      iconColor: "text-red-600 dark:text-red-300",
+    },
+  };
+
+  return styles[actionType] || styles.shopping_added;
 }
 
-withDefaults(
-  defineProps<{
-    feedItems?: FeedItem[];
-  }>(),
-  {
-    feedItems: () => [
-      {
-        userName: "王大力",
-        avatarUrl:
-          "https://lh3.googleusercontent.com/aida-public/AB6AXuBjcq8CxGQy10qOw1mGfDaRNM6EANdhOWxTONBLlMw3M9Xco518tnNUaf0RZtaJtdGn-hLIqhUQihRUs10iZ3l0-MF0A5rihvZPyF9JUzmc97ZSumzqsL24avZUijzhjPbHffNsUtsl59YO0cs_jWktk2kk_acKT7z8xaASvDhqgf17j6EoBuf4sOfq70sIpsOiKO9ewIqFGOvRlqHTNoOp_aI5sAerjifbxTcRYBox9suxgcqiS-h0cOlCkcByyryY8L_CRfMPZlZt",
-        action: "标记了",
-        target: "生姜",
-        actionSuffix: "已买",
-        time: "10分钟前",
-        badgeIcon: "check",
-        badgeBg: "bg-green-100 dark:bg-green-900",
-        badgeIconColor: "text-green-600 dark:text-green-300",
-      },
-      {
-        userName: "李妈妈",
-        avatarUrl:
-          "https://lh3.googleusercontent.com/aida-public/AB6AXuCSyb22lNKeHPxwTv8K7Je_lJriUDk6NJpc7_DkkBTi0PT0B99bYFRnLqx2GTd7GgVWp-f5YZCgT-v-vQV_zw8tm3kIGsrzO5IOZH_koZgd7lwuwiSN5anglDylsKfPMCkA1NHIiBb1p2YbqjSbKehjtjI3lfxPRAs39dKJ1O--G7zYGdw0dCFpGLKdpJcd3vMBNUGyl0SU5QGQZAex7-eJObFDVYI6G5jVDtpwTE9D256cBo1GTpiKpEhWTP86v2_TCDZBC_148NXq",
-        action: "添加了",
-        target: "酱油",
-        actionSuffix: "到清单",
-        time: "30分钟前",
-        badgeIcon: "add",
-        badgeBg: "bg-blue-100 dark:bg-blue-900",
-        badgeIconColor: "text-blue-600 dark:text-blue-300",
-      },
-    ],
-  },
-);
+// 格式化时间
+function formatTime(dateStr: string) {
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+
+  if (minutes < 1) return "刚刚";
+  if (minutes < 60) return `${minutes}分钟前`;
+  if (hours < 24) return `${hours}小时前`;
+  if (days < 7) return `${days}天前`;
+  return date.toLocaleDateString("zh-CN");
+}
+
+onMounted(async () => {
+  if (groupStore.currentGroup) {
+    await feedStore.fetchFeedList(groupStore.currentGroup.id, true);
+  }
+});
 
 const handleFeedClick = (item: FeedItem) => {
-  // TODO: 跳转到协作详情
-  uni.$u.toast(`${item.userName}的动态（开发中）`);
+  // TODO: 根据动作类型跳转到对应页面
+  console.log("Feed item clicked:", item);
 };
 
 const handleGoShopping = () => {
-  // TODO: 跳转到购物清单页
-  uni.$u.toast("去买菜（开发中）");
+  uni.navigateTo({
+    url: "/pages/shopping/index",
+  });
 };
 </script>

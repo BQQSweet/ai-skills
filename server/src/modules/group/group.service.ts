@@ -200,6 +200,44 @@ export class GroupService {
   }
 
   /**
+   * 获取家庭组成员列表
+   */
+  async getGroupMembers(groupId: string) {
+    const group = await this.prisma.group.findUnique({
+      where: { id: groupId },
+      include: {
+        members: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                nickname: true,
+                avatar_url: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!group) {
+      throw new NotFoundException('家庭组不存在');
+    }
+
+    return {
+      id: group.id,
+      name: group.name,
+      inviteCode: group.invite_code,
+      members: group.members.map((m) => ({
+        id: m.user.id,
+        nickname: m.user.nickname,
+        avatarUrl: m.user.avatar_url,
+        role: m.role,
+      })),
+    };
+  }
+
+  /**
    * 刷新邀请码（仅 owner 可操作）
    */
   async refreshInviteCode(groupId: string, userId: string) {

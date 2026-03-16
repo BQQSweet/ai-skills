@@ -1,7 +1,7 @@
 <template>
   <view class="cm-tabbar-placeholder">
     <view
-      class="cm-tabbar fixed bottom-0 left-0 w-full z-50 bg-white dark:bg-[#1a150e] shadow-[0_-2px_10px_rgba(0,0,0,0.05)] pb-safe"
+      class="cm-tabbar fixed bottom-0 left-0 w-full z-50 bg-white dark:bg-surface-dark shadow-[0_-2px_10px_rgba(0,0,0,0.05)] pb-safe"
     >
       <view class="flex items-end justify-around h-14 relative px-2">
         <template v-for="(item, index) in tabList" :key="index">
@@ -46,7 +46,7 @@
             @click="onMidButtonClick"
           >
             <view
-              class="w-14 h-14 bg-white dark:bg-[#1a150e] rounded-full p-1.5 absolute -top-12 shadow-[0_-4px_10px_rgba(0,0,0,0.03)] flex items-center justify-center"
+              class="w-14 h-14 bg-white dark:bg-surface-dark rounded-full p-1.5 absolute -top-12 shadow-[0_-4px_10px_rgba(0,0,0,0.03)] flex items-center justify-center"
             >
               <view
                 class="w-full h-full bg-primary rounded-full flex items-center justify-center shadow-[0_4px_12px_rgba(255,157,10,0.4)] active:scale-95 transition-transform duration-200"
@@ -111,7 +111,7 @@ const switchTab = (index: number, item: any) => {
 const onMidButtonClick = () => {
   emit("mid-click");
   // todo: 跳转到发布页面或弹出菜单
-  uni.showToast({ title: "点击了发布按钮", icon: "none" });
+  uni.$u.toast('点击了发布按钮');
 };
 </script>
 

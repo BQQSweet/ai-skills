@@ -105,9 +105,10 @@
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
+import type { FridgeItemUI } from "@/types/fridge";
 
 const props = defineProps<{
-  item: any;
+  item: FridgeItemUI;
 }>();
 
 const emit = defineEmits(["toggle-select", "edit", "delete"]);

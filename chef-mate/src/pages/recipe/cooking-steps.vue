@@ -52,7 +52,7 @@
           :key="index"
           :step="step"
           :index="Number(index) + 1"
-          :isLast="Number(index) === recipe?.steps?.length - 1"
+          :isLast="Number(index) === (recipe?.steps?.length ?? 0) - 1"
           :hasQa="(qaRecords[Number(index)]?.length || 0) > 0"
           @ask="handleAsk(Number(index), step)"
         />

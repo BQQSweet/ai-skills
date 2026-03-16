@@ -1,22 +1,10 @@
 import { get, post } from "./request";
 import { getToken } from "@/utils/storage";
 import { BASE_URL } from "@/utils/env";
+import type { Recipe } from "@/types/recipe";
 
-export interface Recipe {
-  id: string;
-  title: string;
-  description?: string;
-  ingredients: any;
-  steps: any;
-  nutrition?: any;
-  difficulty: string;
-  cook_time: number;
-  servings: number;
-  cover_url?: string;
-  source_type: string;
-  tags: string[];
-  status: string;
-}
+export type { Recipe } from "@/types/recipe";
+export type { RecipeIngredient, RecipeStep, RecipeNutrition } from "@/types/recipe";
 
 /**
  * 获取推荐食谱

@@ -16,6 +16,18 @@ export interface UserPreferences {
   spiceLevel?: number;
 }
 
+/** 饮食偏好（详细） */
+export interface DietaryPreferences {
+  allergies: string[];
+  habits: string[];
+  dislikes: string[];
+  taste: {
+    spicy: number;
+    sweet: number;
+    salty: number;
+  };
+}
+
 /** 登录请求参数 */
 export interface LoginParams {
   type: "code" | "password";

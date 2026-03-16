@@ -167,6 +167,38 @@ let GroupService = class GroupService {
             createdAt: group.created_at,
         };
     }
+    async getGroupMembers(groupId) {
+        const group = await this.prisma.group.findUnique({
+            where: { id: groupId },
+            include: {
+                members: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                nickname: true,
+                                avatar_url: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+        if (!group) {
+            throw new common_1.NotFoundException('家庭组不存在');
+        }
+        return {
+            id: group.id,
+            name: group.name,
+            inviteCode: group.invite_code,
+            members: group.members.map((m) => ({
+                id: m.user.id,
+                nickname: m.user.nickname,
+                avatarUrl: m.user.avatar_url,
+                role: m.role,
+            })),
+        };
+    }
     async refreshInviteCode(groupId, userId) {
         const group = await this.prisma.group.findUnique({
             where: { id: groupId },

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ChefMate 协作采购清单</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Noto+Sans+SC:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#FF9F0A",
+                        "background-light": "#FAFAFA",
+                        "surface-light": "#ffffff",
+                        "text-main": "#1d160c",
+                        "text-sub": "#a17c45",
+                        "danger": "#ef4444",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "Noto Sans SC", "sans-serif"],
+                        "body": ["Noto Sans SC", "sans-serif"],
+                    },
+                    boxShadow: {
+                        "soft": "0 4px 20px -2px rgba(29, 22, 12, 0.05)",
+                        "glow": "0 8px 24px -4px rgba(255, 159, 10, 0.3)",
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: "Plus Jakarta Sans", "Noto Sans SC", sans-serif;
+            -webkit-font-smoothing: antialiased;
+            background-color: #FAFAFA;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-[#FAFAFA] text-text-main">
+<div class="relative flex min-h-screen w-full flex-col mx-auto max-w-md bg-[#FAFAFA] shadow-2xl overflow-hidden border-x border-slate-100">
+<header class="sticky top-0 z-30 bg-[#FAFAFA]/80 backdrop-blur-lg px-6 pt-12 pb-4 flex items-center justify-between">
+<button class="size-10 rounded-full bg-white shadow-soft flex items-center justify-center text-text-main">
+<span class="material-symbols-outlined">arrow_back_ios_new</span>
+</button>
+<h1 class="text-lg font-bold">协作采购清单</h1>
+<button class="size-10 rounded-full bg-white shadow-soft flex items-center justify-center text-text-main">
+<span class="material-symbols-outlined">ios_share</span>
+</button>
+</header>
+<main class="flex-1 overflow-y-auto no-scrollbar pb-32">
+<section class="px-6 py-4">
+<div class="bg-white rounded-2xl p-5 shadow-soft">
+<div class="flex items-center justify-between mb-4">
+<h2 class="font-bold text-text-main">家庭采购进度</h2>
+<span class="text-sm font-bold text-primary">65%</span>
+</div>
+<div class="h-3 w-full bg-orange-50 rounded-full overflow-hidden mb-4">
+<div class="h-full bg-primary rounded-full transition-all duration-1000" style="width: 65%"></div>
+</div>
+<div class="flex items-center -space-x-2">
+<img alt="Wang Dali" class="size-8 rounded-full border-2 border-white object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBjcq8CxGQy10qOw1mGfDaRNM6EANdhOWxTONBLlMw3M9Xco518tnNUaf0RZtaJtdGn-hLIqhUQihRUs10iZ3l0-MF0A5rihvZPyF9JUzmc97ZSumzqsL24avZUijzhjPbHffNsUtsl59YO0cs_jWktk2kk_acKT7z8xaASvDhqgf17j6EoBuf4sOfq70sIpsOiKO9ewIqFGOvRlqHTNoOp_aI5sAerjifbxTcRYBox9suxgcqiS-h0cOlCkcByyryY8L_CRfMPZlZt"/>
+<img alt="Mom Li" class="size-8 rounded-full border-2 border-white object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSyb22lNKeHPxwTv8K7Je_lJriUDk6NJpc7_DkkBTi0PT0B99bYFRnLqx2GTd7GgVWp-f5YZCgT-v-vQV_zw8tm3kIGsrzO5IOZH_koZgd7lwuwiSN5anglDylsKfPMCkA1NHIiBb1p2YbqjSbKehjtjI3lfxPRAs39dKJ1O--G7zYGdw0dCFpGLKdpJcd3vMBNUGyl0SU5QGQZAex7-eJObFDVYI6G5jVDtpwTE9D256cBo1GTpiKpEhWTP86v2_TCDZBC_148NXq"/>
+<div class="size-8 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-400">+2</div>
+<span class="ml-4 text-xs text-text-sub">王大力、李妈妈 正在采购</span>
+</div>
+</div>
+</section>
+<section class="px-6 space-y-4">
+<div class="flex items-center justify-between">
+<h2 class="font-bold text-lg">待买食材</h2>
+<span class="text-xs text-text-sub">来自“今日烹饪计划”</span>
+</div>
+<div class="space-y-3">
+<div class="bg-white p-4 rounded-2xl shadow-soft border border-slate-50 flex items-start gap-4">
+<div class="mt-1">
+<div class="size-6 rounded-full border-2 border-primary flex items-center justify-center">
+<div class="size-3 bg-primary rounded-full opacity-0"></div>
+</div>
+</div>
+<div class="flex-1">
+<div class="flex items-center justify-between">
+<h3 class="font-bold text-text-main">生姜</h3>
+<div class="flex items-center gap-1 bg-primary/10 px-2 py-1 rounded-lg">
+<img class="size-4 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBjcq8CxGQy10qOw1mGfDaRNM6EANdhOWxTONBLlMw3M9Xco518tnNUaf0RZtaJtdGn-hLIqhUQihRUs10iZ3l0-MF0A5rihvZPyF9JUzmc97ZSumzqsL24avZUijzhjPbHffNsUtsl59YO0cs_jWktk2kk_acKT7z8xaASvDhqgf17j6EoBuf4sOfq70sIpsOiKO9ewIqFGOvRlqHTNoOp_aI5sAerjifbxTcRYBox9suxgcqiS-h0cOlCkcByyryY8L_CRfMPZlZt"/>
+<span class="text-[10px] text-primary font-bold">正在采购中</span>
+</div>
+</div>
+<p class="text-sm text-text-sub mt-0.5">50g · 西红柿炒鸡蛋</p>
+</div>
+</div>
+<div class="bg-white p-4 rounded-2xl shadow-soft border border-slate-50 flex items-start gap-4">
+<div class="mt-1">
+<div class="size-6 rounded-full border-2 border-slate-200 flex items-center justify-center"></div>
+</div>
+<div class="flex-1">
+<div class="flex items-center justify-between">
+<h3 class="font-bold text-text-main">酱油</h3>
+<span class="text-xs font-medium text-slate-300">待认领</span>
+</div>
+<p class="text-sm text-text-sub mt-0.5">1瓶 · 调料补给</p>
+</div>
+</div>
+<div class="bg-white p-4 rounded-2xl shadow-soft border border-slate-50 flex items-start gap-4">
+<div class="mt-1">
+<div class="size-6 rounded-full border-2 border-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-lg">check_circle</span>
+</div>
+</div>
+<div class="flex-1 opacity-60">
+<div class="flex items-center justify-between">
+<h3 class="font-bold text-text-main line-through">排骨</h3>
+<div class="flex items-center gap-1 bg-green-50 px-2 py-1 rounded-lg">
+<img class="size-4 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSyb22lNKeHPxwTv8K7Je_lJriUDk6NJpc7_DkkBTi0PT0B99bYFRnLqx2GTd7GgVWp-f5YZCgT-v-vQV_zw8tm3kIGsrzO5IOZH_koZgd7lwuwiSN5anglDylsKfPMCkA1NHIiBb1p2YbqjSbKehjtjI3lfxPRAs39dKJ1O--G7zYGdw0dCFpGLKdpJcd3vMBNUGyl0SU5QGQZAex7-eJObFDVYI6G5jVDtpwTE9D256cBo1GTpiKpEhWTP86v2_TCDZBC_148NXq"/>
+<span class="text-[10px] text-green-600 font-bold">已买到</span>
+</div>
+</div>
+<p class="text-sm text-text-sub mt-0.5">500g · 红烧排骨</p>
+</div>
+</div>
+<div class="bg-white p-4 rounded-2xl shadow-soft border border-slate-50 flex items-start gap-4">
+<div class="mt-1">
+<div class="size-6 rounded-full border-2 border-slate-200 flex items-center justify-center"></div>
+</div>
+<div class="flex-1">
+<h3 class="font-bold text-text-main">西红柿</h3>
+<p class="text-sm text-text-sub mt-0.5">3个 · 西红柿炒鸡蛋</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<div class="absolute bottom-[88px] left-0 right-0 px-6 pb-4">
+<button class="w-full bg-primary hover:bg-orange-500 text-white font-bold py-4 rounded-2xl shadow-glow active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">inventory_2</span>
+<span>完成采购并入库</span>
+</button>
+</div>
+<nav class="absolute bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg border-t border-slate-100 pt-2 pb-6 px-6 z-50">
+<div class="flex items-center justify-between">
+<a class="flex flex-col items-center justify-center gap-1 w-16 group" href="#">
+<span class="material-symbols-outlined text-text-sub group-hover:text-primary transition-colors">home</span>
+<span class="text-[10px] font-medium text-text-sub group-hover:text-primary">首页</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-1 w-16 group" href="#">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">shopping_basket</span>
+<span class="text-[10px] font-bold text-primary">清单</span>
+</a>
+<div class="relative -top-5">
+<button class="size-14 bg-primary text-white rounded-full shadow-glow flex items-center justify-center transform hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+</div>
+<a class="flex flex-col items-center justify-center gap-1 w-16 group" href="#">
+<span class="material-symbols-outlined text-text-sub group-hover:text-primary transition-colors">kitchen</span>
+<span class="text-[10px] font-medium text-text-sub group-hover:text-primary">厨房</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-1 w-16 group" href="#">
+<span class="material-symbols-outlined text-text-sub group-hover:text-primary transition-colors">person</span>
+<span class="text-[10px] font-medium text-text-sub group-hover:text-primary">我的</span>
+</a>
+</div>
+</nav>
+</div>
+
+</body></html>

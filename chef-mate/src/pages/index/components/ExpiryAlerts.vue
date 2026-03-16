@@ -29,7 +29,7 @@
       <view
         v-for="(item, index) in alerts"
         :key="index"
-        class="inline-flex flex-col justify-between gap-3 w-[160px] h-[120px] p-4 rounded-[24rpx] bg-white dark:bg-[#2d2418] shadow-sm border border-slate-100 dark:border-slate-800 relative overflow-hidden align-top"
+        class="inline-flex flex-col justify-between gap-3 w-[160px] h-[120px] p-4 rounded-[24rpx] bg-white dark:bg-card-dark shadow-sm border border-slate-100 dark:border-slate-800 relative overflow-hidden align-top"
         :class="[
           index < alerts.length - 1 ? 'mr-4' : 'mr-6',
           item.dimmed ? 'opacity-60' : '',
@@ -70,6 +70,8 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
+import type { FridgeItem } from "@/types/fridge";
+import { calculateExpireDays } from "@/utils/expiry";
 
 export interface ExpiryAlert {
   icon: string;
@@ -84,7 +86,7 @@ export interface ExpiryAlert {
 
 const props = withDefaults(
   defineProps<{
-    items?: any[];
+    items?: FridgeItem[];
   }>(),
   {
     items: () => [],
@@ -113,14 +115,7 @@ const alerts = computed<ExpiryAlert[]>(() => {
   const processed: ExpiryAlert[] = [];
 
   for (const item of props.items) {
-    const expireDate = new Date(item.expire_date);
-    const expDay = new Date(
-      expireDate.getFullYear(),
-      expireDate.getMonth(),
-      expireDate.getDate(),
-    );
-    const diffTime = expDay.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const diffDays = calculateExpireDays(item.expire_date);
 
     const createdDate = new Date(item.created_at || now);
     const storedTime =

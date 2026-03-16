@@ -56,6 +56,7 @@ const shopping_module_1 = require("./modules/shopping/shopping.module");
 const task_module_1 = require("./modules/task/task.module");
 const notification_module_1 = require("./modules/notification/notification.module");
 const stats_module_1 = require("./modules/stats/stats.module");
+const feed_module_1 = require("./modules/feed/feed.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -78,6 +79,7 @@ exports.AppModule = AppModule = __decorate([
             task_module_1.TaskModule,
             notification_module_1.NotificationModule,
             stats_module_1.StatsModule,
+            feed_module_1.FeedModule,
         ],
         providers: [prisma_service_1.PrismaService],
         exports: [prisma_service_1.PrismaService],

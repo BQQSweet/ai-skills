@@ -37,6 +37,9 @@ let GroupController = class GroupController {
     async getGroupDetail(groupId) {
         return this.groupService.getGroupDetail(groupId);
     }
+    async getGroupMembers(groupId) {
+        return this.groupService.getGroupMembers(groupId);
+    }
     async refreshInviteCode(groupId, userId) {
         return this.groupService.refreshInviteCode(groupId, userId);
     }
@@ -82,6 +85,15 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], GroupController.prototype, "getGroupDetail", null);
+__decorate([
+    (0, common_1.Get)(':groupId/members'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, group_guard_1.GroupGuard),
+    (0, swagger_1.ApiOperation)({ summary: '获取家庭组成员列表' }),
+    __param(0, (0, common_1.Param)('groupId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], GroupController.prototype, "getGroupMembers", null);
 __decorate([
     (0, common_1.Put)(':groupId/invite-code'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, group_guard_1.GroupGuard),

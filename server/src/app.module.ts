@@ -27,6 +27,7 @@ import { ShoppingModule } from './modules/shopping/shopping.module';
 import { TaskModule } from './modules/task/task.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { StatsModule } from './modules/stats/stats.module';
+import { FeedModule } from './modules/feed/feed.module';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { StatsModule } from './modules/stats/stats.module';
     TaskModule,
     NotificationModule,
     StatsModule,
+    FeedModule,
   ],
   providers: [PrismaService],
   exports: [PrismaService],

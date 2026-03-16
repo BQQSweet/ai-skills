@@ -125,10 +125,11 @@
 <script setup lang="ts">
 import { ref, reactive, watch } from "vue";
 import { addFridgeItem } from "@/services/fridge";
+import type { RecognizedFridgeData } from "@/types/fridge";
 
 const props = defineProps<{
   show: boolean;
-  recognizedData: Record<string, any> | null;
+  recognizedData: RecognizedFridgeData | null;
   imageBase64: string;
 }>();
 

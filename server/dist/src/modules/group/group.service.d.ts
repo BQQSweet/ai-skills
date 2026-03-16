@@ -46,6 +46,17 @@ export declare class GroupService {
         }[];
         createdAt: Date;
     }>;
+    getGroupMembers(groupId: string): Promise<{
+        id: string;
+        name: string;
+        inviteCode: string;
+        members: {
+            id: string;
+            nickname: string;
+            avatarUrl: string | null;
+            role: string;
+        }[];
+    }>;
     refreshInviteCode(groupId: string, userId: string): Promise<{
         inviteCode: string;
     }>;

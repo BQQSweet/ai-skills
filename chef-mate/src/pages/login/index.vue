@@ -136,7 +136,7 @@
             <view class="flex-1 h-px bg-gray-300"></view>
           </view>
           <view
-            class="w-12 h-12 rounded-full bg-[#07c160]/10 border border-[#07c160]/20 flex items-center justify-center transition-colors cursor-pointer active:bg-[#07c160]/20 active:scale-95"
+            class="w-12 h-12 rounded-full bg-wechat/10 border border-wechat/20 flex items-center justify-center transition-colors cursor-pointer active:bg-wechat/20 active:scale-95"
             @click="handleWechatLogin"
           >
             <CmIcon name="weixin" is-svg size="48rpx"></CmIcon>
@@ -191,7 +191,7 @@
 <script setup lang="ts">
 import CmIcon from "@/components/CmIcon/CmIcon.vue";
 import CmToast from "@/components/CmToast/CmToast.vue";
-import { ref, reactive } from "vue";
+import { ref, reactive, onUnmounted } from "vue";
 import { onShow } from "@dcloudio/uni-app";
 import CmInput from "@/components/CmInput/CmInput.vue";
 import { useUserStore } from "@/stores/user";
@@ -213,6 +213,7 @@ onShow(() => {
 
 const loading = ref(false);
 const codeCooldown = ref(0);
+const codeCooldownTimer = ref<ReturnType<typeof setInterval> | null>(null);
 const agreedToTerms = ref(true);
 
 const loginType = ref<"code" | "password">("code");
@@ -238,21 +239,24 @@ async function handleSendCode() {
   }
 
   try {
-    uni.showLoading({ title: "发送中" });
+    loading.value = true;
     await authService.sendSmsCode(form.phone);
-    uni.hideLoading();
+    loading.value = false;
     uToastRef.value?.show({
       type: "success",
       message: "验证码已发送",
     });
 
     codeCooldown.value = 60;
-    const timer = setInterval(() => {
+    codeCooldownTimer.value = setInterval(() => {
       codeCooldown.value--;
-      if (codeCooldown.value <= 0) clearInterval(timer);
+      if (codeCooldown.value <= 0 && codeCooldownTimer.value) {
+        clearInterval(codeCooldownTimer.value);
+        codeCooldownTimer.value = null;
+      }
     }, 1000);
   } catch (err: any) {
-    uni.hideLoading();
+    loading.value = false;
     // 错误在 request 拦截器中已经进行了 showToast，无需重复
   }
 }
@@ -335,6 +339,13 @@ async function handleSubmit() {
     loading.value = false;
   }
 }
+
+onUnmounted(() => {
+  if (codeCooldownTimer.value) {
+    clearInterval(codeCooldownTimer.value);
+    codeCooldownTimer.value = null;
+  }
+});
 </script>
 
 <style lang="css" scoped>

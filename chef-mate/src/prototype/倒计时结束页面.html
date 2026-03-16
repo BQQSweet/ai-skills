@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html class="dark" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#FF9F0A",
+                        "background-dark": "#0a0a0a",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "Noto Sans SC", "sans-serif"]
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'button-flash': 'button-flash 2s infinite',
+                    },
+                    keyframes: {
+                        'pulse-slow': {
+                            '0%, 100%': { opacity: '0.4' },
+                            '50%': { opacity: '0.8' },
+                        },
+                        'float': {
+                            '0%, 100%': { transform: 'translateY(0) rotate(0deg)' },
+                            '50%': { transform: 'translateY(-20px) rotate(10deg)' },
+                        },
+                        'button-flash': {
+                            '0%, 100%': { opacity: '1', transform: 'scale(1)' },
+                            '50%': { opacity: '0.9', transform: 'scale(1.02)' },
+                        }
+                    }
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer utilities {
+            .orange-glow-bg {
+                background: radial-gradient(circle at center, #FF9F0A 0%, #0a0a0a 100%);
+            }
+            .confetti-particle {
+                position: absolute;
+                width: 8px;
+                height: 8px;
+                background-color: #FF9F0A;
+                border-radius: 2px;
+                opacity: 0.6;
+            }
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-dark font-display text-white overflow-hidden h-screen w-full">
+<div class="absolute inset-0 orange-glow-bg animate-pulse-slow"></div>
+<div class="relative z-10 flex h-full w-full flex-col px-6 pb-12 pt-16">
+<header class="flex justify-center mb-8">
+<div class="flex flex-col items-center gap-2">
+<span class="text-white/80 text-lg font-bold tracking-widest uppercase">第一步完成</span>
+<div class="w-32 h-1 bg-white/20 rounded-full overflow-hidden">
+<div class="h-full bg-white rounded-full" style="width: 12.5%;"></div>
+</div>
+</div>
+</header>
+<main class="flex-1 flex flex-col items-center justify-center text-center">
+<div class="mb-12">
+<h1 class="text-6xl md:text-7xl font-black text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.5)]">
+                    🎉 时间到！
+                </h1>
+</div>
+<div class="w-full bg-white rounded-[2.5rem] p-8 shadow-2xl shadow-orange-600/50 mb-12 transform scale-105">
+<p class="text-gray-500 text-sm font-bold tracking-widest mb-2 uppercase">立即执行</p>
+<h2 class="text-background-dark text-4xl font-black leading-tight">
+                    赶紧关火，盛出排骨
+                </h2>
+<div class="mt-6 flex justify-center">
+<span class="material-symbols-outlined text-primary text-5xl animate-bounce">
+                        soup_kitchen
+                    </span>
+</div>
+</div>
+</main>
+<footer class="mt-auto">
+<button class="w-full bg-primary animate-button-flash text-background-dark text-2xl font-black py-7 rounded-2xl shadow-[0_0_40px_rgba(255,159,10,0.4)] flex items-center justify-center gap-3 active:scale-95 transition-all">
+<span>下一步</span>
+<span class="material-symbols-outlined text-3xl font-bold">arrow_forward</span>
+</button>
+<button class="w-full mt-6 text-white/60 font-bold text-lg">
+                延时 1 分钟
+            </button>
+</footer>
+</div>
+<div class="absolute inset-0 pointer-events-none overflow-hidden z-0">
+<div class="confetti-particle animate-float top-[15%] left-[10%] w-3 h-3 bg-white"></div>
+<div class="confetti-particle animate-float top-[25%] right-[15%] w-4 h-4 bg-primary rotate-45" style="animation-delay: 1s;"></div>
+<div class="confetti-particle animate-float bottom-[30%] left-[20%] w-2 h-2 bg-white" style="animation-delay: 2s;"></div>
+<div class="confetti-particle animate-float top-[50%] right-[10%] w-5 h-5 border-2 border-primary bg-transparent" style="animation-delay: 1.5s;"></div>
+<div class="confetti-particle animate-float bottom-[15%] right-[25%] w-3 h-3 bg-white rounded-full" style="animation-delay: 0.5s;"></div>
+<div class="confetti-particle animate-float top-[40%] left-[5%] w-4 h-1 bg-primary" style="animation-delay: 2.5s;"></div>
+</div>
+<div class="hidden">
+<img data-alt="Close up of sizzling golden brown pork ribs in a pan" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrei8UCfE-R26U1U-KAW1WFJH2DsXZnmeoSKFx5jqsluA-nfPGrPw7iey3GSp6BCKQydu_zW0tNj78DV3GK7z9hKmaVoqEtx2anjCkMqAwYf1GROfpVX1n7iUEwHBaMQ73ANI0eFLmLSkbhnD5eNJIZTNhUFcMAALLJsQ73ZYorYbDgsH3ZR8QffYATjTvTQ1tuJi4owNuKfAhmRKKc2M1rYviJ2X237iWBG7dAuNREV5VAbLeziQEOd-hgR5AK5uQSu-sGRa5jPO3"/>
+</div>
+
+</body></html>

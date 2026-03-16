@@ -8,6 +8,8 @@ const STORAGE_KEYS = {
   REFRESH_TOKEN: 'refreshToken',
   USER_INFO: 'userInfo',
   CURRENT_GROUP_ID: 'currentGroupId',
+  DIETARY_PREFS: 'dietaryPrefs',
+  SPEECH_LANGUAGE: 'speechLanguage',
 } as const;
 
 /** 获取存储值 */

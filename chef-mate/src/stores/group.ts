@@ -42,6 +42,22 @@ export const useGroupStore = defineStore("group", () => {
   }
 
   /**
+   * 获取家庭组成员详情
+   */
+  async function fetchGroupMembers(groupId: string) {
+    const groupDetail = await groupApi.getGroupMembers(groupId);
+    // 更新当前组的成员信息
+    const index = groupList.value.findIndex((g) => g.id === groupId);
+    if (index !== -1) {
+      groupList.value[index] = groupDetail;
+    }
+    if (currentGroup.value?.id === groupId) {
+      currentGroup.value = groupDetail;
+    }
+    return groupDetail;
+  }
+
+  /**
    * 创建家庭组
    */
   async function createGroup(name: string) {
@@ -82,6 +98,7 @@ export const useGroupStore = defineStore("group", () => {
     hasGroup,
     initFromLogin,
     fetchMyGroups,
+    fetchGroupMembers,
     createGroup,
     joinGroup,
     setCurrentGroup,

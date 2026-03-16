@@ -13,7 +13,7 @@ import {
   getStorage,
 } from "@/utils/storage";
 import * as authService from "@/services/auth";
-import type { UserInfo } from "@/types/user";
+import type { UserInfo, DietaryPreferences } from "@/types/user";
 
 export const useUserStore = defineStore("user", () => {
   // ========== State ==========
@@ -63,12 +63,12 @@ export const useUserStore = defineStore("user", () => {
   };
 
   const dietaryPreferences = ref(
-    JSON.parse(getStorage("DIETARY_PREFS") || JSON.stringify(defaultPrefs)),
+    JSON.parse(getStorage(STORAGE_KEYS.DIETARY_PREFS) || JSON.stringify(defaultPrefs)),
   );
 
-  function setDietaryPreferences(prefs: any) {
+  function setDietaryPreferences(prefs: DietaryPreferences) {
     dietaryPreferences.value = prefs;
-    setStorage("DIETARY_PREFS", JSON.stringify(prefs));
+    setStorage(STORAGE_KEYS.DIETARY_PREFS, JSON.stringify(prefs));
   }
 
   /** 退出登录 */

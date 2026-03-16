@@ -28,6 +28,11 @@ export function getGroupDetail(groupId: string): Promise<GroupInfo> {
   return get<GroupInfo>(`/api/group/${groupId}`);
 }
 
+/** 获取家庭组成员列表 */
+export function getGroupMembers(groupId: string): Promise<GroupInfo> {
+  return get<GroupInfo>(`/api/group/${groupId}/members`);
+}
+
 /** 刷新邀请码 */
 export function refreshInviteCode(
   groupId: string,

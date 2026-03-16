@@ -19,6 +19,8 @@ export async function requestPermission(
     await uni.authorize({ scope });
     return true;
   } catch {
+    // 保留 uni.showModal：permission.ts 是纯 TS 工具文件，无法挂载 Vue 组件（up-modal），
+    // 且此处为 APP-PLUS 条件编译内的系统权限弹窗，属于规范允许的降级场景。
     uni.showModal({
       title: '权限申请',
       content: tipMessage,

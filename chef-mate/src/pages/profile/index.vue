@@ -131,7 +131,8 @@
           </view>
         </view>
         <view
-          class="flex items-center gap-4 p-4 bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700 active:bg-slate-50 dark:active:bg-slate-800"
+          @click="navToGroupInvite"
+          class="flex items-center gap-4 p-4 bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700 active:bg-slate-50 dark:active:bg-slate-800 cursor-pointer"
         >
           <view
             class="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600"
@@ -253,6 +254,12 @@ const navToLanguageSettings = () => {
 const navToDietaryPreferences = () => {
   uni.navigateTo({
     url: "/pages/profile/dietary-preferences",
+  });
+};
+
+const navToGroupInvite = () => {
+  uni.navigateTo({
+    url: "/pages/group/invite",
   });
 };
 </script>
