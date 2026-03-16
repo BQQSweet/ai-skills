@@ -13,7 +13,12 @@ import {
   getStorage,
 } from "@/utils/storage";
 import * as authService from "@/services/auth";
-import type { UserInfo, DietaryPreferences } from "@/types/user";
+import type {
+  UserInfo,
+  DietaryPreferences,
+  AuthResult,
+  RegisterParams,
+} from "@/types/user";
 
 export const useUserStore = defineStore("user", () => {
   // ========== State ==========
@@ -32,22 +37,39 @@ export const useUserStore = defineStore("user", () => {
 
   // ========== Actions ==========
 
-  /** 登录 */
-  async function login(params: import("@/types/user").LoginParams) {
-    const res = await authService.login(params);
+  function applyAuthResult(res: AuthResult) {
     token.value = res.token;
     userInfo.value = res.user;
     setToken(res.token);
     setRefreshToken(res.refreshToken);
     setStorage(STORAGE_KEYS.USER_INFO, JSON.stringify(res.user));
+  }
 
-    // 初始化家庭组信息
+  async function syncGroupsFromAuthResult(res: AuthResult) {
+    const { useGroupStore } = await import("@/stores/group");
+    const groupStore = useGroupStore();
+
     if (res.groups && res.groups.length > 0) {
-      const { useGroupStore } = await import("@/stores/group");
-      const groupStore = useGroupStore();
       groupStore.initFromLogin(res.groups);
       setCurrentGroupId(groupStore.currentGroup?.id || res.groups[0].groupId);
+      return;
     }
+
+    groupStore.clearGroups();
+  }
+
+  /** 登录 */
+  async function login(params: import("@/types/user").LoginParams) {
+    const res = await authService.login(params);
+    applyAuthResult(res);
+    await syncGroupsFromAuthResult(res);
+  }
+
+  /** 注册并登录 */
+  async function register(params: RegisterParams) {
+    const res = await authService.register(params);
+    applyAuthResult(res);
+    await syncGroupsFromAuthResult(res);
   }
 
   // ========== Preferences ==========
@@ -97,6 +119,7 @@ export const useUserStore = defineStore("user", () => {
     nickname,
     dietaryPreferences,
     login,
+    register,
     logout,
     setCurrentGroupId,
     setDietaryPreferences,

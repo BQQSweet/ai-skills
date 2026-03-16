@@ -8,8 +8,17 @@ import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '@/common/prisma.service';
-import { SendSmsDto, LoginDto, LoginType } from './dto/auth.dto';
+import { SendSmsDto, LoginDto, LoginType, RegisterDto } from './dto/auth.dto';
 
+/**
+ * AuthService 负责认证领域的核心业务：
+ * - 发送验证码
+ * - 验证码登录 / 密码登录
+ * - 注册
+ * - JWT 签发
+ *
+ * 一般可以把它理解为“Controller 背后的真正处理者”。
+ */
 @Injectable()
 export class AuthService {
   private redisClient: Redis;
@@ -19,6 +28,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {
+    // 这里手动创建 Redis 客户端，用来存验证码和读取发送冷却时间
     const redisConfig = this.configService.get('redis');
     this.redisClient = new Redis({
       host: redisConfig.host,
@@ -50,28 +60,95 @@ export class AuthService {
   }
 
   /**
-   * 统一登录逻辑
+   * 统一登录逻辑。
+   *
+   * 输入是 LoginDto，但真正的分支入口由 dto.type 决定：
+   * - code: 验证码登录
+   * - password: 密码登录
+   *
+   * 不管走哪条分支，最后都会收敛到 buildAuthResult，
+   * 返回统一的 token + user + groups 结构。
    */
   async login(dto: LoginDto): Promise<any> {
     let user;
+    const phone = dto.phone?.trim();
+    const code = dto.code?.trim();
+    const account = dto.account?.trim() || phone;
+    const password = dto.password?.trim();
 
     if (dto.type === LoginType.CODE) {
-      if (!dto.phone || !dto.code) {
+      // 验证码登录要求 phone + code 同时存在
+      if (!phone || !code) {
         throw new BadRequestException('手机号和验证码不能为空');
       }
-      user = await this.verifyCodeAndGetUser(dto.phone, dto.code);
+      user = await this.verifyCodeAndGetUser(phone, code);
     } else if (dto.type === LoginType.PASSWORD) {
-      if (!dto.account || !dto.password) {
+      // 密码登录兼容 account 字段名，本项目当前约定 account 实际上就是手机号
+      if (!account || !password) {
         throw new BadRequestException('账号和密码不能为空');
       }
-      user = await this.verifyPasswordAndGetUser(dto.account, dto.password);
+      user = await this.verifyPasswordAndGetUser(account, password);
     }
 
     if (!user) {
       throw new UnauthorizedException('登录失败，用户状态异常');
     }
 
-    // 签发 Token
+    return this.buildAuthResult(user);
+  }
+
+  /**
+   * 手机号密码注册。
+   *
+   * 流程：
+   * 1. 基础字段清洗
+   * 2. 检查手机号是否已注册
+   * 3. 用 bcrypt 生成密码哈希，而不是明文入库
+   * 4. 创建用户
+   * 5. 直接复用 buildAuthResult 返回登录态
+   */
+  async register(dto: RegisterDto): Promise<any> {
+    const phone = dto.phone.trim();
+    const password = dto.password.trim();
+    const nickname = dto.nickname?.trim() || `CM_${phone.slice(-4)}`;
+
+    const existing = await this.prisma.user.findUnique({
+      where: { phone },
+      select: { id: true },
+    });
+
+    if (existing) {
+      throw new BadRequestException('该账号已注册，请直接登录');
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    const user = await this.prisma.user.create({
+      data: {
+        phone,
+        password_hash: passwordHash,
+        nickname,
+      },
+    });
+
+    return this.buildAuthResult(user);
+  }
+
+  /**
+   * 构造前端真正需要的认证返回值。
+   *
+   * 这里把“签 token”和“补充用户所在家庭组信息”收口到一个地方，
+   * 这样登录、注册、验证码静默注册等入口都能复用同一套返回格式。
+   */
+  private async buildAuthResult(user: {
+    id: string;
+    phone: string;
+    nickname: string;
+    avatar_url: string | null;
+    role: string;
+    preferences: any;
+    created_at: Date;
+  }) {
+    // access token 用于日常接口鉴权；refresh token 预留给未来刷新登录态使用
     const payload = { sub: user.id, phone: user.phone, role: user.role };
     const token = await this.jwtService.signAsync(payload);
     const refreshToken = await this.jwtService.signAsync(
@@ -83,7 +160,7 @@ export class AuthService {
       },
     );
 
-    // 查询用户的家庭组
+    // 登录成功后顺手把用户所属家庭组一起返回，前端首页/切组场景可以直接使用
     const groupMemberships = await this.prisma.groupMember.findMany({
       where: { user_id: user.id },
       include: {
@@ -128,6 +205,12 @@ export class AuthService {
 
   /**
    * 验证验证码并获取/创建用户
+   *
+   * 流程：
+   * 1. 去 Redis 校验验证码
+   * 2. 验证成功后删除验证码，避免重复使用
+   * 3. 查找手机号对应用户
+   * 4. 如果用户不存在，则自动创建一个默认账号（静默注册）
    */
   private async verifyCodeAndGetUser(phone: string, code: string) {
     const storedCode = await this.redisClient.get(`auth:code:${phone}`);
@@ -160,6 +243,9 @@ export class AuthService {
 
   /**
    * 验证密码并获取用户
+   *
+   * 当前项目里 account 暂时就是手机号，所以直接按 phone 查询。
+   * 查询到用户后，再用 bcrypt.compare 比较“明文密码”和“数据库里的哈希”。
    */
   private async verifyPasswordAndGetUser(account: string, password: string) {
     const user = await this.prisma.user.findUnique({

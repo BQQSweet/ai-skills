@@ -21,7 +21,11 @@ interface RequestOptions {
   header?: Record<string, string>;
   /** 是否不需要 Token（如登录接口） */
   noAuth?: boolean;
+  /** 是否自动展示业务错误提示 */
+  showError?: boolean;
 }
+
+type RequestConfig = Pick<RequestOptions, "header" | "noAuth" | "showError">;
 
 /** Token 刷新状态锁 */
 let isRefreshing = false;
@@ -79,7 +83,7 @@ export function request<T = any>(options: RequestOptions): Promise<T> {
       data: options.data,
       header,
       success: async (res) => {
-        if (res.statusCode === 401) {
+        if (res.statusCode === 401 && !options.noAuth) {
           clearAuth();
           uni.reLaunch({ url: "/pages/login/index" });
           uni.$u.toast("登录已过期，请重新登录");
@@ -120,7 +124,9 @@ export function request<T = any>(options: RequestOptions): Promise<T> {
         }
 
         // 其他业务错误
-        uni.$u.toast(data.msg || "请求失败");
+        if (options.showError !== false) {
+          uni.$u.toast(data.msg || "请求失败");
+        }
         reject(data);
       },
       fail: (err) => {
@@ -133,18 +139,34 @@ export function request<T = any>(options: RequestOptions): Promise<T> {
 
 // ========== 快捷方法 ==========
 
-export function get<T = any>(url: string, data?: any): Promise<T> {
-  return request<T>({ url, method: "GET", data });
+export function get<T = any>(
+  url: string,
+  data?: any,
+  config: RequestConfig = {},
+): Promise<T> {
+  return request<T>({ url, method: "GET", data, ...config });
 }
 
-export function post<T = any>(url: string, data?: any): Promise<T> {
-  return request<T>({ url, method: "POST", data });
+export function post<T = any>(
+  url: string,
+  data?: any,
+  config: RequestConfig = {},
+): Promise<T> {
+  return request<T>({ url, method: "POST", data, ...config });
 }
 
-export function put<T = any>(url: string, data?: any): Promise<T> {
-  return request<T>({ url, method: "PUT", data });
+export function put<T = any>(
+  url: string,
+  data?: any,
+  config: RequestConfig = {},
+): Promise<T> {
+  return request<T>({ url, method: "PUT", data, ...config });
 }
 
-export function del<T = any>(url: string, data?: any): Promise<T> {
-  return request<T>({ url, method: "DELETE", data });
+export function del<T = any>(
+  url: string,
+  data?: any,
+  config: RequestConfig = {},
+): Promise<T> {
+  return request<T>({ url, method: "DELETE", data, ...config });
 }

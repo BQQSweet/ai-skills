@@ -71,6 +71,7 @@ export function clearAuth(): void {
   removeStorage(STORAGE_KEYS.TOKEN);
   removeStorage(STORAGE_KEYS.REFRESH_TOKEN);
   removeStorage(STORAGE_KEYS.USER_INFO);
+  removeStorage(STORAGE_KEYS.CURRENT_GROUP_ID);
 }
 
 export { STORAGE_KEYS };

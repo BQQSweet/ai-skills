@@ -7,10 +7,23 @@ import {
 import { PrismaService } from '@/common/prisma.service';
 import { CreateGroupDto, JoinGroupDto } from './dto/group.dto';
 
+/**
+ * GroupService 负责家庭组领域的业务规则和数据库操作。
+ *
+ * 可以把它和 Controller 的分工理解为：
+ * - Controller：负责接 HTTP 请求、取参数、挂权限装饰器
+ * - Service：负责真正的业务流程、校验和 Prisma 查询
+ */
 @Injectable()
 export class GroupService {
   constructor(private readonly prisma: PrismaService) {}
 
+  /**
+   * 查询一个“未被软删除”的家庭组。
+   *
+   * 这里反复出现的 deleted_at: null 是软删除语义：
+   * 数据并没有真的从数据库消失，而是通过 deleted_at 是否为空来区分是否有效。
+   */
   private async getActiveGroupById(groupId: string) {
     const group = await this.prisma.group.findFirst({
       where: {
@@ -42,6 +55,9 @@ export class GroupService {
    * 创建家庭组
    * - 自动生成唯一邀请码
    * - 创建者自动成为 owner
+   *
+   * 这里使用事务，是因为“创建 group”和“创建 group_member”必须同时成功或同时失败，
+   * 否则会出现组已创建但成员关系缺失的脏数据。
    */
   async createGroup(userId: string, dto: CreateGroupDto) {
     // 生成唯一邀请码（重试机制）
@@ -94,6 +110,10 @@ export class GroupService {
 
   /**
    * 通过邀请码加入家庭组
+   *
+   * 核心业务规则：
+   * - 邀请码必须对应一个未删除的家庭组
+   * - 同一个用户不能重复加入同一个组
    */
   async joinByInviteCode(userId: string, dto: JoinGroupDto) {
     const group = await this.prisma.group.findFirst({
@@ -137,6 +157,9 @@ export class GroupService {
 
   /**
    * 获取用户所属的所有家庭组
+   *
+   * 这里使用 include 把 group、members、user 一次查出来，
+   * 目的是减少多次往返数据库，直接组装前端可用结构。
    */
   async getMyGroups(userId: string) {
     const memberships = await this.prisma.groupMember.findMany({
@@ -163,23 +186,26 @@ export class GroupService {
     return memberships
       .filter((m) => m.group.deleted_at === null)
       .map((m) => ({
-      id: m.group.id,
-      name: m.group.name,
-      inviteCode: m.group.invite_code,
-      role: m.role,
-      memberCount: m.group.members.length,
-      members: m.group.members.map((mem) => ({
-        id: mem.user.id,
-        nickname: mem.user.nickname,
-        avatarUrl: mem.user.avatar_url,
-        role: mem.role,
-      })),
-      createdAt: m.group.created_at,
+        id: m.group.id,
+        name: m.group.name,
+        inviteCode: m.group.invite_code,
+        role: m.role,
+        memberCount: m.group.members.length,
+        members: m.group.members.map((mem) => ({
+          id: mem.user.id,
+          nickname: mem.user.nickname,
+          avatarUrl: mem.user.avatar_url,
+          role: mem.role,
+        })),
+        createdAt: m.group.created_at,
       }));
   }
 
   /**
    * 获取单个家庭组详情
+   *
+   * 因为 GroupGuard 已经提前保证“当前用户属于这个组”，
+   * 这里的重点就变成查询详情并整理返回结构。
    */
   async getGroupDetail(groupId: string, userId: string) {
     const group = await this.prisma.group.findFirst({
@@ -207,7 +233,9 @@ export class GroupService {
       throw new NotFoundException('家庭组不存在');
     }
 
-    const currentMember = group.members.find((member) => member.user_id === userId);
+    const currentMember = group.members.find(
+      (member) => member.user_id === userId,
+    );
 
     return {
       id: group.id,
@@ -255,7 +283,9 @@ export class GroupService {
       throw new NotFoundException('家庭组不存在');
     }
 
-    const currentMember = group.members.find((member) => member.user_id === userId);
+    const currentMember = group.members.find(
+      (member) => member.user_id === userId,
+    );
 
     return {
       id: group.id,
@@ -276,6 +306,9 @@ export class GroupService {
 
   /**
    * 刷新邀请码（仅 owner 可操作）
+   *
+   * 这里没有重新查成员关系，而是直接用 group.owner_id 判断，
+   * 因为“谁是组长”这个事实本来就记录在 group 表里。
    */
   async refreshInviteCode(groupId: string, userId: string) {
     const group = await this.getActiveGroupById(groupId);
@@ -305,6 +338,9 @@ export class GroupService {
 
   /**
    * 退出家庭组
+   *
+   * 注意：这里只处理“当前用户退出自己所在的组”，
+   * 并不负责踢出其他成员，那会是另一条业务规则。
    */
   async leaveGroup(groupId: string, userId: string) {
     await this.getActiveGroupById(groupId);

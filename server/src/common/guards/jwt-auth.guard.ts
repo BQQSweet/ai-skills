@@ -9,8 +9,14 @@ import { ConfigService } from '@nestjs/config';
 
 /**
  * JWT 鉴权守卫
- * 从请求头 Authorization: Bearer <token> 中解析并校验 JWT，
- * 将解码后的 payload 挂载到 request.user 上。
+ *
+ * Guard 会在进入 Controller 方法之前执行。
+ * 这个 Guard 的职责是：
+ * 1. 从请求头里读取 Bearer Token
+ * 2. 校验 Token 是否合法、是否过期
+ * 3. 把解码后的用户核心信息挂到 request.user
+ *
+ * 后续 Controller 才能通过 @CurrentUser() 拿到当前登录人。
  */
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -23,6 +29,7 @@ export class JwtAuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const authHeader = request.headers['authorization'];
 
+    // 约定的请求头格式必须是：Authorization: Bearer <token>
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       throw new UnauthorizedException('缺少登录凭证');
     }
@@ -30,10 +37,11 @@ export class JwtAuthGuard implements CanActivate {
     const token = authHeader.split(' ')[1];
 
     try {
+      // verifyAsync 不仅会解码，还会校验签名和过期时间
       const payload = await this.jwtService.verifyAsync(token, {
         secret: this.configService.get<string>('jwt.secret'),
       });
-      // 将用户信息挂载到 request 上，供 @CurrentUser() 装饰器使用
+      // 这里只挂业务里常用的核心字段，避免后续代码反复自己解析 token
       request.user = {
         id: payload.sub,
         phone: payload.phone,

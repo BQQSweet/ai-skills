@@ -26,7 +26,7 @@
         <view class="flex items-center gap-5">
           <image
             class="aspect-square rounded-full h-24 w-24 border-4 border-white dark:border-slate-800 shadow-sm"
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuAIp_B2OdmY9ynelrRKQub58P1Nq6I3xsnjIgyOg31u2ErDi0Z0geMwzoKKVxEoCqNaeIuJddRBOi_48Y8MeF1TOqOwOWjML2e7R7BFboRWB_hfNoFMV6rmNrahgy5c_XraLDu3-ehkDhrNMUVq7xAN0s7Iaj9kRV6bp5UL9254QZQPulnkuaG6vTwA3MiZU5Gl3YX78zzd_MJRYV3hiXE5hlMQM9YUnfvz8Z539uiXChckB5RR1N09sd7m4YaDxSNK10xtaQAxDIS2"
+            :src="avatarUrl"
             mode="aspectFill"
           ></image>
           <view class="flex flex-col justify-center">
@@ -34,22 +34,25 @@
               <text
                 class="text-slate-900 dark:text-slate-100 text-2xl font-bold leading-tight"
               >
-                大厨 王大力
+                {{ profileName }}
               </text>
               <text
                 class="bg-primary/20 text-primary text-[10px] px-2 py-0.5 rounded-full font-bold"
               >
-                V5
+                {{ kitchenRank }}
               </text>
             </view>
             <view
               class="text-slate-500 dark:text-slate-400 text-sm mt-1 flex items-center gap-1"
             >
               <text class="material-symbols-outlined text-sm">home</text>
-              <text>幸福里小家</text>
+              <text>{{ currentKitchenName }}</text>
             </view>
             <text class="text-primary text-sm font-semibold mt-1">
-              厨房等级：资深大厨
+              {{ kitchenLevelText }}
+            </text>
+            <text class="text-slate-400 text-xs mt-1">
+              {{ phoneText }}
             </text>
           </view>
         </view>
@@ -62,31 +65,34 @@
         class="flex flex-1 flex-col gap-1 rounded-2xl bg-white dark:bg-slate-800/50 p-4 items-center text-center shadow-sm border border-slate-100 dark:border-slate-700"
       >
         <text class="text-slate-900 dark:text-slate-100 text-2xl font-bold">
-          128
+          --
         </text>
         <text class="text-slate-500 dark:text-slate-400 text-xs font-medium">
           下厨次数
         </text>
+        <text class="text-slate-400 text-[10px]">暂无数据</text>
       </view>
       <view
         class="flex flex-1 flex-col gap-1 rounded-2xl bg-white dark:bg-slate-800/50 p-4 items-center text-center shadow-sm border border-slate-100 dark:border-slate-700"
       >
         <text class="text-slate-900 dark:text-slate-100 text-2xl font-bold">
-          42
+          --
         </text>
         <text class="text-slate-500 dark:text-slate-400 text-xs font-medium">
           收藏菜谱
         </text>
+        <text class="text-slate-400 text-[10px]">暂无数据</text>
       </view>
       <view
         class="flex flex-1 flex-col gap-1 rounded-2xl bg-white dark:bg-slate-800/50 p-4 items-center text-center shadow-sm border border-slate-100 dark:border-slate-700"
       >
         <text class="text-slate-900 dark:text-slate-100 text-2xl font-bold">
-          12
+          --
         </text>
         <text class="text-slate-500 dark:text-slate-400 text-xs font-medium">
           勋章
         </text>
+        <text class="text-slate-400 text-[10px]">即将开放</text>
       </view>
     </view>
 
@@ -111,7 +117,7 @@
               class="text-slate-900 dark:text-slate-100 font-bold text-sm block"
               >我的勋章墙</text
             >
-            <text class="text-slate-400 text-[10px] block">已获12枚勋章</text>
+            <text class="text-slate-400 text-[10px] block">即将开放</text>
           </view>
         </view>
         <view
@@ -127,7 +133,7 @@
               class="text-slate-900 dark:text-slate-100 font-bold text-sm block"
               >食光日记</text
             >
-            <text class="text-slate-400 text-[10px] block">记录美味时刻</text>
+            <text class="text-slate-400 text-[10px] block">暂无数据</text>
           </view>
         </view>
         <view
@@ -144,7 +150,7 @@
               class="text-slate-900 dark:text-slate-100 font-bold text-sm block"
               >家庭成员</text
             >
-            <text class="text-slate-400 text-[10px] block">3位成员在线</text>
+            <text class="text-slate-400 text-[10px] block">{{ familyMemberText }}</text>
           </view>
         </view>
         <view
@@ -160,7 +166,7 @@
               class="text-slate-900 dark:text-slate-100 font-bold text-sm block"
               >厨房设备</text
             >
-            <text class="text-slate-400 text-[10px] block">已连接4台设备</text>
+            <text class="text-slate-400 text-[10px] block">即将开放</text>
           </view>
         </view>
       </view>
@@ -270,13 +276,55 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
+import { onShow } from "@dcloudio/uni-app";
 import * as authService from "@/services/auth";
 import { useUserStore } from "@/stores/user";
+import { useGroupStore } from "@/stores/group";
+import defaultAvatar from "@/static/svgs/default_avatar.svg";
 
 const userStore = useUserStore();
+const groupStore = useGroupStore();
 const showLogoutModal = ref(false);
 const loggingOut = ref(false);
+
+const profileName = computed(() => userStore.userInfo?.nickname || "ChefMate 用户");
+const avatarUrl = computed(() => userStore.userInfo?.avatarUrl || defaultAvatar);
+const currentKitchenName = computed(() =>
+  groupStore.currentGroup?.name || "未加入家庭组",
+);
+const familyMemberText = computed(() => {
+  if (!groupStore.currentGroup) return "未加入家庭组";
+  const count =
+    groupStore.currentGroup.memberCount ||
+    groupStore.currentGroup.members?.length ||
+    0;
+  return `${count}位成员`;
+});
+const kitchenRank = computed(() => {
+  if (!groupStore.currentGroup) return "NEW";
+  return groupStore.currentGroup.role === "owner" ? "OWNER" : "MEMBER";
+});
+const kitchenLevelText = computed(() =>
+  groupStore.currentGroup ? "厨房等级：数据建设中" : "还没有绑定家庭厨房",
+);
+const phoneText = computed(() => userStore.userInfo?.phone || "未绑定手机号");
+
+onShow(async () => {
+  if (!groupStore.currentGroup && userStore.isLoggedIn) {
+    const groups = await groupStore.fetchMyGroups();
+    const currentGroupId = groups[0]?.id || "";
+    if (groups.length > 0 && currentGroupId) {
+      await groupStore.fetchGroupDetail(currentGroupId);
+    }
+    return;
+  }
+
+  const currentGroupId = groupStore.currentGroup?.id;
+  if (currentGroupId) {
+    await groupStore.fetchGroupDetail(currentGroupId);
+  }
+});
 
 const navToLanguageSettings = () => {
   uni.navigateTo({

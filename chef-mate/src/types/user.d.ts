@@ -41,8 +41,8 @@ export interface LoginParams {
 export interface RegisterParams {
   phone: string;
   password: string;
-  nickname: string;
-  code: string;
+  nickname?: string;
+  code?: string;
 }
 
 /** 登录/注册响应 */

@@ -6,6 +6,12 @@ import { AuthService } from './auth.service';
 
 import { PrismaService } from '@/common/prisma.service';
 
+/**
+ * 认证模块。
+ *
+ * 这里负责把登录相关的 Controller、Service、JWT 能力装配在一起。
+ * JwtModule.registerAsync 表示 JWT 配置不是写死的，而是启动时从 ConfigService 读取。
+ */
 @Module({
   imports: [
     JwtModule.registerAsync({

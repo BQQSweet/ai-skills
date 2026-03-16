@@ -222,7 +222,7 @@
                     :key="index"
                     v-model="inviteCodeArr[index]"
                     class="w-10 h-11 text-center text-lg font-black rounded-xl border border-slate-200 bg-white text-slate-900"
-                    type="number"
+                    type="text"
                     maxlength="1"
                     placeholder="•"
                     :focus="focusIndex === index"
@@ -281,6 +281,85 @@
           @click="openAddGroupPanel"
         >
           <text>输入邀请码加入</text>
+        </view>
+
+        <view
+          v-if="showAddGroupPanel"
+          class="mt-4 rounded-[24rpx] border-2 border-dashed border-primary/20 bg-white px-4 py-4 text-left shadow-soft"
+        >
+          <view class="flex items-center justify-between gap-3">
+            <view class="flex items-center gap-3">
+              <view
+                class="w-11 h-11 shrink-0 rounded-2xl bg-primary/10 text-primary flex items-center justify-center"
+              >
+                <text class="material-symbols-outlined text-xl">add</text>
+              </view>
+              <view>
+                <text class="block text-sm font-bold text-slate-900">创建或加入新厨房</text>
+                <text class="block text-xs text-text-muted">
+                  创建新的家庭厨房，或输入邀请码加入已有厨房
+                </text>
+              </view>
+            </view>
+            <text
+              class="material-symbols-outlined text-text-muted cursor-pointer"
+              @click="showAddGroupPanel = false"
+            >
+              expand_less
+            </text>
+          </view>
+
+          <view class="mt-4 flex flex-col gap-4">
+            <view class="rounded-[20rpx] bg-[#fff9ef] px-4 py-4 border border-primary/10">
+              <text class="block text-sm font-bold text-slate-900">创建新厨房</text>
+              <text class="mt-1 block text-xs text-text-muted">
+                创建一个新的家庭协作空间，并自动切换到新厨房
+              </text>
+              <view class="mt-3">
+                <CmInput
+                  v-model="newGroupName"
+                  dark
+                  placeholder="例如：周末聚会组"
+                  inputClass="bg-white border border-transparent focus:border-primary"
+                />
+              </view>
+              <view
+                class="mt-3 h-11 rounded-full bg-primary text-white font-bold flex items-center justify-center"
+                :class="creatingGroup ? 'opacity-70' : ''"
+                @click="handleCreateGroup"
+              >
+                <text>{{ creatingGroup ? "创建中..." : "创建家庭组" }}</text>
+              </view>
+            </view>
+
+            <view class="rounded-[20rpx] bg-[#f8fafc] px-4 py-4 border border-slate-100">
+              <text class="block text-sm font-bold text-slate-900">加入其他厨房</text>
+              <text class="mt-1 block text-xs text-text-muted">
+                输入家人或朋友分享的 6 位邀请码，加入已有厨房
+              </text>
+              <view class="mt-3 flex gap-2 justify-between">
+                <input
+                  v-for="(_, index) in 6"
+                  :key="index"
+                  v-model="inviteCodeArr[index]"
+                  class="w-10 h-11 text-center text-lg font-black rounded-xl border border-slate-200 bg-white text-slate-900"
+                  type="text"
+                  maxlength="1"
+                  placeholder="•"
+                  :focus="focusIndex === index"
+                  @input="handleInviteCodeInput(index, $event)"
+                  @focus="focusIndex = index"
+                />
+              </view>
+              <view
+                class="mt-3 h-11 rounded-full bg-slate-900 text-white font-bold flex items-center justify-center"
+                :class="joiningGroup ? 'opacity-70' : ''"
+                @click="handleJoinGroup"
+              >
+                <text>{{ joiningGroup ? "加入中..." : "加入家庭组" }}</text>
+              </view>
+            </view>
+          </view>
         </view>
       </view>
     </scroll-view>
@@ -366,7 +445,10 @@ function openAddGroupPanel() {
 }
 
 function handleInviteCodeInput(index: number, event: any) {
-  const value = String(event?.detail?.value || "").slice(-1);
+  const value = String(event?.detail?.value || "")
+    .replace(/[^0-9a-z]/gi, "")
+    .toUpperCase()
+    .slice(-1);
   inviteCodeArr.value[index] = value;
 
   if (value && index < inviteCodeArr.value.length - 1) {
@@ -466,6 +548,8 @@ async function handleSwitchGroup(groupId: string) {
 }
 
 async function handleCreateGroup() {
+  if (creatingGroup.value) return;
+
   if (!newGroupName.value.trim()) {
     uToastRef.value?.show({
       type: "error",
@@ -494,6 +578,8 @@ async function handleCreateGroup() {
 }
 
 async function handleJoinGroup() {
+  if (joiningGroup.value) return;
+
   if (inviteCode.value.length !== 6) {
     uToastRef.value?.show({
       type: "error",

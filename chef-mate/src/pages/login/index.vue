@@ -67,10 +67,16 @@
             <template #suffix>
               <button
                 class="absolute right-2 top-2 bottom-2 flex items-center justify-center px-4 bg-primary/10 text-primary text-sm font-bold border-none rounded-xl min-w-[100px] transition-colors active:bg-primary/20 disabled:opacity-50 disabled:bg-primary/5 after:hidden"
-                :disabled="codeCooldown > 0"
+                :disabled="codeCooldown > 0 || smsSending"
                 @click="handleSendCode"
               >
-                {{ codeCooldown > 0 ? `${codeCooldown}s` : "获取验证码" }}
+                {{
+                  codeCooldown > 0
+                    ? `${codeCooldown}s`
+                    : smsSending
+                      ? "发送中..."
+                      : "获取验证码"
+                }}
               </button>
             </template>
           </CmInput>
@@ -81,7 +87,7 @@
           <CmInput
             v-model="form.account"
             icon="person"
-            placeholder="请输入用户名或手机号"
+            placeholder="请输入手机号"
           />
 
           <!-- Password Input -->
@@ -106,7 +112,7 @@
         <button
           class="mt-2 w-full h-14 bg-primary rounded-full shadow-[0_10px_15px_-3px_rgba(var(--primary),0.4)] border-none p-0 transition-all duration-300 overflow-hidden relative group active:scale-98 active:bg-primary-dark after:hidden"
           :loading="loading"
-          @click="handleSubmit"
+          @click="onSubmit"
         >
           <view
             class="relative z-10 flex items-center justify-center gap-2 h-full text-white text-lg font-bold"
@@ -191,6 +197,7 @@
 <script setup lang="ts">
 import CmIcon from "@/components/CmIcon/CmIcon.vue";
 import CmToast from "@/components/CmToast/CmToast.vue";
+import { debounce } from "lodash";
 import { ref, reactive, onUnmounted } from "vue";
 import { onShow } from "@dcloudio/uni-app";
 import CmInput from "@/components/CmInput/CmInput.vue";
@@ -212,6 +219,7 @@ onShow(() => {
 });
 
 const loading = ref(false);
+const smsSending = ref(false);
 const codeCooldown = ref(0);
 const codeCooldownTimer = ref<ReturnType<typeof setInterval> | null>(null);
 const agreedToTerms = ref(true);
@@ -226,10 +234,40 @@ const form = reactive({
 });
 
 function toggleLoginType() {
+  if (loginType.value === "code" && !form.account && form.phone) {
+    form.account = form.phone.trim();
+  }
+
+  if (
+    loginType.value === "password" &&
+    !form.phone &&
+    /^1[3-9]\d{9}$/.test(form.account.trim())
+  ) {
+    form.phone = form.account.trim();
+  }
+
   loginType.value = loginType.value === "code" ? "password" : "code";
 }
 
-async function handleSendCode() {
+function startCodeCooldown() {
+  codeCooldown.value = 60;
+
+  if (codeCooldownTimer.value) {
+    clearInterval(codeCooldownTimer.value);
+  }
+
+  codeCooldownTimer.value = setInterval(() => {
+    codeCooldown.value--;
+    if (codeCooldown.value <= 0 && codeCooldownTimer.value) {
+      clearInterval(codeCooldownTimer.value);
+      codeCooldownTimer.value = null;
+    }
+  }, 1000);
+}
+
+async function sendCodeRequest() {
+  if (smsSending.value || codeCooldown.value > 0) return;
+
   if (!form.phone || form.phone.length !== 11) {
     uToastRef.value?.show({
       type: "error",
@@ -239,26 +277,27 @@ async function handleSendCode() {
   }
 
   try {
-    loading.value = true;
+    smsSending.value = true;
     await authService.sendSmsCode(form.phone);
-    loading.value = false;
     uToastRef.value?.show({
       type: "success",
       message: "验证码已发送",
     });
-
-    codeCooldown.value = 60;
-    codeCooldownTimer.value = setInterval(() => {
-      codeCooldown.value--;
-      if (codeCooldown.value <= 0 && codeCooldownTimer.value) {
-        clearInterval(codeCooldownTimer.value);
-        codeCooldownTimer.value = null;
-      }
-    }, 1000);
+    startCodeCooldown();
   } catch (err: any) {
-    loading.value = false;
     // 错误在 request 拦截器中已经进行了 showToast，无需重复
+  } finally {
+    smsSending.value = false;
   }
+}
+
+const debouncedSendCode = debounce(sendCodeRequest, 300, {
+  leading: true,
+  trailing: false,
+});
+
+function handleSendCode() {
+  debouncedSendCode();
 }
 
 function toggleTerms() {
@@ -286,7 +325,56 @@ function handleWechatLogin() {
   });
 }
 
+function getErrorMessage(err: any) {
+  if (typeof err?.msg === "string") return err.msg;
+  if (typeof err?.message === "string") return err.message;
+  return "登录失败，请稍后重试";
+}
+
+function redirectAfterLogin() {
+  setTimeout(() => {
+    if (userStore.currentGroupId) {
+      uni.reLaunch({ url: "/pages/index/index" });
+    } else {
+      uni.reLaunch({ url: "/pages/guide/index" });
+    }
+  }, 1000);
+}
+
+async function promptAutoRegister(account: string, password: string) {
+  const { confirm } = await uni.showModal({
+    title: "账号未注册",
+    content: `手机号 ${account} 尚未注册，是否自动创建账号并登录？`,
+    confirmText: "自动注册",
+    cancelText: "取消",
+  });
+
+  if (!confirm) return;
+
+  loading.value = true;
+  try {
+    await userStore.register({
+      phone: account,
+      password,
+    });
+    uToastRef.value?.show({
+      type: "success",
+      message: "注册并登录成功",
+    });
+    redirectAfterLogin();
+  } catch (err: any) {
+    uToastRef.value?.show({
+      type: "error",
+      message: getErrorMessage(err),
+    });
+  } finally {
+    loading.value = false;
+  }
+}
+
 async function handleSubmit() {
+  if (loading.value) return;
+
   if (!agreedToTerms.value) {
     uToastRef.value?.show({
       type: "error",
@@ -296,27 +384,31 @@ async function handleSubmit() {
   }
 
   const payload: import("@/types/user").LoginParams = { type: loginType.value };
+  const phone = form.phone.trim();
+  const code = form.code.trim();
+  const account = form.account.trim();
+  const password = form.password.trim();
 
   if (loginType.value === "code") {
-    if (!form.phone || !form.code) {
+    if (!phone || !code) {
       uToastRef.value?.show({
         type: "error",
         message: "请填写完整信息",
       });
       return;
     }
-    payload.phone = form.phone;
-    payload.code = form.code;
+    payload.phone = phone;
+    payload.code = code;
   } else {
-    if (!form.account || !form.password) {
+    if (!account || !password) {
       uToastRef.value?.show({
         type: "error",
         message: "请填写完整信息",
       });
       return;
     }
-    payload.account = form.account;
-    payload.password = form.password;
+    payload.account = account;
+    payload.password = password;
   }
 
   loading.value = true;
@@ -326,21 +418,36 @@ async function handleSubmit() {
       type: "success",
       message: "登录成功",
     });
-    setTimeout(() => {
-      if (userStore.currentGroupId) {
-        uni.reLaunch({ url: "/pages/index/index" });
-      } else {
-        uni.reLaunch({ url: "/pages/guide/index" });
-      }
-    }, 1000);
+    redirectAfterLogin();
   } catch (err: any) {
-    // 失败由请求层拦截吐司
+    const message = getErrorMessage(err);
+
+    if (loginType.value === "password" && message === "该账号未注册") {
+      await promptAutoRegister(account, password);
+      return;
+    }
+
+    uToastRef.value?.show({
+      type: "error",
+      message,
+    });
   } finally {
     loading.value = false;
   }
 }
 
+const debouncedHandleSubmit = debounce(handleSubmit, 300, {
+  leading: true,
+  trailing: false,
+});
+
+function onSubmit() {
+  debouncedHandleSubmit();
+}
+
 onUnmounted(() => {
+  debouncedSendCode.cancel();
+  debouncedHandleSubmit.cancel();
   if (codeCooldownTimer.value) {
     clearInterval(codeCooldownTimer.value);
     codeCooldownTimer.value = null;

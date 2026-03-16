@@ -114,7 +114,7 @@
               :key="index"
               v-model="inviteCodeArr[index]"
               class="w-11 h-12 text-center text-xl font-display font-bold rounded-xl border border-orange-100 dark:border-gray-700 bg-background-light/50 dark:bg-background-dark focus:border-primary focus:ring-1 focus:ring-primary text-text-main dark:text-white transition-all caret-primary shadow-inner"
-              type="number"
+              type="text"
               maxlength="1"
               placeholder="•"
               :focus="focusIndex === index"
@@ -176,7 +176,11 @@ const uToastRef = ref<any>(null);
 
 // Methods
 const handleCodeInput = (index: number, e: any) => {
-  const val = e.detail.value;
+  const val = String(e.detail.value || "")
+    .replace(/[^0-9a-z]/gi, "")
+    .toUpperCase()
+    .slice(-1);
+  inviteCodeArr.value[index] = val;
   if (val) {
     if (index < 5) focusIndex.value = index + 1;
   } else {
@@ -186,6 +190,8 @@ const handleCodeInput = (index: number, e: any) => {
 };
 
 const handleCreateKitchen = async () => {
+  if (isCreating.value) return;
+
   if (!kitchenName.value.trim()) {
     uToastRef.value?.show({
       type: "error",
@@ -218,6 +224,7 @@ const handleCreateKitchen = async () => {
 };
 
 const handleJoinKitchen = async () => {
+  if (isJoining.value) return;
   if (inviteCode.value.length !== 6) return;
 
   isJoining.value = true;

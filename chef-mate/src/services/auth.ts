@@ -6,17 +6,23 @@ import type { LoginParams, RegisterParams, AuthResult } from '@/types/user';
 
 /** 手机号+密码登录 */
 export function login(params: LoginParams): Promise<AuthResult> {
-  return post<AuthResult>('/api/auth/login', params);
+  return post<AuthResult>("/api/auth/login", params, {
+    noAuth: true,
+    showError: false,
+  });
 }
 
 /** 手机号注册 */
 export function register(params: RegisterParams): Promise<AuthResult> {
-  return post<AuthResult>('/api/auth/register', params);
+  return post<AuthResult>("/api/auth/register", params, {
+    noAuth: true,
+    showError: false,
+  });
 }
 
 /** 发送短信验证码 */
 export function sendSmsCode(phone: string): Promise<void> {
-  return post('/api/auth/sms-code', { phone });
+  return post("/api/auth/sms-code", { phone }, { noAuth: true });
 }
 
 /** 退出登录 */
