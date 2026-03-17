@@ -53,7 +53,10 @@
           >
             <text
               class="block truncate text-[17px] font-black leading-tight text-slate-900"
-              :class="{ 'line-through decoration-slate-400 text-slate-400': item.status === 'purchased' }"
+              :class="{
+                'line-through decoration-slate-400 text-slate-400':
+                  item.status === 'purchased',
+              }"
             >
               {{ item.name }}
             </text>
@@ -116,24 +119,15 @@
 
         <view class="mt-3 flex flex-wrap items-center gap-2 justify-between">
           <view class="flex flex-wrap items-center gap-2">
-            <view
-              class="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium"
-              :class="sourceBadgeClass"
-            >
-              <text class="material-symbols-outlined text-[14px]">
-                {{ sourceIcon }}
-              </text>
+            <CmTag tone="warning">
               <text>{{ sourceText }}</text>
-            </view>
+            </CmTag>
             <CmTag v-if="item.hasInFridge" tone="warning" size="xs">
               冰箱已有
             </CmTag>
           </view>
 
-          <text
-            v-if="statusMeta"
-            class="text-[11px] text-slate-400"
-          >
+          <text v-if="statusMeta" class="text-[11px] text-slate-400">
             {{ statusMeta }}
           </text>
         </view>
@@ -144,7 +138,6 @@
         >
           冰箱库存中已有 {{ item.fridgeMatchedName }}
         </text>
-
       </view>
     </view>
   </view>
@@ -153,6 +146,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import type { ShoppingItem } from "@/types/shopping";
+import CmTag from "@/components/CmTag/CmTag.vue";
 
 const props = defineProps<{
   item: ShoppingItem;
@@ -206,13 +200,12 @@ const canToggle = computed(() => {
 });
 
 const checkboxHitAreaClass = computed(() =>
-  canToggle.value
-    ? "cursor-pointer"
-    : "cursor-not-allowed opacity-70",
+  canToggle.value ? "cursor-pointer" : "cursor-not-allowed opacity-70",
 );
 
 const checkboxClass = computed(() => {
-  if (showCheckedIcon.value) return "border-primary bg-primary shadow-[0_6px_12px_-8px_rgba(255,157,10,0.85)]";
+  if (showCheckedIcon.value)
+    return "border-primary bg-primary shadow-[0_6px_12px_-8px_rgba(255,157,10,0.85)]";
   if (props.item.hasInFridge) return "border-amber-300 bg-amber-50";
   if (!canToggle.value) return "border-slate-200 bg-slate-50";
   return "border-slate-200 dark:border-gray-600";
@@ -261,9 +254,10 @@ const statusBanner = computed(() => {
 
 const statusMeta = computed(() => {
   if (props.item.status === "claimed") {
-    if (props.item.assignedTo === props.currentUserId) return "已由你领取";
-    if (props.item.assignedToName) return `由 ${props.item.assignedToName} 领取`;
-    return "已被领取";
+    if (props.item.assignedTo === props.currentUserId) return "已由你认领";
+    if (props.item.assignedToName)
+      return `已由 ${props.item.assignedToName} 采购中`;
+    return "已被其他成员认领";
   }
 
   if (props.item.status === "purchased") {
@@ -285,11 +279,9 @@ const showTopActionBar = computed(
   () =>
     !props.item.hasInFridge &&
     props.item.status !== "purchased" &&
-    (
-      showClaimIconButton.value ||
+    (showClaimIconButton.value ||
       showAssignIconButton.value ||
-      showDeleteIconButton.value
-    ),
+      showDeleteIconButton.value),
 );
 
 const showClaimIconButton = computed(
@@ -355,7 +347,9 @@ const claimIconTextClass = computed(() =>
 );
 
 const assignButtonClass = computed(() =>
-  showAssignedAvatar.value ? assigneePillClass.value : "bg-slate-100 text-slate-400",
+  showAssignedAvatar.value
+    ? assigneePillClass.value
+    : "bg-slate-100 text-slate-400",
 );
 
 const assignIconTextClass = computed(() =>

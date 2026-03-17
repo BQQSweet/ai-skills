@@ -1,11 +1,21 @@
 <template>
-  <view
-    class="relative flex min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto bg-background-light dark:bg-background-dark font-display text-slate-900 pb-50"
+  <CmPageShell
+    title="语音语言设置"
+    :background-class="
+      'relative flex min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto bg-background-light dark:bg-background-dark font-display text-slate-900 pb-50'
+    "
+    :header-class="
+      'z-30 px-4 pt-6 pb-4 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md'
+    "
+    :use-scroll-view="false"
+    :content-padding-class="'px-6 py-4'"
+    :footer-class="
+      'fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-background-dark/90 backdrop-blur-lg px-6 pt-4 pb-10 flex flex-col gap-3 border-t border-slate-50 dark:border-slate-800'
+    "
+    :header-offset-class="'pt-[72px]'"
+    @back="goBack"
   >
-    <!-- Header -->
-    <view
-      class="sticky top-0 z-30 flex items-center justify-between px-4 pt-6 pb-4 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md"
-    >
+    <template #left>
       <button
         @click="goBack"
         class="flex h-10 w-10 p-0 m-0 items-center justify-center rounded-full bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 after:border-none"
@@ -16,14 +26,8 @@
           chevron_left
         </text>
       </button>
-      <text class="text-lg font-bold text-slate-900 dark:text-slate-100">
-        语音语言设置
-      </text>
-      <view class="w-10"></view>
-    </view>
+    </template>
 
-    <!-- Main Content -->
-    <view class="flex-1 px-6 py-4">
       <view class="mb-6">
         <text
           class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-1 block"
@@ -90,12 +94,7 @@
           H5 环境，最终效果取决于设备浏览器的支持度。
         </text>
       </view>
-    </view>
-
-    <!-- Footer Actions -->
-    <view
-      class="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-background-dark/90 backdrop-blur-lg px-6 pt-4 pb-10 flex flex-col gap-3 border-t border-slate-50 dark:border-slate-800"
-    >
+    <template #footer>
       <button
         @click="testVoiceRecognition"
         class="flex items-center justify-center gap-2 w-full h-14 bg-transparent rounded-full border-2 border-primary text-primary font-bold m-0 p-0 after:border-none active:bg-primary/5"
@@ -109,9 +108,9 @@
       >
         确认保存
       </button>
-    </view>
+    </template>
     <up-toast ref="uToastRef"></up-toast>
-  </view>
+  </CmPageShell>
 </template>
 
 <script setup lang="ts">

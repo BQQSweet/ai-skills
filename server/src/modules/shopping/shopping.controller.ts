@@ -113,6 +113,15 @@ export class ShoppingController {
     return this.shoppingService.claimShoppingItem(itemId, userId);
   }
 
+  @Put('item/:itemId/claim-and-purchase')
+  @ApiOperation({ summary: '认领并标记为已购买' })
+  async claimAndPurchaseShoppingItem(
+    @Param('itemId') itemId: string,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.shoppingService.claimAndPurchaseShoppingItem(itemId, userId);
+  }
+
   @Put('item/:itemId/assign')
   @ApiOperation({ summary: '组长分配购物任务' })
   async assignShoppingItem(

@@ -12,6 +12,12 @@ Read the root docs first:
 
 Then use this file for admin-specific guidance.
 
+Shared frontend page standard:
+
+- `../docs/frontend-page-standards.md`
+- Use it by default when creating, refactoring, or reviewing pages
+- If a page exceeds the recommended size or mixes multiple responsibilities, prefer proposing or applying a split instead of extending the monolith
+
 ## What This Package Is
 
 `admin` is the ChefMate management panel.
@@ -64,6 +70,11 @@ If the task is about:
 - if you change backend contracts, update the TypeScript interfaces in `src/api/*`
 - preserve existing Arco UI patterns unless the task explicitly asks for redesign
 - avoid introducing a second request abstraction
+- for page work, follow `../docs/frontend-page-standards.md` by default
+- keep `src/views/*/index.vue` focused on orchestration and move independent panels, dialogs, and tables into local `components/`
+- when a page grows beyond the recommended thresholds in the shared standard, propose or implement a component/composable split
+- during review, treat page-structure compliance as a default review dimension, not an optional extra
+- only relax the page standard when the task explicitly says the page is a temporary prototype or one-off experiment
 
 ## Validation
 

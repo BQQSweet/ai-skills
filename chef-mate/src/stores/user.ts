@@ -93,14 +93,20 @@ export const useUserStore = defineStore("user", () => {
     setStorage(STORAGE_KEYS.DIETARY_PREFS, JSON.stringify(prefs));
   }
 
-  /** 退出登录 */
-  async function logout() {
+  /** 清空本地会话状态，不负责页面跳转 */
+  async function resetSession() {
     token.value = "";
     userInfo.value = null;
-    setCurrentGroupId("");
+    currentGroupId.value = "";
+
     const { useGroupStore } = await import("@/stores/group");
     useGroupStore().clearGroups();
     clearAuth();
+  }
+
+  /** 退出登录 */
+  async function logout() {
+    await resetSession();
     uni.reLaunch({ url: "/pages/login/index" });
   }
 
@@ -121,6 +127,7 @@ export const useUserStore = defineStore("user", () => {
     login,
     register,
     logout,
+    resetSession,
     setCurrentGroupId,
     setDietaryPreferences,
   };

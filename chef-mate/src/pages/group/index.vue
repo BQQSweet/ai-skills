@@ -1,22 +1,15 @@
 <template>
-  <view
-    class="min-h-screen bg-[#f8f5ef] dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display"
+  <CmPageShell
+    title="我的家庭组"
+    :background-class="
+      'min-h-screen bg-[#f8f5ef] dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display'
+    "
+    :header-class="
+      'z-20 px-6 pt-12 pb-4 bg-[#f8f5ef]/90 dark:bg-background-dark/90 backdrop-blur-lg'
+    "
+    :content-padding-class="'px-6 pb-8'"
+    @back="goBack"
   >
-    <view
-      class="sticky top-0 z-20 flex items-center px-6 pt-12 pb-4 bg-[#f8f5ef]/90 dark:bg-background-dark/90 backdrop-blur-lg"
-    >
-      <view
-        class="w-10 h-10 rounded-full bg-white/80 dark:bg-surface-dark shadow-soft flex items-center justify-center"
-        @click="goBack"
-      >
-        <text class="material-symbols-outlined text-text-main dark:text-white">
-          arrow_back_ios_new
-        </text>
-      </view>
-      <text class="flex-1 pr-10 text-center text-lg font-bold">我的家庭组</text>
-    </view>
-
-    <scroll-view scroll-y class="h-[calc(100vh-88px)] px-6 pb-8">
       <view v-if="loading" class="py-20 flex justify-center">
         <text class="text-sm text-text-muted">正在加载家庭组信息...</text>
       </view>
@@ -364,7 +357,7 @@
           </view>
         </view>
       </view>
-    </scroll-view>
+  </CmPageShell>
 
     <up-modal
       :show="showLeaveModal"
@@ -387,7 +380,6 @@
     ></up-modal>
 
     <up-toast ref="uToastRef"></up-toast>
-  </view>
 </template>
 
 <script setup lang="ts">

@@ -17,12 +17,77 @@ type ShoppingListRecord = Awaited<
   ReturnType<ShoppingService['getShoppingListsRaw']>
 >[number];
 
+type ShoppingItemRecord = ShoppingListRecord['items'][number];
+
 @Injectable()
 export class ShoppingService {
   constructor(private readonly prisma: PrismaService) {}
 
   private normalizeName(name: string) {
     return name.trim().toLowerCase();
+  }
+
+  /**
+   * 统一维护购物项状态字段之间的一致性，避免出现：
+   * - status = pending，但 purchased_by / bought_at 仍然有值
+   * - status = pending，但 assigned_to 仍然有值
+   */
+  private buildItemStateUpdate(
+    status: 'pending' | 'claimed' | 'purchased',
+    item: ShoppingItemRecord,
+    userId: string,
+  ) {
+    if (status === 'pending') {
+      return {
+        status: 'pending' as const,
+        assigned_to: null,
+        is_bought: false,
+        bought_at: null,
+        purchased_by: null,
+      };
+    }
+
+    if (status === 'claimed') {
+      return {
+        status: 'claimed' as const,
+        assigned_to: item.assigned_to || userId,
+        is_bought: false,
+        bought_at: null,
+        purchased_by: null,
+      };
+    }
+
+    return {
+      status: 'purchased' as const,
+      is_bought: true,
+      bought_at: new Date(),
+      purchased_by: userId,
+      // 如果之前没有领取人，则默认把购买人视为当前执行购买的人
+      assigned_to: item.assigned_to || userId,
+    };
+  }
+
+  private isValidItemStatus(
+    status: string,
+  ): status is 'pending' | 'claimed' | 'purchased' {
+    return ['pending', 'claimed', 'purchased'].includes(status);
+  }
+
+  private getSerializedItemState(item: ShoppingItemRecord) {
+    const isClaimed = item.status === 'claimed';
+    const isPurchased = item.status === 'purchased';
+
+    return {
+      assignedTo: isClaimed || isPurchased ? item.assigned_to : null,
+      purchasedBy: isPurchased ? item.purchased_by : null,
+      purchasedAt: isPurchased ? item.bought_at : null,
+    };
+  }
+
+  private assertCanPurchase(item: ShoppingItemRecord, userId: string) {
+    if (item.assigned_to && item.assigned_to !== userId) {
+      throw new ForbiddenException('该任务已由其他成员认领');
+    }
   }
 
   private async getShoppingListsRaw(groupId: string) {
@@ -45,7 +110,10 @@ export class ShoppingService {
     });
   }
 
-  private async buildSerializeContext(groupId: string, lists: ShoppingListRecord[]) {
+  private async buildSerializeContext(
+    groupId: string,
+    lists: ShoppingListRecord[],
+  ) {
     const fridgeItems = await this.prisma.fridgeItem.findMany({
       where: {
         group_id: groupId,
@@ -107,6 +175,7 @@ export class ShoppingService {
       items: list.items.map((item) => {
         const matchedName =
           context.fridgeNameMap.get(this.normalizeName(item.name)) || '';
+        const itemState = this.getSerializedItemState(item);
 
         return {
           id: item.id,
@@ -128,15 +197,15 @@ export class ShoppingService {
           addedBy: item.added_by,
           addedByName:
             context.userMap.get(item.added_by)?.nickname || '未知成员',
-          assignedTo: item.assigned_to,
-          assignedToName: item.assigned_to
-            ? context.userMap.get(item.assigned_to)?.nickname || '未知成员'
+          assignedTo: itemState.assignedTo,
+          assignedToName: itemState.assignedTo
+            ? context.userMap.get(itemState.assignedTo)?.nickname || '未知成员'
             : '',
-          purchasedBy: item.purchased_by,
-          purchasedByName: item.purchased_by
-            ? context.userMap.get(item.purchased_by)?.nickname || '未知成员'
+          purchasedBy: itemState.purchasedBy,
+          purchasedByName: itemState.purchasedBy
+            ? context.userMap.get(itemState.purchasedBy)?.nickname || '未知成员'
             : '',
-          purchasedAt: item.bought_at,
+          purchasedAt: itemState.purchasedAt,
           createdAt: item.created_at,
           updatedAt: item.updated_at,
           hasInFridge: Boolean(matchedName),
@@ -146,7 +215,10 @@ export class ShoppingService {
     }));
   }
 
-  private async serializeGroupLists(groupId: string, lists: ShoppingListRecord[]) {
+  private async serializeGroupLists(
+    groupId: string,
+    lists: ShoppingListRecord[],
+  ) {
     const context = await this.buildSerializeContext(groupId, lists);
     return this.serializeShoppingLists(lists, context);
   }
@@ -302,7 +374,13 @@ export class ShoppingService {
       })),
     });
 
-    await this.createFeed(groupId, userId, 'shopping_added', dto.recipeTitle, listId);
+    await this.createFeed(
+      groupId,
+      userId,
+      'shopping_added',
+      dto.recipeTitle,
+      listId,
+    );
 
     return this.getSerializedListById(listId);
   }
@@ -347,7 +425,7 @@ export class ShoppingService {
       userId,
       'shopping_added',
       dto.name,
-      item.id,
+      listId,
     );
 
     return this.getSerializedItemById(item.id);
@@ -362,10 +440,29 @@ export class ShoppingService {
     const item = await this.getItemOrThrow(itemId);
     await this.verifyGroupMembership(item.list.group_id, userId);
 
+    const { status, ...restDto } = dto;
+    const stateUpdate =
+      status && this.isValidItemStatus(status)
+        ? this.buildItemStateUpdate(status, item, userId)
+        : {};
+
     await this.prisma.shoppingItem.update({
       where: { id: itemId },
-      data: dto,
+      data: {
+        ...restDto,
+        ...stateUpdate,
+      },
     });
+
+    if (item.status === 'purchased' && status === 'pending') {
+      await this.createFeed(
+        item.list.group_id,
+        userId,
+        'shopping_reopened',
+        item.name,
+        item.list.id,
+      );
+    }
 
     return this.getSerializedItemById(itemId);
   }
@@ -392,10 +489,42 @@ export class ShoppingService {
     await this.prisma.shoppingItem.update({
       where: { id: itemId },
       data: {
+        ...this.buildItemStateUpdate('claimed', item, userId),
         assigned_to: userId,
-        status: 'claimed',
       },
     });
+
+    return this.getSerializedItemById(itemId);
+  }
+
+  // 认领并标记已购买
+  async claimAndPurchaseShoppingItem(itemId: string, userId: string) {
+    const item = await this.getItemOrThrow(itemId);
+    await this.verifyGroupMembership(item.list.group_id, userId);
+    this.assertCanPurchase(item, userId);
+
+    const updateResult = await this.prisma.shoppingItem.updateMany({
+      where: {
+        id: itemId,
+        status: {
+          in: ['pending', 'claimed'],
+        },
+        OR: [{ assigned_to: null }, { assigned_to: userId }],
+      },
+      data: this.buildItemStateUpdate('purchased', item, userId),
+    });
+
+    if (updateResult.count === 0) {
+      throw new ForbiddenException('该任务已由其他成员认领');
+    }
+
+    await this.createFeed(
+      item.list.group_id,
+      userId,
+      'shopping_purchased',
+      item.name,
+      item.list.id,
+    );
 
     return this.getSerializedItemById(itemId);
   }
@@ -407,13 +536,19 @@ export class ShoppingService {
     dto: AssignShoppingItemDto,
   ) {
     const item = await this.getItemOrThrow(itemId);
-    const membership = await this.verifyGroupMembership(item.list.group_id, userId);
+    const membership = await this.verifyGroupMembership(
+      item.list.group_id,
+      userId,
+    );
 
     if (membership.role !== 'owner') {
       throw new ForbiddenException('只有组长可以分配购物任务');
     }
 
-    const assignee = await this.verifyGroupMembership(item.list.group_id, dto.assignedTo);
+    const assignee = await this.verifyGroupMembership(
+      item.list.group_id,
+      dto.assignedTo,
+    );
     if (!assignee) {
       throw new ForbiddenException('目标成员不属于该家庭组');
     }
@@ -421,8 +556,8 @@ export class ShoppingService {
     await this.prisma.shoppingItem.update({
       where: { id: itemId },
       data: {
+        ...this.buildItemStateUpdate('claimed', item, userId),
         assigned_to: dto.assignedTo,
-        status: 'claimed',
       },
     });
 
@@ -433,15 +568,11 @@ export class ShoppingService {
   async markAsPurchased(itemId: string, userId: string) {
     const item = await this.getItemOrThrow(itemId);
     await this.verifyGroupMembership(item.list.group_id, userId);
+    this.assertCanPurchase(item, userId);
 
     await this.prisma.shoppingItem.update({
       where: { id: itemId },
-      data: {
-        is_bought: true,
-        bought_at: new Date(),
-        purchased_by: userId,
-        status: 'purchased',
-      },
+      data: this.buildItemStateUpdate('purchased', item, userId),
     });
 
     await this.createFeed(
@@ -449,7 +580,7 @@ export class ShoppingService {
       userId,
       'shopping_purchased',
       item.name,
-      itemId,
+      item.list.id,
     );
 
     return this.getSerializedItemById(itemId);

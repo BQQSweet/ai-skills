@@ -67,6 +67,7 @@ For device debugging, `chef-mate/scripts/update-ip.sh` updates `chef-mate/.env.d
 
 - `PROJECT_CONTEXT.md`: best single-file onboarding context for humans and LLMs
 - `PROJECT_CONTEXT.md` also records the frontend Stitch prototype workflow for new pages
+- `docs/frontend-page-standards.md`: shared frontend page structure and componentization standard for `chef-mate` and `admin`
 - `task_plan.md`: current execution priorities, completed items, and P0 / P1 / P2 scheduling advice
 - `THREAD_START_PROMPT.md`: reusable startup prompt for opening a new model thread
 - `docs/ChefMate-需求设计文档.md`: product goals, user stories, feature scope

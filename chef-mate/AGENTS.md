@@ -12,6 +12,12 @@ Read the root docs first:
 
 Then use this file for client-app-specific guidance.
 
+Shared frontend page standard:
+
+- `../docs/frontend-page-standards.md`
+- Use it by default when creating, refactoring, or reviewing pages
+- If a page exceeds the recommended size or mixes multiple responsibilities, prefer proposing or applying a split instead of extending the monolith
+
 ## What This Package Is
 
 `chef-mate` is the end-user client.
@@ -68,6 +74,11 @@ If the task is about:
 - when changing API shapes, update the local types and the matching backend contract
 - prefer following existing uni-app patterns instead of introducing web-only assumptions
 - check mobile, H5, and upload-related behavior before changing platform-sensitive code
+- for page work, follow `../docs/frontend-page-standards.md` by default
+- when adding or refactoring a page, keep `index.vue` focused on orchestration and move independent regions into local `components/`
+- when a page grows beyond the recommended thresholds in the shared standard, propose or implement a component/composable split
+- during review, treat page-structure compliance as a default review dimension, not an optional nice-to-have
+- only relax the page standard when the task explicitly says the page is a temporary prototype or one-off experiment
 
 ## Stitch Workflow
 

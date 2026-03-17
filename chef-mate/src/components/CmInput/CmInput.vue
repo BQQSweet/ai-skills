@@ -12,7 +12,7 @@
       </slot>
     </view>
     <input
-      class="w-full h-14 bg-white dark:bg-background-input border border-gray-100 dark:border-gray-200 text-text-main dark:text-text-main rounded-[20rpx] text-md transition-all duration-300 shadow-sm focus:border-primary focus:shadow-[0_0_0_2px_rgba(var(--primary),0.2)]"
+      class="w-full h-10 bg-white dark:bg-background-input border border-gray-100 dark:border-gray-200 text-text-main dark:text-text-main rounded-[20rpx] text-md transition-all duration-300 shadow-sm focus:border-primary focus:shadow-[0_0_0_2px_rgba(var(--primary),0.2)]"
       :class="[icon || $slots.prefix ? 'pl-14' : 'pl-5', inputClass]"
       :type="type"
       :password="password"

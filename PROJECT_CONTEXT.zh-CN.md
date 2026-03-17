@@ -38,6 +38,7 @@ ChefMate 是一个智能家庭烹饪助手，围绕三类核心能力展开：
 
 - `docs/ChefMate-需求设计文档.md`：产品目标、用户故事、功能列表
 - `docs/ChefMate-前端开发设计文档.md`：前端页面流程与组件思路
+- `docs/frontend-page-standards.zh-CN.md`：`chef-mate` 与 `admin` 共用的前端页面结构与审查规范
 - `docs/ChefMate-后端开发设计文档.md`：后端架构、接口约定、AI 模块设计
 
 重要说明：`server/README.md` 目前仍然是 Nest 默认模板，不是这个项目的真实总览。
@@ -165,6 +166,7 @@ API 约定：
 - 在页面规格最终确定前，先向用户确认目标 Stitch 原型或页面 ID
 - 如果用户已经提供 Stitch 页面 ID，则以该原型作为主要设计参考
 - 如果还没有 Stitch 原型，则先提出创建或选择原型的方案，再开始实现
+- `chef-mate` 与 `admin` 默认同时遵循 `docs/frontend-page-standards.zh-CN.md` 中的页面结构与审查规范
 
 ### 4.3 `admin`
 

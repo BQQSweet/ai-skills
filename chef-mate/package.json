@@ -36,6 +36,7 @@
     "build:quickapp-webview-huawei": "uni build -p quickapp-webview-huawei",
     "build:quickapp-webview-union": "uni build -p quickapp-webview-union",
     "dev:app-plus": "pnpm run update-ip && uni -p app-plus",
+    "dev:app": "pnpm run update-ip && uni -p app",
     "type-check": "vue-tsc --noEmit"
   },
   "dependencies": {

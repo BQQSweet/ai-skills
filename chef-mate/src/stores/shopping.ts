@@ -231,6 +231,15 @@ export const useShoppingStore = defineStore("shopping", () => {
   }
 
   /**
+   * 认领并立即完成采购
+   */
+  async function claimAndPurchase(itemId: string) {
+    const updatedItem = await shoppingApi.claimAndPurchaseShoppingItem(itemId);
+    replaceItemInLists(updatedItem);
+    return updatedItem;
+  }
+
+  /**
    * 组长分配任务
    */
   async function assignItem(itemId: string, params: AssignShoppingItemParams) {
@@ -279,6 +288,7 @@ export const useShoppingStore = defineStore("shopping", () => {
     markAsPurchased,
     togglePurchased,
     claimItem,
+    claimAndPurchase,
     assignItem,
     clearPurchased,
     clearAll,

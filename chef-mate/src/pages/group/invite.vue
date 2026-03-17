@@ -1,26 +1,14 @@
 <template>
-  <view
-    class="relative flex min-h-screen w-full flex-col bg-[#FAFAFA] dark:bg-background-dark font-display"
+  <CmPageShell
+    title="邀请家庭成员"
+    :background-class="
+      'relative flex min-h-screen w-full flex-col bg-[#FAFAFA] dark:bg-background-dark font-display'
+    "
+    :header-class="
+      'z-30 bg-[#FAFAFA]/80 dark:bg-background-dark/80 px-6 pt-12 pb-4 backdrop-blur-lg'
+    "
+    @back="goBack"
   >
-    <!-- Header -->
-    <view
-      class="sticky top-0 z-30 bg-[#FAFAFA]/80 dark:bg-background-dark/80 backdrop-blur-lg px-6 pt-12 pb-4 flex items-center"
-    >
-      <view
-        @click="goBack"
-        class="w-10 h-10 rounded-full hover:bg-primary/10 flex items-center justify-center cursor-pointer transition-colors"
-      >
-        <text class="material-symbols-outlined text-text-main dark:text-white"
-          >arrow_back_ios_new</text
-        >
-      </view>
-      <text class="flex-1 text-center text-lg font-bold text-text-main dark:text-white pr-10"
-        >邀请家庭成员</text
-      >
-    </view>
-
-    <!-- Main Content -->
-    <scroll-view scroll-y class="flex-1">
       <!-- Illustration Section -->
       <view class="px-6 py-4">
         <view
@@ -205,7 +193,7 @@
           </view>
         </view>
       </view>
-    </scroll-view>
+  </CmPageShell>
 
     <!-- Refresh Confirmation Modal -->
     <up-modal
@@ -219,7 +207,6 @@
     ></up-modal>
 
     <up-toast ref="uToastRef"></up-toast>
-  </view>
 </template>
 
 <script setup lang="ts">

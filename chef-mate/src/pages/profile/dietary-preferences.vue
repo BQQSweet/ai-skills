@@ -1,29 +1,24 @@
 <template>
-  <view
-    class="relative flex min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto bg-background-light font-display text-slate-900 pb-10"
+  <CmPageShell
+    title="饮食偏好"
+    :background-class="
+      'relative flex min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto bg-background-light font-display text-slate-900 pb-10'
+    "
+    :header-class="
+      'z-30 px-4 py-4 bg-background-light/80 backdrop-blur-md'
+    "
+    :content-padding-class="'px-5 pb-10'"
+    @back="goBack"
   >
-    <!-- Header -->
-    <view
-      class="sticky top-0 z-30 flex items-center justify-between px-4 py-4 bg-background-light/80 backdrop-blur-md"
-    >
-      <button
-        @click="goBack"
-        class="flex items-center justify-center w-10 h-10 rounded-full bg-transparent hover:bg-slate-100 transition-colors p-0 m-0 border-none after:border-none"
-      >
-        <text class="material-symbols-outlined text-slate-900"
-          >arrow_back_ios_new</text
-        >
-      </button>
-      <text class="text-lg font-bold text-slate-900">饮食偏好</text>
+    <template #right>
       <button
         @click="savePreferences"
         class="px-4 py-2 bg-transparent text-primary font-bold text-base hover:opacity-80 transition-opacity p-0 m-0 border-none after:border-none"
       >
         保存
       </button>
-    </view>
+    </template>
 
-    <view class="flex-1 px-5 pb-10 flex flex-col gap-8">
       <!-- Allergies -->
       <view>
         <view class="flex items-center gap-2 mb-4">
@@ -230,9 +225,8 @@
           </view>
         </view>
       </view>
-    </view>
+  </CmPageShell>
     <up-toast ref="uToastRef"></up-toast>
-  </view>
 </template>
 
 <script setup lang="ts">

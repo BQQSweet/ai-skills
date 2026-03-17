@@ -39,6 +39,7 @@ Useful documents:
 - `task_plan.md`: current delivery priorities, completed items, and follow-up sequencing
 - `docs/ChefMate-需求设计文档.md`: product goals, user stories, feature list
 - `docs/ChefMate-前端开发设计文档.md`: frontend page flows and component ideas
+- `docs/frontend-page-standards.md`: shared page componentization and frontend review standard for `chef-mate` and `admin`
 - `docs/ChefMate-后端开发设计文档.md`: backend architecture, API conventions, AI module design
 
 Important note: `server/README.md` is still the default Nest starter README, not a real project overview.
@@ -166,6 +167,7 @@ Frontend prototype workflow:
 - ask the user for the target Stitch prototype or page ID before treating the page spec as final
 - if the user already has a Stitch page ID, treat that prototype as the primary design reference
 - if no Stitch prototype exists yet, propose creating or selecting one before implementation starts
+- both `chef-mate` and `admin` also follow `docs/frontend-page-standards.md` as the default page structure and review standard
 
 ### 4.3 `admin`
 

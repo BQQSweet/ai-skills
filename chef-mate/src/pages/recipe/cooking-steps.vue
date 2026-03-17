@@ -1,51 +1,44 @@
 <template>
-  <view
-    class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen pb-20 flex flex-col relative w-full overflow-x-hidden"
+  <CmPageShell
+    :background-class="
+      'bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex flex-col relative w-full overflow-x-hidden'
+    "
+    :header-class="
+      'z-50 bg-background-light/80 dark:bg-background-dark/80 border-b border-slate-100 dark:border-slate-800 backdrop-blur-md px-4 py-4 mt-safe-top pb-safe-top'
+    "
+    :content-padding-class="'max-w-md mx-auto w-full px-4 pt-6'"
+    :footer-class="
+      'fixed bottom-0 left-0 right-0 p-6 flex flex-col items-center z-50 pointer-events-none pb-safe'
+    "
+    :header-offset-class="'pt-[96px]'"
+    @back="goBack"
   >
-    <!-- Header -->
-    <view
-      class="sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-100 dark:border-slate-800"
-    >
-      <view
-        class="flex items-center justify-between px-4 py-4 mt-safe-top pb-safe-top"
-      >
-        <view
-          @click="goBack"
-          class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors active:scale-95"
+    <template #title>
+      <view class="text-center">
+        <text
+          class="block text-base font-bold text-slate-900 dark:text-white"
         >
-          <text
-            class="material-symbols-outlined text-slate-700 dark:text-slate-300"
-            >arrow_back_ios_new</text
-          >
-        </view>
-        <view class="text-center">
-          <text
-            class="block text-base font-bold text-slate-900 dark:text-white"
-          >
-            {{ recipe?.title || "食谱详情" }}
-          </text>
-          <text
-            class="block text-[10px] text-slate-400 font-medium uppercase tracking-widest mt-0.5"
-          >
-            完整烹饪步骤
-          </text>
-        </view>
-        <view
-          class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+          {{ recipe?.title || "食谱详情" }}
+        </text>
+        <text
+          class="block text-[10px] text-slate-400 font-medium uppercase tracking-widest mt-0.5"
         >
-          <text
-            class="material-symbols-outlined text-slate-700 dark:text-slate-300"
-            >more_horiz</text
-          >
-        </view>
+          完整烹饪步骤
+        </text>
       </view>
-    </view>
+    </template>
 
-    <!-- Main Content -->
-    <scroll-view
-      scroll-y
-      class="max-w-md mx-auto w-full px-4 pt-6 flex flex-col gap-5 flex-1 relative z-10"
-    >
+    <template #right>
+      <view
+        class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+      >
+        <text
+          class="material-symbols-outlined text-slate-700 dark:text-slate-300"
+          >more_horiz</text
+        >
+      </view>
+    </template>
+
       <view class="flex flex-col gap-5">
         <CookingStepCard
           v-for="(step, index) in recipe?.steps"
@@ -76,12 +69,7 @@
           </text>
         </view>
       </view>
-    </scroll-view>
-
-    <!-- FAB -->
-    <view
-      class="fixed bottom-0 left-0 right-0 p-6 flex flex-col items-center z-50 pointer-events-none pb-safe"
-    >
+    <template #footer>
       <view
         class="absolute inset-0 bg-gradient-to-t from-background-light dark:from-background-dark via-background-light/95 dark:via-background-dark/95 to-transparent -z-10 h-40 bottom-0 pointer-events-none"
       ></view>
@@ -107,7 +95,7 @@
       >
         使用语音控制，无需触碰手机
       </text>
-    </view>
+    </template>
 
     <!-- Global Master Q&A Popup -->
     <up-popup
@@ -215,7 +203,7 @@
         </view>
       </view>
     </up-popup>
-  </view>
+  </CmPageShell>
 </template>
 
 <script setup lang="ts">

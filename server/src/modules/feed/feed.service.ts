@@ -5,6 +5,12 @@ import { PrismaService } from '@/common/prisma.service';
 export class FeedService {
   constructor(private readonly prisma: PrismaService) {}
 
+  private readonly shoppingFeedActionTypes = new Set([
+    'shopping_added',
+    'shopping_purchased',
+    'shopping_reopened',
+  ]);
+
   private mapActionText(actionType: string) {
     const actionMap: Record<string, { action: string; actionSuffix: string }> = {
       shopping_added: {
@@ -13,7 +19,11 @@ export class FeedService {
       },
       shopping_purchased: {
         action: '购买了',
-        actionSuffix: '已买到',
+        actionSuffix: '',
+      },
+      shopping_reopened: {
+        action: '重新标记为',
+        actionSuffix: '待采购',
       },
       recipe_cooked: {
         action: '完成了',
@@ -80,6 +90,7 @@ export class FeedService {
     });
 
     const userMap = new Map(users.map((u: any) => [u.id, u]));
+    const targetIdMap = await this.resolveShoppingTargetIds(feeds);
 
     // 组装返回数据
     const items = feeds.map((feed: any) => {
@@ -95,7 +106,7 @@ export class FeedService {
         action,
         target: feed.target,
         actionSuffix,
-        targetId: feed.target_id,
+        targetId: targetIdMap.get(feed.id) || feed.target_id,
         createdAt: feed.created_at,
       };
     });
@@ -121,5 +132,58 @@ export class FeedService {
         group_id: groupId,
       },
     });
+  }
+
+  private async resolveShoppingTargetIds(feeds: any[]) {
+    const shoppingFeeds = feeds.filter(
+      (feed) =>
+        feed.target_id && this.shoppingFeedActionTypes.has(feed.action_type),
+    );
+
+    if (!shoppingFeeds.length) {
+      return new Map<string, string>();
+    }
+
+    const rawTargetIds = [...new Set(shoppingFeeds.map((feed) => feed.target_id))];
+
+    const [shoppingLists, shoppingItems] = await Promise.all([
+      this.prisma.shoppingList.findMany({
+        where: {
+          id: { in: rawTargetIds },
+          deleted_at: null,
+        },
+        select: { id: true },
+      }),
+      this.prisma.shoppingItem.findMany({
+        where: {
+          id: { in: rawTargetIds },
+        },
+        select: {
+          id: true,
+          list_id: true,
+          list: {
+            select: {
+              deleted_at: true,
+            },
+          },
+        },
+      }),
+    ]);
+
+    const listIdSet = new Set(shoppingLists.map((list) => list.id));
+    const itemToListMap = new Map(
+      shoppingItems
+        .filter((item) => !item.list.deleted_at)
+        .map((item) => [item.id, item.list_id]),
+    );
+
+    return new Map(
+      shoppingFeeds.map((feed) => [
+        feed.id,
+        listIdSet.has(feed.target_id)
+          ? feed.target_id
+          : itemToListMap.get(feed.target_id) || feed.target_id,
+      ]),
+    );
   }
 }

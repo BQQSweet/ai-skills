@@ -59,7 +59,7 @@
         <view class="flex-1">
           <view class="text-sm text-text-main dark:text-white leading-normal">
             <text class="font-bold">{{ item.userName }}</text>
-            {{ item.action || "" }}
+            {{ actionText(item.action) }}
             <text
               class="font-bold"
               :class="
@@ -71,7 +71,7 @@
             >
               {{ item.target }}
             </text>
-            {{ item.actionSuffix || "" }}
+            {{ actionSuffixText(item.actionSuffix) }}
           </view>
           <text class="block text-xs text-text-muted mt-1">{{
             formatTime(item.createdAt)
@@ -109,6 +109,11 @@ function getBadgeStyle(actionType: FeedActionType) {
       icon: "check",
       bg: "bg-green-100 dark:bg-green-900",
       iconColor: "text-green-600 dark:text-green-300",
+    },
+    shopping_reopened: {
+      icon: "undo",
+      bg: "bg-amber-100 dark:bg-amber-900",
+      iconColor: "text-amber-600 dark:text-amber-300",
     },
     shopping_added: {
       icon: "add",
@@ -151,6 +156,14 @@ function formatTime(dateStr: string) {
   return date.toLocaleDateString("zh-CN");
 }
 
+function actionText(action?: string) {
+  return action ? ` ${action} ` : " ";
+}
+
+function actionSuffixText(actionSuffix?: string) {
+  return actionSuffix ? ` ${actionSuffix}` : "";
+}
+
 watch(
   () => groupStore.currentGroup?.id,
   async (groupId) => {
@@ -164,12 +177,14 @@ watch(
 );
 
 const handleFeedClick = (item: FeedItem) => {
-  // TODO: 根据动作类型跳转到对应页面
-  console.log("Feed item clicked:", item);
+  openShoppingList(item);
 };
 
 const canOpenShoppingList = (item: FeedItem) =>
-  item.actionType === "shopping_added" && Boolean(item.targetId);
+  ["shopping_added", "shopping_purchased", "shopping_reopened"].includes(
+    item.actionType,
+  ) &&
+  Boolean(item.targetId);
 
 const openShoppingList = (item: FeedItem) => {
   if (!canOpenShoppingList(item)) return;

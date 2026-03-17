@@ -74,6 +74,13 @@ export function claimShoppingItem(itemId: string): Promise<ShoppingItem> {
   return put<ShoppingItem>(`/api/shopping/item/${itemId}/claim`, {});
 }
 
+/** 认领并标记为已购买 */
+export function claimAndPurchaseShoppingItem(
+  itemId: string,
+): Promise<ShoppingItem> {
+  return put<ShoppingItem>(`/api/shopping/item/${itemId}/claim-and-purchase`, {});
+}
+
 /** 组长分配购物任务 */
 export function assignShoppingItem(
   itemId: string,

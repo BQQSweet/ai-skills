@@ -1,6 +1,7 @@
 /** 家庭动态类型 */
 export type FeedActionType =
   | 'shopping_purchased'  // 标记已购买
+  | 'shopping_reopened'   // 撤回购买，重新待采购
   | 'shopping_added'      // 添加到购物清单
   | 'recipe_cooked'       // 完成烹饪
   | 'fridge_added'        // 添加到冰箱
@@ -16,8 +17,8 @@ export interface FeedItem {
   actionType: FeedActionType;
   action: string;          // 动作描述，如 "标记了"
   target: string;          // 目标对象，如 "生姜"
-  actionSuffix: string;    // 动作后缀，如 "已买"
-  targetId?: string;       // 目标对象ID
+  actionSuffix: string;    // 动作后缀，可为空字符串
+  targetId?: string;       // 购物动态中指向购物清单ID
   createdAt: string;
 }
 

@@ -30,6 +30,40 @@ type RequestConfig = Pick<RequestOptions, "header" | "noAuth" | "showError">;
 /** Token 刷新状态锁 */
 let isRefreshing = false;
 let refreshPromise: Promise<string> | null = null;
+let isRedirectingToLogin = false;
+
+function isLoginPage() {
+  const pages = getCurrentPages();
+  const currentPage = pages[pages.length - 1];
+  return currentPage?.route === "pages/login/index";
+}
+
+async function handleAuthExpired(message = "登录已过期，请重新登录") {
+  if (isRedirectingToLogin) {
+    return;
+  }
+
+  isRedirectingToLogin = true;
+  isRefreshing = false;
+  refreshPromise = null;
+
+  try {
+    const { useUserStore } = await import("@/stores/user");
+    await useUserStore().resetSession();
+  } catch {
+    clearAuth();
+  }
+
+  if (!isLoginPage()) {
+    uni.reLaunch({ url: "/pages/login/index" });
+  }
+
+  uni.$u.toast(message);
+
+  setTimeout(() => {
+    isRedirectingToLogin = false;
+  }, 800);
+}
 
 /** 刷新 Token */
 async function refreshTokenRequest(): Promise<string> {
@@ -84,9 +118,7 @@ export function request<T = any>(options: RequestOptions): Promise<T> {
       header,
       success: async (res) => {
         if (res.statusCode === 401 && !options.noAuth) {
-          clearAuth();
-          uni.reLaunch({ url: "/pages/login/index" });
-          uni.$u.toast("登录已过期，请重新登录");
+          await handleAuthExpired();
           reject(new Error("登录已过期，请重新登录"));
           return;
         }
@@ -116,8 +148,7 @@ export function request<T = any>(options: RequestOptions): Promise<T> {
           } catch {
             isRefreshing = false;
             refreshPromise = null;
-            clearAuth();
-            uni.reLaunch({ url: "/pages/login/index" });
+            await handleAuthExpired();
             reject(new Error("登录已过期，请重新登录"));
           }
           return;
