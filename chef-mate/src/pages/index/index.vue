@@ -1,19 +1,25 @@
 <template>
-  <view
-    class="relative flex min-h-screen w-full flex-col overflow-hidden bg-[#fcfaf8] font-sans text-text-main transition-colors duration-200 dark:bg-background-dark dark:text-white"
+  <CmPageShell
+    :background-class="'relative flex min-h-screen w-full flex-col overflow-hidden bg-[#fcfaf8] font-sans text-text-main transition-colors duration-200 dark:bg-background-dark dark:text-white'"
+    :header-class="'z-20 bg-[#fcfaf8]/95 px-0 backdrop-blur-md dark:bg-background-dark/95'"
+    :use-scroll-view="false"
+    :content-class="'flex min-h-0 flex-1 flex-col'"
+    :header-offset-class="'pt-[92px]'"
   >
-    <HomeHeader
-      :nickname="nickname"
-      :avatar-url="avatarUrl"
-      :unread-count="1"
-    />
+    <template #header>
+      <HomeHeader
+        :nickname="nickname"
+        :avatar-url="avatarUrl"
+        :unread-count="1"
+      />
+    </template>
 
     <scroll-view
       scroll-y
       class="flex-1 overflow-y-auto no-scrollbar"
       :show-scrollbar="false"
     >
-      <view class="space-y-6 pb-24">
+      <view>
         <CookingPlanCard
           v-if="recommendedRecipes.length > 0"
           :recipes="recommendedRecipes"
@@ -25,17 +31,20 @@
           v-else
           class="mx-6 mt-2 flex h-72 items-center justify-center rounded-[32rpx] border border-white/60 bg-white/70 px-6 text-center shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] backdrop-blur-sm dark:border-white/10 dark:bg-black/20"
         >
-          <text class="text-sm text-slate-400">{{ recommendPlaceholderText }}</text>
+          <text class="text-sm text-slate-400">{{
+            recommendPlaceholderText
+          }}</text>
         </view>
 
         <ExpiryAlerts :items="fridgeItems" />
         <FamilyFeed />
-        <view class="h-10"></view>
       </view>
     </scroll-view>
 
-    <CmTabBar :current="0" />
-  </view>
+    <template #footer>
+      <CmTabBar :current="0" />
+    </template>
+  </CmPageShell>
 </template>
 
 <script setup lang="ts">
@@ -139,7 +148,9 @@ onShow(async () => {
     }
 
     if (fridgeRes) {
-      fridgeItems.value = (fridgeRes as FridgeItem[] & { data?: FridgeItem[] })?.data || fridgeRes as FridgeItem[];
+      fridgeItems.value =
+        (fridgeRes as FridgeItem[] & { data?: FridgeItem[] })?.data ||
+        (fridgeRes as FridgeItem[]);
     }
 
     applyRecommendationResponse(recipeRes);

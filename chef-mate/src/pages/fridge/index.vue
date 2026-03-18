@@ -6,7 +6,7 @@
     :header-class="'z-20 bg-white/75 backdrop-blur-md border-b border-white/30'"
     :use-scroll-view="false"
     :content-class="'flex min-h-0 flex-1 flex-col'"
-    :header-offset-class="'pt-[188px]'"
+    :header-offset-class="'pt-[228px]'"
   >
     <template #header>
       <FridgeHeader
