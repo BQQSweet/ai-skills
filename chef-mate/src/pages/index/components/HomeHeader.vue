@@ -1,39 +1,39 @@
 <template>
-  <view class="flex items-center justify-between px-6 pt-12 pb-4">
+  <view class="flex items-center justify-between px-6 pb-4 pt-12">
     <view class="flex items-center gap-4">
-      <view class="relative group cursor-pointer" @click="handleProfileClick">
+      <view class="relative cursor-pointer" @click="handleProfileClick">
         <image
-          class="w-12 h-12 rounded-full border-2 border-white dark:border-[#2d2418] shadow-sm bg-gray-100"
+          class="h-12 w-12 rounded-full border-2 border-white shadow-sm bg-gray-100 dark:border-[#2d2418]"
           :src="avatarUrl || defaultAvatar"
           mode="aspectFill"
         />
         <view
-          class="absolute bottom-1 right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-[#2d2418]"
+          class="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-green-500 dark:border-[#2d2418]"
         ></view>
       </view>
+
       <view>
         <text
-          class="block text-sm text-text-muted dark:text-orange-200/80 font-medium leading-tight"
-          >{{ greeting }}</text
+          class="block text-sm font-medium text-[#a17c45] leading-tight dark:text-orange-200/80"
         >
+          {{ greeting }}
+        </text>
         <text
-          class="block text-xl font-bold text-text-main dark:text-white leading-tight mt-1"
-          >{{ nickname }}</text
+          class="mt-1 block text-xl font-bold leading-tight text-[#1d160c] dark:text-white"
         >
+          {{ nickname }}
+        </text>
       </view>
     </view>
+
     <view
-      class="relative w-10 h-10 rounded-full bg-white dark:bg-[#2d2418] shadow-sm text-text-main dark:text-white hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors flex items-center justify-center active:scale-95"
+      class="relative flex h-10 w-10 items-center justify-center rounded-full bg-white text-[#1d160c] shadow-[0_4px_20px_-2px_rgba(29,22,12,0.08)] transition-colors active:scale-95 dark:bg-[#2d2418] dark:text-white"
       @click="handleNotification"
     >
-      <text
-        class="material-symbols-outlined text-[22px]"
-        :style="{ fontVariationSettings: '\'FILL\' 1' }"
-        >notifications</text
-      >
+      <text class="material-symbols-outlined text-[22px]">notifications</text>
       <view
         v-if="unreadCount > 0"
-        class="absolute top-2 right-[9px] w-2 h-2 bg-red-500 rounded-full border border-white dark:border-[#2d2418]"
+        class="absolute right-[8px] top-[8px] h-2 w-2 rounded-full border border-white bg-red-500 dark:border-[#2d2418]"
       ></view>
     </view>
   </view>

@@ -1,4 +1,5 @@
 import { computed, ref, watch, type Ref } from "vue";
+import { useConfirmDialog } from "@/composables/useConfirmDialog";
 import { useGroupStore } from "@/stores/group";
 import { useShoppingStore } from "@/stores/shopping";
 import { useUserStore } from "@/stores/user";
@@ -28,6 +29,7 @@ export function useShoppingPage(options: { toastRef: Ref<ToastValue | null> }) {
   const completion = useShoppingCompletionTransition();
   const { useInnerScroll, lockBodyScroll, unlockBodyScroll } =
     useShoppingScrollLock();
+  const interactionDialog = useConfirmDialog();
 
   const newItemName = ref("");
   const selectedCategory = ref<ShoppingCategory>("other");
@@ -297,15 +299,30 @@ export function useShoppingPage(options: { toastRef: Ref<ToastValue | null> }) {
     let targetListId = "";
 
     if (shoppingStore.activeList?.id) {
-      try {
-        const { tapIndex } = await uni.showActionSheet({
-          itemList: ["新增协作清单", "覆盖当前清单"],
-        });
-        mode = tapIndex === 1 ? "overwrite" : "create";
-        targetListId = mode === "overwrite" ? shoppingStore.activeList.id : "";
-      } catch {
+      const action = await interactionDialog.openActionSheet({
+        title: "生成协作采购清单",
+        description: "选择如何处理当前家庭采购清单",
+        iconName: "playlist_add_check",
+        actions: [
+          {
+            key: "create",
+            label: "新增协作清单",
+            tone: "primary",
+          },
+          {
+            key: "overwrite",
+            label: "覆盖当前清单",
+            tone: "danger",
+          },
+        ],
+      });
+
+      if (!action) {
         return;
       }
+
+      mode = action === "overwrite" ? "overwrite" : "create";
+      targetListId = mode === "overwrite" ? shoppingStore.activeList.id : "";
     }
 
     try {
@@ -371,29 +388,38 @@ export function useShoppingPage(options: { toastRef: Ref<ToastValue | null> }) {
     }
 
     if (currentItem.status === "pending" && !currentItem.assignedTo) {
-      try {
-        const { tapIndex } = await uni.showActionSheet({
-          itemList: ["认领并完成", "仅认领"],
-        });
+      const action = await interactionDialog.openActionSheet({
+        title: "处理待采购食材",
+        description: `选择「${currentItem.name}」的处理方式`,
+        iconName: "shopping_bag",
+        actions: [
+          {
+            key: "claimAndComplete",
+            label: "认领并完成",
+            tone: "primary",
+          },
+          {
+            key: "claim",
+            label: "仅认领",
+            tone: "default",
+          },
+        ],
+      });
 
-        if (tapIndex === 0) {
-          await completion.runPurchaseTransition(
-            itemId,
-            () => shoppingStore.claimAndPurchase(itemId),
-            () => showToast("success", "已认领并标记完成"),
-            () => showToast("error", "认领并完成失败"),
-          );
-          return;
-        }
-
-        if (tapIndex === 1) {
-          await handleClaim(itemId);
-        }
-      } catch (error: any) {
-        if (!error?.errMsg?.includes("cancel")) {
-          showToast("error", "操作失败");
-        }
+      if (action === "claimAndComplete") {
+        await completion.runPurchaseTransition(
+          itemId,
+          () => shoppingStore.claimAndPurchase(itemId),
+          () => showToast("success", "已认领并标记完成"),
+          () => showToast("error", "认领并完成失败"),
+        );
+        return;
       }
+
+      if (action === "claim") {
+        await handleClaim(itemId);
+      }
+
       return;
     }
 
@@ -550,6 +576,7 @@ export function useShoppingPage(options: { toastRef: Ref<ToastValue | null> }) {
   return {
     shoppingStore,
     userStore,
+    interactionDialog,
     useInnerScroll,
     newItemName,
     selectedCategory,

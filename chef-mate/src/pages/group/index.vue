@@ -77,25 +77,23 @@
       />
     </template>
 
-    <up-modal
-      :show="page.showLeaveModal"
+    <CmConfirmDialog
+      v-model:show="page.showLeaveModal"
       title="退出家庭组"
-      content="退出后将无法继续访问该家庭组的数据，确定要退出吗？"
-      showCancelButton
+      description="退出后将无法继续访问该家庭组的数据，确定要退出吗？"
+      icon-name="logout"
+      tone="danger"
       @confirm="page.confirmLeaveGroup"
-      @cancel="page.showLeaveModal = false"
-      @close="page.showLeaveModal = false"
-    ></up-modal>
+    />
 
-    <up-modal
-      :show="page.showDisbandModal"
+    <CmConfirmDialog
+      v-model:show="page.showDisbandModal"
       title="解散家庭组"
-      content="解散后邀请码将立即失效，且无法恢复，确定要继续吗？"
-      showCancelButton
+      description="解散后邀请码将立即失效，且无法恢复，确定要继续吗？"
+      icon-name="group_remove"
+      tone="danger"
       @confirm="page.confirmDisbandGroup"
-      @cancel="page.showDisbandModal = false"
-      @close="page.showDisbandModal = false"
-    ></up-modal>
+    />
 
     <up-toast ref="uToastRef"></up-toast>
   </CmPageShell>
@@ -104,6 +102,7 @@
 <script setup lang="ts">
 import { reactive, ref } from "vue";
 import { onShow } from "@dcloudio/uni-app";
+import CmConfirmDialog from "@/components/CmConfirmDialog/CmConfirmDialog.vue";
 import CurrentGroupCard from "./components/CurrentGroupCard.vue";
 import GroupDangerZone from "./components/GroupDangerZone.vue";
 import GroupEmptyState from "./components/GroupEmptyState.vue";

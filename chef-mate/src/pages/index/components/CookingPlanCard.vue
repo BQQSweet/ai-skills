@@ -1,124 +1,113 @@
 <template>
-  <view class="pl-6 mb-8 mt-2">
-    <view class="flex items-center justify-between mb-4 pr-6">
-      <text class="text-lg font-bold text-text-main dark:text-white"
-        >今日烹饪计划</text
-      >
+  <view class="px-6">
+    <view class="mb-4 flex items-center justify-between">
+      <text class="text-lg font-bold text-[#1d160c] dark:text-white">
+        今日烹饪计划
+      </text>
       <view class="flex items-center gap-2">
-        <button
-          class="px-3 py-1 m-0 rounded-full border-none after:hidden bg-white text-primary text-xs font-medium shadow-[0_4px_12px_-4px_rgba(255,157,10,0.35)] active:opacity-80 disabled:opacity-60"
-          :disabled="refreshing"
-          @click="emit('refresh')"
+        <view
+          class="plan-refresh-trigger"
+          :class="{ 'plan-refresh-trigger--disabled': refreshing }"
+          @click="handleRefreshClick"
         >
-          {{ refreshing ? "更新中" : "换一批" }}
-        </button>
-        <text
-          class="text-xs font-medium text-primary bg-primary/10 px-3 py-1 rounded-full"
-          >{{ mealTag }}</text
-        >
+          <text class="plan-refresh-trigger__label">
+            {{ refreshing ? "更新中" : "换一批" }}
+          </text>
+        </view>
+        <text class="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+          {{ mealTag }}
+        </text>
       </view>
     </view>
 
     <swiper
-      class="h-[380px]"
+      class="h-[420px]"
       circular
       :indicator-dots="true"
       indicator-active-color="#ff9d0a"
+      indicator-color="rgba(255,255,255,0.4)"
       previous-margin="0"
-      next-margin="50rpx"
+      next-margin="40rpx"
     >
       <swiper-item v-for="(item, index) in recipes" :key="item.id || index">
-        <!-- 间距和底部指示器留白 -->
-        <view class="w-full h-full pr-4 pb-8 box-border bg-transparent">
+        <view class="h-full w-full box-border bg-transparent pb-8 pr-4">
           <view
-            class="relative w-full h-full rounded-[30rpx] bg-white dark:bg-[#2d2418] shadow-[0_4px_20px_-2px_rgba(29,22,12,0.08)] flex flex-col"
-            style="transform: translateZ(0)"
+            class="flex h-full flex-col overflow-hidden rounded-[32rpx] bg-white shadow-[0_4px_20px_-2px_rgba(29,22,12,0.08)] dark:bg-[#2d2418]"
           >
-            <!-- Image Area -->
-            <view
-              class="relative flex-1 w-full overflow-hidden rounded-t-[30rpx]"
-            >
-              <view
-                class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10"
-              ></view>
+            <view class="relative h-48 w-full overflow-hidden rounded-[24px]">
               <image
                 :src="item.cover_url || defaultImageUrl"
                 mode="aspectFill"
-                class="absolute inset-0 h-full w-full transition-transform duration-700 hover:scale-105"
+                class="h-full w-full object-cover"
               />
-              <view class="absolute top-4 right-4 z-20 flex gap-2">
+              <view class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></view>
+
+              <view class="absolute right-3 top-3 flex gap-2">
                 <button
-                  class="w-9 h-9 p-0 m-0 rounded-full bg-black/20 backdrop-blur-md border border-solid border-white/20 flex items-center justify-center text-white hover:bg-white hover:text-danger active:bg-white active:text-danger transition-all after:hidden"
+                  class="m-0 flex h-8 w-8 items-center justify-center rounded-full border border-white/30 bg-white/20 p-0 text-white backdrop-blur-md after:hidden active:opacity-80"
                   @click.stop="handleFavorite"
                 >
-                  <text
-                    class="material-symbols-outlined text-[20px] leading-none"
-                    >favorite</text
-                  >
+                  <text class="material-symbols-outlined text-[18px]">favorite</text>
                 </button>
                 <button
-                  class="w-9 h-9 p-0 m-0 rounded-full bg-black/20 backdrop-blur-md border border-solid border-white/20 flex items-center justify-center text-white hover:bg-white hover:text-primary active:bg-white active:text-primary transition-all after:hidden"
+                  class="m-0 flex h-8 w-8 items-center justify-center rounded-full border border-white/30 bg-white/20 p-0 text-white backdrop-blur-md after:hidden active:opacity-80"
                   @click.stop="handleShare"
                 >
-                  <text
-                    class="material-symbols-outlined text-[20px] leading-none"
-                    >share</text
-                  >
+                  <text class="material-symbols-outlined text-[18px]">share</text>
                 </button>
               </view>
-              <!-- Floating Dish Name -->
-              <view class="absolute bottom-4 left-4 right-4 z-20 text-white">
+            </view>
+
+            <view class="flex flex-1 flex-col justify-between gap-4 p-4">
+              <view>
                 <view
-                  class="flex flex-wrap items-center gap-2 mb-2"
                   v-if="item.tags && item.tags.length > 0"
+                  class="mb-2 flex flex-wrap items-center gap-2"
                 >
                   <text
-                    v-for="(tag, idx) in item.tags.slice(0, 3)"
+                    v-for="(tag, idx) in item.tags.slice(0, 2)"
                     :key="'tag-' + idx"
-                    class="text-[10px] px-2 py-0.5 rounded bg-white/20 backdrop-blur-md border border-white/30 text-white font-medium"
-                    >{{ tag }}</text
+                    class="rounded-full border border-primary/10 bg-orange-50 px-2.5 py-1 text-[10px] font-medium text-primary"
                   >
+                    {{ tag }}
+                  </text>
+                  <text
+                    class="rounded-full border border-slate-100 bg-slate-50 px-2.5 py-1 text-[10px] font-medium text-slate-500"
+                  >
+                    {{ ingredientSummary(item) }}
+                  </text>
                 </view>
-                <text class="block text-2xl font-bold mb-2 truncate">{{
-                  item.title
-                }}</text>
-                <view
-                  class="flex items-center gap-2 text-sm font-medium text-white/90 flex-wrap"
-                >
-                  <view
-                    class="flex text-xs items-center gap-1 bg-black/30 backdrop-blur-md px-2.5 py-1 rounded-lg shrink-0"
-                  >
-                    <text class="material-symbols-outlined !text-sm"
-                      >schedule</text
-                    >
-                    <text>{{ item.cook_time || 0 }}分钟</text>
-                  </view>
-                  <view
-                    class="flex text-xs items-center gap-1 bg-black/30 backdrop-blur-md px-2.5 py-1 rounded-lg shrink-0"
-                  >
-                    <text class="material-symbols-outlined !text-sm"
-                      >equalizer</text
-                    >
-                    <text>{{ item.difficulty || "简单" }}</text>
+
+                <view class="flex items-center justify-between gap-3">
+                  <view class="space-y-1">
+                    <text class="block text-lg font-bold text-[#1d160c] dark:text-white">
+                      {{ item.title }}
+                    </text>
+                    <view class="flex flex-wrap items-center gap-1.5 text-xs text-[#a17c45] dark:text-orange-200/60">
+                      <text>{{ item.cook_time || 0 }}分钟</text>
+                      <text class="opacity-30">|</text>
+                      <text>{{ item.difficulty || "简单" }}</text>
+                    </view>
                   </view>
                 </view>
               </view>
-            </view>
-            <!-- Action Area -->
-            <view
-              class="p-4 flex items-center justify-between gap-4 shrink-0 bg-white dark:bg-[#2d2418] rounded-b-[30rpx]"
-            >
-              <button
-                class="w-full m-0 bg-primary hover:bg-orange-600 border-none after:hidden active:opacity-80 active:scale-[0.98] text-white font-bold h-[52px] rounded-xl transition-all shadow-[0_4px_20px_-2px_rgba(255,157,10,0.4)] flex items-center justify-center gap-2"
-                @click="handleStartCooking(item)"
-              >
-                <text class="material-symbols-outlined text-[20px] leading-none"
-                  >skillet</text
+
+              <view class="flex gap-3">
+                <button
+                  class="m-0 flex h-[48px] flex-1 items-center justify-center gap-2 rounded-xl border-none bg-primary text-sm font-bold text-white shadow-[0_4px_20px_-2px_rgba(255,157,10,0.4)] after:hidden active:scale-[0.98] active:opacity-80"
+                  @click="handleStartCooking(item)"
                 >
-                <text class="text-sm text-white font-bold leading-none"
-                  >开始下厨</text
+                  <text class="material-symbols-outlined text-lg">skillet</text>
+                  <text>开始下厨</text>
+                </button>
+                <button
+                  class="m-0 flex h-[48px] flex-1 items-center justify-center gap-2 rounded-xl border-[1.5px] border-primary/40 bg-transparent text-sm font-bold text-primary after:hidden active:scale-[0.98] active:opacity-80"
+                  @click="handleViewSteps(item)"
                 >
-              </button>
+                  <text class="material-symbols-outlined text-lg">list_alt</text>
+                  <text>查看步骤</text>
+                </button>
+              </view>
             </view>
           </view>
         </view>
@@ -130,7 +119,7 @@
 <script setup lang="ts">
 import type { Recipe } from "@/services/recipe";
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     recipes?: Recipe[];
     mealTag?: string;
@@ -165,6 +154,21 @@ const handleShare = () => {
   uni.$u.toast("分享功能开发中");
 };
 
+const handleRefreshClick = () => {
+  if (props.refreshing) {
+    return;
+  }
+
+  emit("refresh");
+};
+
+const handleViewSteps = (recipe: Recipe) => {
+  uni.$u.toast(`${recipe.title} 的步骤页开发中`);
+};
+
+const ingredientSummary = (recipe: Recipe) =>
+  recipe.ingredients?.slice(0, 2).map((item) => item.name).join("/") || "家常";
+
 const handleStartCooking = (recipe: Recipe) => {
   const query = [
     `recipeId=${encodeURIComponent(recipe.id || "")}`,
@@ -179,3 +183,31 @@ const handleStartCooking = (recipe: Recipe) => {
   });
 };
 </script>
+
+<style scoped>
+.plan-refresh-trigger {
+  display: inline-flex;
+  min-width: 108rpx;
+  height: 64rpx;
+  padding: 0 24rpx;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999rpx;
+  background: #ffffff;
+  box-sizing: border-box;
+  box-shadow: 0 8rpx 24rpx -8rpx rgba(255, 157, 10, 0.35);
+}
+
+.plan-refresh-trigger__label {
+  color: #ff9d0a;
+  font-size: 24rpx;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.plan-refresh-trigger--disabled {
+  opacity: 0.6;
+}
+</style>

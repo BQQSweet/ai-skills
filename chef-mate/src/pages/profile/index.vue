@@ -1,16 +1,20 @@
 <template>
-  <view
-    class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 pb-24"
+  <CmPageShell
+    title="个人中心"
+    :background-class="
+      'relative flex min-h-screen w-full flex-col overflow-x-hidden bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100'
+    "
+    :header-class="
+      'z-20 bg-background-light/95 dark:bg-background-dark/95 px-4 pt-12 pb-2 backdrop-blur-lg'
+    "
+    :use-scroll-view="false"
+    :header-offset-class="'pt-[80px]'"
   >
-    <view
-      class="flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between sticky top-0 z-10"
-    >
-      <view class="w-12"></view>
-      <text
-        class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-tight flex-1 text-center"
-      >
-        个人中心
-      </text>
+    <template #left>
+      <view class="h-10 w-10"></view>
+    </template>
+
+    <template #right>
       <view class="flex w-12 items-center justify-end">
         <button
           class="flex cursor-pointer items-center justify-center rounded-full h-10 w-10 bg-primary/10 text-primary border-none p-0 m-0 after:border-none"
@@ -18,7 +22,7 @@
           <text class="material-symbols-outlined">settings</text>
         </button>
       </view>
-    </view>
+    </template>
 
     <ProfileSummaryCard
       :profile-name="profileName"
@@ -47,23 +51,25 @@
       @logout="openLogoutConfirm"
     />
 
-    <up-modal
-      :show="showLogoutModal"
+    <CmConfirmDialog
+      v-model:show="showLogoutModal"
       title="退出登录"
-      content="退出后需要重新登录才能继续使用 ChefMate，确定退出吗？"
-      showCancelButton
+      description="退出后需要重新登录才能继续使用 ChefMate，确定退出吗？"
       confirmText="退出"
-      confirmColor="#ef4444"
+      icon-name="logout"
+      tone="danger"
+      :disabled="loggingOut"
       @confirm="handleLogout"
-      @cancel="showLogoutModal = false"
-      @close="showLogoutModal = false"
-    ></up-modal>
+    />
 
-    <CmTabBar :current="4" />
-  </view>
+    <template #footer>
+      <CmTabBar :current="4" />
+    </template>
+  </CmPageShell>
 </template>
 
 <script setup lang="ts">
+import CmConfirmDialog from "@/components/CmConfirmDialog/CmConfirmDialog.vue";
 import ProfileKitchenSection from "./components/ProfileKitchenSection.vue";
 import ProfileLogoutAction from "./components/ProfileLogoutAction.vue";
 import ProfileServiceSection from "./components/ProfileServiceSection.vue";

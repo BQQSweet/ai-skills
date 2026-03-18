@@ -1,70 +1,129 @@
 <template>
-  <view class="pl-6 pb-8">
-    <view class="flex items-center justify-between pr-6 mb-4">
+  <view class="px-6">
+    <view class="mb-4 flex items-center justify-between">
       <view class="flex items-center gap-2">
-        <text class="text-lg font-bold text-text-main dark:text-white"
-          >过期预警</text
-        >
-        <view class="flex h-2 w-2 relative" v-if="hasUrgent">
+        <text class="text-lg font-bold text-[#1d160c] dark:text-white">
+          过期预警
+        </text>
+        <view v-if="hasUrgent" class="relative flex h-2 w-2">
           <view
-            class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"
+            class="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75"
           ></view>
-          <view
-            class="relative inline-flex h-2 w-2 rounded-full bg-red-500"
-          ></view>
+          <view class="relative inline-flex h-2 w-2 rounded-full bg-red-500"></view>
         </view>
       </view>
       <text
-        class="text-sm font-medium text-text-muted dark:text-orange-200 hover:text-primary active:opacity-70"
+        class="text-sm font-medium text-[#a17c45] transition-colors active:opacity-70 dark:text-orange-200"
         @click="handleViewAll"
-        >查看全部</text
       >
+        查看全部
+      </text>
     </view>
 
-    <scroll-view
-      scroll-x
-      class="whitespace-nowrap w-full no-scrollbar"
-      :show-scrollbar="false"
-    >
+    <view v-if="primaryAlerts.length > 0" class="space-y-2.5">
       <view
-        v-for="(item, index) in alerts"
-        :key="index"
-        class="inline-flex flex-col justify-between gap-3 w-[160px] h-[120px] p-4 rounded-[24rpx] bg-white dark:bg-card-dark shadow-sm border border-slate-100 dark:border-slate-800 relative overflow-hidden align-top"
-        :class="[
-          index < alerts.length - 1 ? 'mr-4' : 'mr-6',
-          item.dimmed ? 'opacity-60' : '',
-        ]"
+        v-for="(item, index) in primaryAlerts"
+        :key="`${item.title}-${index}`"
+        class="flex items-center gap-3 rounded-2xl border border-slate-100 bg-white p-2.5 shadow-sm dark:border-slate-800/50 dark:bg-[#2d2418]"
         @click="handleAlertClick(item)"
       >
-        <!-- Status Dot -->
-        <view v-if="item.dotColor" class="absolute top-3 right-3">
-          <view class="w-2 h-2 rounded-full" :class="item.dotColor"></view>
-        </view>
-        <!-- Icon -->
-        <!-- <view
-          class="w-10 h-10 rounded-xl flex items-center justify-center"
+        <view
+          class="flex size-10 shrink-0 items-center justify-center rounded-xl"
           :class="item.iconBg"
         >
           <text
-            class="material-symbols-outlined text-xl font-light"
+            class="material-symbols-outlined text-2xl"
             :class="item.iconColor"
-            >{{ item.icon }}</text
+            :style="{ fontVariationSettings: '\'FILL\' 1' }"
           >
-        </view> -->
-        <!-- Text -->
-        <view>
-          <text
-            class="block font-bold text-text-main dark:text-white text-[15px]"
-            >{{ item.title }}</text
-          >
-          <text
-            class="block text-xs mt-1 font-medium"
-            :class="item.subtitleColor || 'text-text-muted dark:text-gray-400'"
-            >{{ item.subtitle }}</text
-          >
+            {{ item.icon }}
+          </text>
+        </view>
+
+        <view class="min-w-0 flex-1">
+          <view class="mb-1 flex items-end justify-between gap-3">
+            <text class="truncate text-[12px] font-bold text-[#1d160c] dark:text-white">
+              {{ item.title }}
+            </text>
+            <text
+              class="shrink-0 text-[9px] font-bold"
+              :class="item.subtitleColor || 'text-[#a17c45]'"
+            >
+              {{ item.badgeText }}
+            </text>
+          </view>
+          <view class="h-1 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+            <view
+              class="h-full rounded-full"
+              :class="item.progressColor"
+              :style="{ width: item.progressWidth }"
+            ></view>
+          </view>
+        </view>
+
+        <view
+          class="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-white shadow-[0_4px_20px_-2px_rgba(255,157,10,0.3)]"
+        >
+          <text class="material-symbols-outlined text-lg">restaurant</text>
         </view>
       </view>
-    </scroll-view>
+    </view>
+
+    <view
+      v-else
+      class="rounded-[28rpx] border border-slate-100 bg-white px-5 py-8 text-center shadow-soft dark:border-slate-800 dark:bg-[#2d2418]"
+    >
+      <text class="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600">
+        eco
+      </text>
+      <text class="mt-3 block text-base font-bold text-[#1d160c] dark:text-white">
+        {{ alerts[0]?.title || "全部食材保鲜中" }}
+      </text>
+      <text class="mt-2 block text-sm text-slate-400">
+        {{ alerts[0]?.subtitle || "继续保持哦" }}
+      </text>
+    </view>
+
+    <view v-if="secondaryAlerts.length > 0" class="mt-4">
+      <text class="ml-1 block text-[10px] font-bold uppercase tracking-wider text-[#a17c45] dark:text-orange-200/60">
+        更多预警
+      </text>
+      <scroll-view
+        scroll-x
+        class="mt-2 w-full whitespace-nowrap no-scrollbar"
+        :show-scrollbar="false"
+      >
+        <view class="flex items-center gap-4 py-1 pr-6">
+          <view
+            v-for="(item, index) in secondaryAlerts"
+            :key="`${item.title}-${index}`"
+            class="flex shrink-0 flex-col items-center gap-2"
+            @click="handleAlertClick(item)"
+          >
+            <view
+              class="relative flex size-12 items-center justify-center rounded-xl border border-slate-100 bg-white p-1 shadow-[0_4px_20px_-2px_rgba(29,22,12,0.08)] dark:border-slate-700 dark:bg-[#2d2418]"
+            >
+              <view
+                class="flex h-full w-full items-center justify-center rounded-lg"
+                :class="item.iconBg"
+              >
+                <text class="material-symbols-outlined text-xl" :class="item.iconColor">
+                  {{ item.icon }}
+                </text>
+              </view>
+              <view
+                v-if="item.dotColor"
+                class="absolute bottom-1 right-1 h-2 w-2 rounded-full border-2 border-white dark:border-[#2d2418]"
+                :class="item.dotColor"
+              ></view>
+            </view>
+            <text class="text-[10px] font-medium text-[#a17c45] dark:text-orange-200/80">
+              {{ item.shortTitle }}
+            </text>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
   </view>
 </template>
 
@@ -77,8 +136,12 @@ export interface ExpiryAlert {
   icon: string;
   title: string;
   subtitle: string;
+  shortTitle: string;
+  badgeText: string;
   iconBg: string;
   iconColor: string;
+  progressColor: string;
+  progressWidth: string;
   dotColor?: string;
   subtitleColor?: string;
   dimmed?: boolean;
@@ -101,8 +164,12 @@ const alerts = computed<ExpiryAlert[]>(() => {
         icon: "inventory_2",
         title: "冰箱暂无食材",
         subtitle: "快去录入吧",
+        shortTitle: "空冰箱",
+        badgeText: "",
         iconBg: "bg-gray-50 dark:bg-gray-800",
         iconColor: "text-gray-400",
+        progressColor: "bg-slate-300",
+        progressWidth: "0%",
         dimmed: true,
       },
     ];
@@ -132,10 +199,14 @@ const alerts = computed<ExpiryAlert[]>(() => {
         icon: "set_meal",
         title: `${item.name}已过期`,
         subtitle: "建议立即清理",
+        shortTitle: item.name,
+        badgeText: "立即处理",
         iconBg: "bg-red-50 dark:bg-red-900/20",
         iconColor: "text-red-500",
         dotColor: "bg-red-500",
         subtitleColor: "text-red-500",
+        progressColor: "bg-gradient-to-r from-orange-400 to-red-500",
+        progressWidth: "85%",
         days: diffDays,
       } as ExpiryAlert & { days: number });
     } else if (diffDays <= 3 || item.status === "expiring") {
@@ -143,9 +214,13 @@ const alerts = computed<ExpiryAlert[]>(() => {
         icon: "eco",
         title: `${item.name}即将到期`,
         subtitle: `剩余 ${diffDays} 天`,
+        shortTitle: item.name,
+        badgeText: `仅剩 ${diffDays} 天`,
         iconBg: "bg-orange-50 dark:bg-orange-900/20",
         iconColor: "text-amber-500",
         dotColor: "bg-amber-500",
+        progressColor: "bg-amber-500",
+        progressWidth: diffDays <= 1 ? "82%" : diffDays === 2 ? "68%" : "56%",
         days: diffDays,
       } as ExpiryAlert & { days: number });
     } else if (storedDays >= 3) {
@@ -153,9 +228,13 @@ const alerts = computed<ExpiryAlert[]>(() => {
         icon: "kitchen",
         title: `${item.name}存放较久`,
         subtitle: `已存放 ${storedDays} 天`,
+        shortTitle: item.name,
+        badgeText: `${storedDays} 天`,
         iconBg: "bg-blue-50 dark:bg-blue-900/20",
         iconColor: "text-blue-500",
         dotColor: "bg-blue-500",
+        progressColor: "bg-blue-500",
+        progressWidth: storedDays >= 6 ? "70%" : "52%",
         days: diffDays, // Use diffDays for sorting priority (expiring > stored long)
       } as ExpiryAlert & { days: number });
     }
@@ -167,8 +246,12 @@ const alerts = computed<ExpiryAlert[]>(() => {
         icon: "eco",
         title: "全部食材保鲜中",
         subtitle: "继续保持哦",
+        shortTitle: "保鲜中",
+        badgeText: "",
         iconBg: "bg-green-50 dark:bg-green-900/20",
         iconColor: "text-green-500",
+        progressColor: "bg-green-500",
+        progressWidth: "100%",
         dimmed: true,
       },
     ];
@@ -180,6 +263,12 @@ const alerts = computed<ExpiryAlert[]>(() => {
 
 const hasUrgent = computed(() =>
   alerts.value.some((a) => a.dotColor?.includes("red")),
+);
+
+const primaryAlerts = computed(() => alerts.value.filter((item) => !item.dimmed).slice(0, 2));
+
+const secondaryAlerts = computed(() =>
+  alerts.value.filter((item) => !item.dimmed).slice(2),
 );
 
 const handleViewAll = () => {

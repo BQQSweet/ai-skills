@@ -1,7 +1,5 @@
 <template>
-  <header
-    class="sticky top-0 z-20 w-full bg-white/75 backdrop-blur-md border-b border-white/30"
-  >
+  <view class="w-full">
     <view class="flex items-center justify-between px-5 pt-14 pb-4">
       <view class="flex items-center gap-3">
         <view class="bg-primary/10 p-2 rounded-full text-primary">
@@ -34,24 +32,14 @@
     <view class="px-5 pb-4">
       <view class="relative group">
         <CmInput
+          :dark="true"
           v-model="localKeyword"
           placeholder="快速查找食材..."
           customClass="w-full"
-          inputClass="!bg-white/60 focus:!bg-white !border-none !shadow-sm focus:!ring-2 focus:!ring-primary/50 text-sm pr-10 transition-all !rounded-xl"
+          inputClass=" !border-none !shadow-sm focus:!ring-2 focus:!ring-primary/50 text-sm pr-10 transition-all "
         >
           <template #prefix>
             <text class="material-symbols-outlined text-[20px]">search</text>
-          </template>
-          <template #suffix>
-            <view
-              class="absolute inset-y-0 right-0 pr-3 flex items-center z-10"
-            >
-              <button
-                class="bg-transparent m-0 p-0 text-slate-400 active:text-primary transition-colors border-none after:hidden flex items-center justify-center"
-              >
-                <text class="material-symbols-outlined text-[20px]">mic</text>
-              </button>
-            </view>
           </template>
         </CmInput>
       </view>
@@ -65,33 +53,21 @@
     >
       <view class="flex gap-3">
         <button
-          class="m-0 flex-shrink-0 px-5 py-2 rounded-full bg-primary text-white text-sm font-bold shadow-[0_4px_6px_-1px_rgba(255,159,10,0.3)] transition-transform active:scale-95 after:hidden border-none leading-none"
+          v-for="category in categories"
+          :key="category"
+          class="m-0 flex-shrink-0 whitespace-nowrap rounded-full border text-sm font-medium leading-none transition-all after:hidden"
+          :class="
+            activeCategory === category
+              ? 'border-primary bg-primary px-5 py-2 text-white shadow-[0_4px_6px_-1px_rgba(255,159,10,0.3)]'
+              : 'border-slate-100 bg-white px-5 py-2 text-slate-600 shadow-sm active:bg-slate-50'
+          "
+          @click="handleCategorySelect(category)"
         >
-          全部
-        </button>
-        <button
-          class="m-0 flex-shrink-0 px-5 py-2 rounded-full bg-white text-slate-600 text-sm font-medium border border-slate-100 shadow-sm whitespace-nowrap active:bg-slate-50 transition-colors after:hidden leading-none"
-        >
-          肉禽
-        </button>
-        <button
-          class="m-0 flex-shrink-0 px-5 py-2 rounded-full bg-white text-slate-600 text-sm font-medium border border-slate-100 shadow-sm whitespace-nowrap active:bg-slate-50 transition-colors after:hidden leading-none"
-        >
-          果蔬
-        </button>
-        <button
-          class="m-0 flex-shrink-0 px-5 py-2 rounded-full bg-white text-slate-600 text-sm font-medium border border-slate-100 shadow-sm whitespace-nowrap active:bg-slate-50 transition-colors after:hidden leading-none"
-        >
-          海鲜
-        </button>
-        <button
-          class="m-0 flex-shrink-0 px-5 py-2 rounded-full bg-white text-slate-600 text-sm font-medium border border-slate-100 shadow-sm whitespace-nowrap active:bg-slate-50 transition-colors after:hidden leading-none"
-        >
-          调味
+          {{ category }}
         </button>
       </view>
     </scroll-view>
-  </header>
+  </view>
 </template>
 
 <script setup lang="ts">
@@ -99,14 +75,24 @@ import { computed } from "vue";
 
 const props = defineProps<{
   modelValue: string;
+  categories: readonly string[];
+  activeCategory: string;
 }>();
 
-const emit = defineEmits(["update:modelValue"]);
+const emit = defineEmits<{
+  "update:modelValue": [value: string];
+  "update:activeCategory": [value: string];
+}>();
 
 const localKeyword = computed({
   get: () => props.modelValue,
   set: (val) => emit("update:modelValue", val),
 });
+
+const handleCategorySelect = (category: string) => {
+  if (category === props.activeCategory) return;
+  emit("update:activeCategory", category);
+};
 </script>
 
 <style scoped>

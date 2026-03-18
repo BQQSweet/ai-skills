@@ -1,7 +1,5 @@
 <template>
   <view>
-    <FridgeAiBannerTrigger @open="openPopup" />
-
     <FridgeAiPreferencesPopup
       v-model:show="showPopup"
       :meal-options="mealOptions"
@@ -21,8 +19,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-import FridgeAiBannerTrigger from "./FridgeAiBannerTrigger.vue";
 import FridgeAiPreferencesPopup from "./FridgeAiPreferencesPopup.vue";
 import { mealOptions, tasteOptions } from "../constants/ai-recipe";
 import { useAiRecipePreferences } from "../composables/useAiRecipePreferences";
@@ -31,7 +27,6 @@ const props = defineProps<{
   ingredients?: string[];
 }>();
 
-const uToastRef = ref();
 const {
   showPopup,
   prefs,
@@ -41,4 +36,8 @@ const {
   decreaseServings,
   confirmGenerate,
 } = useAiRecipePreferences(props.ingredients);
+
+defineExpose({
+  openPopup,
+});
 </script>

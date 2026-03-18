@@ -26,15 +26,13 @@
       @refresh-code="handleRefreshCode"
     />
 
-    <up-modal
-      :show="showRefreshModal"
+    <CmConfirmDialog
+      v-model:show="showRefreshModal"
       title="刷新邀请码"
-      content="刷新后旧的邀请码将失效，确定要刷新吗？"
-      showCancelButton
+      description="刷新后旧的邀请码将失效，确定要刷新吗？"
+      icon-name="refresh"
       @confirm="confirmRefreshCode"
-      @cancel="showRefreshModal = false"
-      @close="showRefreshModal = false"
-    ></up-modal>
+    />
 
     <up-toast ref="uToastRef"></up-toast>
   </CmPageShell>
@@ -42,6 +40,7 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
+import CmConfirmDialog from "@/components/CmConfirmDialog/CmConfirmDialog.vue";
 import InviteCodeCard from "./components/InviteCodeCard.vue";
 import InviteHeroSection from "./components/InviteHeroSection.vue";
 import InviteMembersStrip from "./components/InviteMembersStrip.vue";

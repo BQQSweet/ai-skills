@@ -1,11 +1,13 @@
 import { debounce } from "lodash";
 import { onShow } from "@dcloudio/uni-app";
 import { onUnmounted, reactive, ref } from "vue";
+import { useConfirmDialog } from "@/composables/useConfirmDialog";
 import * as authService from "@/services/auth";
 import { useUserStore } from "@/stores/user";
 
 export function useLoginFlow(uToastRef: { value?: any }) {
   const userStore = useUserStore();
+  const autoRegisterDialog = useConfirmDialog();
 
   onShow(() => {
     if (userStore.isLoggedIn) {
@@ -138,11 +140,12 @@ export function useLoginFlow(uToastRef: { value?: any }) {
   }
 
   async function promptAutoRegister(account: string, password: string) {
-    const { confirm } = await uni.showModal({
+    const confirm = await autoRegisterDialog.openConfirm({
       title: "账号未注册",
-      content: `手机号 ${account} 尚未注册，是否自动创建账号并登录？`,
+      description: `手机号 ${account} 尚未注册，是否自动创建账号并登录？`,
       confirmText: "自动注册",
       cancelText: "取消",
+      iconName: "person_add",
     });
 
     if (!confirm) return;
@@ -251,6 +254,7 @@ export function useLoginFlow(uToastRef: { value?: any }) {
   });
 
   return {
+    autoRegisterDialog,
     loading,
     smsSending,
     codeCooldown,

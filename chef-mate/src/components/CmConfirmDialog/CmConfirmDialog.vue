@@ -23,20 +23,33 @@
         {{ title }}
       </text>
       <text
-        v-if="description"
+        v-if="displayDescription"
         class="mx-auto mt-3 block max-w-[520rpx] text-center text-[15px] leading-7 text-slate-400"
       >
-        {{ description }}
+        {{ displayDescription }}
       </text>
 
       <view class="mt-6 flex flex-col gap-3">
-        <view
-          class="flex h-14 items-center justify-center rounded-[28rpx] text-base font-bold text-white transition-all"
-          :class="confirmButtonClass"
-          @click="handleConfirm"
-        >
-          <text>{{ confirmText }}</text>
-        </view>
+        <template v-if="variant === 'confirm'">
+          <view
+            class="flex h-14 items-center justify-center rounded-[28rpx] text-base font-bold text-white transition-all"
+            :class="confirmButtonClass"
+            @click="handleConfirm"
+          >
+            <text>{{ confirmText }}</text>
+          </view>
+        </template>
+        <template v-else>
+          <view
+            v-for="action in actions"
+            :key="action.key"
+            class="flex h-14 items-center justify-center rounded-[28rpx] text-base font-bold transition-all"
+            :class="getActionButtonClass(action.tone)"
+            @click="handleSelect(action.key)"
+          >
+            <text>{{ action.label }}</text>
+          </view>
+        </template>
         <view
           class="flex h-14 items-center justify-center rounded-[28rpx] bg-[#f5f5f7] text-base font-medium text-slate-500 transition-all active:scale-[0.98]"
           @click="handleCancel"
@@ -52,6 +65,14 @@
 import { computed } from "vue";
 
 type Tone = "primary" | "danger";
+type Variant = "confirm" | "actions";
+type ActionTone = Tone | "default";
+
+interface DialogAction {
+  key: string;
+  label: string;
+  tone?: ActionTone;
+}
 
 const props = withDefaults(
   defineProps<{
@@ -64,6 +85,9 @@ const props = withDefaults(
     tone?: Tone;
     closeOnClickOverlay?: boolean;
     disabled?: boolean;
+    variant?: Variant;
+    actions?: DialogAction[];
+    actionDescription?: string;
   }>(),
   {
     description: "",
@@ -73,6 +97,9 @@ const props = withDefaults(
     tone: "primary",
     closeOnClickOverlay: true,
     disabled: false,
+    variant: "confirm",
+    actions: () => [],
+    actionDescription: "",
   },
 );
 
@@ -81,6 +108,7 @@ const emit = defineEmits<{
   confirm: [];
   cancel: [];
   close: [];
+  select: [key: string];
 }>();
 
 const overlayStyle = {
@@ -105,6 +133,28 @@ const confirmButtonClass = computed(() =>
       : "bg-primary shadow-[0_14px_30px_-18px_rgba(255,157,10,0.75)] active:scale-[0.98]",
 );
 
+const displayDescription = computed(() =>
+  props.variant === "actions"
+    ? props.actionDescription || props.description
+    : props.description,
+);
+
+function getActionButtonClass(tone: ActionTone = "default") {
+  if (props.disabled) {
+    return "bg-slate-100 text-slate-400";
+  }
+
+  if (tone === "danger") {
+    return "bg-red-500 text-white shadow-[0_14px_30px_-18px_rgba(239,68,68,0.65)] active:scale-[0.98]";
+  }
+
+  if (tone === "primary") {
+    return "bg-primary text-white shadow-[0_14px_30px_-18px_rgba(255,157,10,0.75)] active:scale-[0.98]";
+  }
+
+  return "bg-[#f5f5f7] text-slate-700 active:scale-[0.98]";
+}
+
 function handleClose() {
   if (props.disabled) return;
   emit("update:show", false);
@@ -120,5 +170,10 @@ function handleCancel() {
 function handleConfirm() {
   if (props.disabled) return;
   emit("confirm");
+}
+
+function handleSelect(key: string) {
+  if (props.disabled) return;
+  emit("select", key);
 }
 </script>

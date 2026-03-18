@@ -1,115 +1,152 @@
 <template>
-  <view
-    class="flex flex-col min-h-screen relative overflow-x-hidden bg-[#f8f7f5] text-slate-800 pb-32"
+  <CmPageShell
+    :background-class="
+      'relative flex min-h-screen w-full flex-col overflow-x-hidden bg-[#f8f7f5] text-slate-800'
+    "
+    :header-class="'z-20 bg-white/75 backdrop-blur-md border-b border-white/30'"
+    :use-scroll-view="false"
+    :content-class="'flex min-h-0 flex-1 flex-col'"
+    :header-offset-class="'pt-[188px]'"
   >
-    <!-- Common Header Component -->
-    <FridgeHeader v-model="searchKeyword" />
+    <template #header>
+      <FridgeHeader
+        v-model="searchKeyword"
+        :categories="fridgeFilterCategories"
+        :active-category="activeCategory"
+        @update:active-category="updateActiveCategory"
+      />
+    </template>
 
-    <!-- Main Content -->
-    <main class="flex-1 px-5 pt-4">
-      <!-- AI Generative Banner -->
-      <FridgeAiBanner :ingredients="selectedIngredients" />
-
-      <!-- Inventory List Title -->
-      <view class="flex justify-between items-center mb-4">
-        <view class="flex items-center gap-3">
-          <view
-            class="text-lg font-bold text-slate-800 tracking-tight flex items-center"
-          >
-            <text>当前库存</text>
-            <text class="text-slate-400 text-sm font-normal ml-2"
-              >已选 {{ selectedCount }} 件</text
+    <scroll-view
+      scroll-y
+      class="flex-1 min-h-0 px-5 pt-4"
+      :show-scrollbar="false"
+    >
+      <view class="pb-40">
+        <view class="mb-4 flex items-center justify-between">
+          <view class="flex items-center gap-3">
+            <view
+              class="flex items-center text-lg font-bold tracking-tight text-slate-800"
             >
+              <text>当前库存</text>
+              <text class="ml-2 text-sm font-normal text-slate-400">
+                已选 {{ selectedCount }} 件
+              </text>
+            </view>
+            <text
+              class="text-sm font-medium text-primary active:opacity-70 active:underline"
+              @click="handleClearSelection"
+            >
+              取消选择
+            </text>
           </view>
-          <text
-            class="text-primary text-sm font-medium active:opacity-70 active:underline"
-            @click="handleClearSelection"
-            >取消选择</text
+          <view
+            class="flex items-center gap-1 text-sm font-medium text-slate-400 active:opacity-70"
+            @click="handleSort"
           >
+            <text>排序</text>
+            <text class="material-symbols-outlined text-[16px]">sort</text>
+          </view>
         </view>
+
         <view
-          class="text-slate-400 text-sm font-medium flex items-center gap-1 active:opacity-70"
-          @click="handleSort"
+          v-if="expiredCount > 0"
+          class="mb-4 flex items-center justify-between rounded-xl border border-red-100 bg-red-50 px-3 py-2.5"
         >
-          <text>排序</text>
-          <text class="material-symbols-outlined text-[16px]">sort</text>
+          <view class="flex items-center gap-2">
+            <text class="material-symbols-outlined text-[18px] text-red-400">
+              warning
+            </text>
+            <text class="text-xs font-medium text-red-500">
+              有 {{ expiredCount }} 件食材已过期
+            </text>
+          </view>
+          <button
+            class="m-0 rounded-lg border-none bg-red-500 px-3 py-1.5 text-xs font-semibold text-white transition-transform after:hidden active:scale-95"
+            @click="showClearExpiredModal = true"
+          >
+            一键清理
+          </button>
+        </view>
+
+        <view
+          v-if="inventoryList.length === 0"
+          class="mt-8 flex min-h-[240px] flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white/75 px-6 text-center"
+        >
+          <view
+            class="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary"
+          >
+            <text class="material-symbols-outlined text-[30px]">kitchen</text>
+          </view>
+          <text class="text-lg font-bold text-slate-800">冰箱还是空的</text>
+          <text class="mt-2 text-sm leading-relaxed text-slate-400">
+            先通过扫描、语音或手动录入，把常用食材添加进来吧。
+          </text>
+        </view>
+
+        <view
+          v-else-if="displayInventoryList.length === 0"
+          class="mt-8 flex min-h-[240px] flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white/75 px-6 text-center"
+        >
+          <view
+            class="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 text-slate-500"
+          >
+            <text class="material-symbols-outlined text-[30px]">search_off</text>
+          </view>
+          <text class="text-lg font-bold text-slate-800">没有匹配的食材</text>
+          <text class="mt-2 text-sm leading-relaxed text-slate-400">
+            试试调整搜索词，或切换到其他分类看看。
+          </text>
+        </view>
+
+        <view v-else class="grid grid-cols-2 gap-4">
+          <FridgeItemCard
+            v-for="item in displayInventoryList"
+            :key="item.id"
+            :item="item"
+            @toggle-select="toggleSelectItem"
+            @edit="handleEditItem"
+            @delete="handleDeleteItem"
+          />
         </view>
       </view>
+    </scroll-view>
 
-      <!-- 清理过期提示 -->
-      <view
-        v-if="expiredCount > 0"
-        class="flex items-center justify-between mb-4 px-3 py-2.5 bg-red-50 border border-red-100 rounded-xl"
-      >
-        <view class="flex items-center gap-2">
-          <text class="material-symbols-outlined text-red-400 text-[18px]"
-            >warning</text
-          >
-          <text class="text-red-500 text-xs font-medium"
-            >有 {{ expiredCount }} 件食材已过期</text
-          >
-        </view>
-        <button
-          class="m-0 px-3 py-1.5 bg-red-500 text-white text-xs font-semibold rounded-lg border-none after:hidden active:scale-95 transition-transform"
-          @click="showClearExpiredModal = true"
-        >
-          一键清理
-        </button>
-      </view>
-
-      <!-- Inventory Grid -->
-      <view class="grid grid-cols-2 gap-4">
-        <FridgeItemCard
-          v-for="item in inventoryList"
-          :key="item.id"
-          :item="item"
-          @toggle-select="toggleSelectItem"
-          @edit="handleEditItem"
-          @delete="handleDeleteItem"
-        />
-      </view>
-    </main>
-
-    <!-- Expandable FAB Menu -->
-    <FridgeFab @added="loadItems" />
-
-    <!-- Global UI Feedback -->
+    <FridgeAiBanner ref="aiRecipeEntryRef" :ingredients="selectedIngredients" />
+    <FridgeFab @added="loadItems" @ai-recipe="openAiRecipeEntry" />
     <up-toast ref="uToastRef"></up-toast>
 
-    <!-- 出库确认弹窗 -->
-    <up-modal
-      :show="showDeleteModal"
+    <CmConfirmDialog
+      v-model:show="showDeleteModal"
       title="确认出库"
-      :content="`确定要将「${pendingDeleteItem?.name || ''}」从冰箱中移除吗？`"
-      showCancelButton
+      :description="`确定要将「${pendingDeleteItem?.name || ''}」从冰箱中移除吗？`"
       confirmText="出库"
-      confirmColor="#ef4444"
+      icon-name="delete"
+      tone="danger"
       @confirm="confirmDelete"
-      @cancel="showDeleteModal = false"
-      @close="showDeleteModal = false"
-    ></up-modal>
+    />
 
-    <!-- 清理过期确认弹窗 -->
-    <up-modal
-      :show="showClearExpiredModal"
+    <CmConfirmDialog
+      v-model:show="showClearExpiredModal"
       title="清理过期食材"
-      :content="`确定要清理所有 ${expiredCount} 件过期食材吗？此操作不可撤销。`"
-      showCancelButton
+      :description="`确定要清理所有 ${expiredCount} 件过期食材吗？此操作不可撤销。`"
       confirmText="确认清理"
-      confirmColor="#ef4444"
+      icon-name="delete_sweep"
+      tone="danger"
       @confirm="confirmClearExpired"
-      @cancel="showClearExpiredModal = false"
-      @close="showClearExpiredModal = false"
-    ></up-modal>
+    />
 
-    <!-- Bottom Navigation Component -->
-    <CmTabBar :current="3" />
-  </view>
+    <template #footer>
+      <CmTabBar :current="3" />
+    </template>
+  </CmPageShell>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { onShow } from "@dcloudio/uni-app";
+import CmConfirmDialog from "@/components/CmConfirmDialog/CmConfirmDialog.vue";
+import { fridgeCategoryStyleMap, fridgeFilterCategories } from "./constants/fridge";
 import FridgeHeader from "./components/FridgeHeader.vue";
 import FridgeAiBanner from "./components/FridgeAiBanner.vue";
 import FridgeItemCard from "./components/FridgeItemCard.vue";
@@ -124,34 +161,33 @@ import { useGroupStore } from "@/stores/group";
 import type { FridgeItem, FridgeItemUI } from "@/types/fridge";
 import { getExpiryStatus } from "@/utils/expiry";
 
+const aiRecipeEntryRef = ref<{ openPopup: () => void } | null>(null);
 const searchKeyword = ref("");
+const activeCategory = ref<(typeof fridgeFilterCategories)[number]>("全部");
 const uToastRef = ref();
 const groupStore = useGroupStore();
 
-// ---------- 分类 → 样式映射 ----------
-const categoryStyleMap: Record<string, { bgClass: string; emoji: string }> = {
-  肉禽: { bgClass: "bg-orange-50", emoji: "🥩" },
-  果蔬: { bgClass: "bg-green-50", emoji: "🥦" },
-  海鲜: { bgClass: "bg-blue-50", emoji: "🐟" },
-  乳制品: { bgClass: "bg-yellow-50", emoji: "🧀" },
-  调味: { bgClass: "bg-amber-50", emoji: "🧂" },
-  主食: { bgClass: "bg-orange-50", emoji: "🍚" },
-  零食: { bgClass: "bg-pink-50", emoji: "🍪" },
-  饮品: { bgClass: "bg-cyan-50", emoji: "🥤" },
-  其他: { bgClass: "bg-slate-50", emoji: "📦" },
+const updateActiveCategory = (category: string) => {
+  if (
+    fridgeFilterCategories.includes(
+      category as (typeof fridgeFilterCategories)[number],
+    )
+  ) {
+    activeCategory.value = category as (typeof fridgeFilterCategories)[number];
+  }
 };
-
-// ---------- 过期状态计算 ----------
-// 已迁移到 @/utils/expiry.ts
 
 // ---------- API → UI 数据转换 ----------
 function transformItem(raw: FridgeItem): FridgeItemUI {
-  const style = categoryStyleMap[raw.category] || categoryStyleMap["其他"];
+  const style =
+    fridgeCategoryStyleMap[raw.category as keyof typeof fridgeCategoryStyleMap] ||
+    fridgeCategoryStyleMap["其他"];
   const expire = getExpiryStatus(raw.expire_date);
 
   return {
     id: raw.id,
     name: raw.name,
+    category: raw.category,
     quantity: `${raw.quantity}${raw.unit}`,
     image: raw.photo_url
       ? raw.photo_url.startsWith("http")
@@ -194,6 +230,21 @@ const expiredCount = computed(
   () => inventoryList.value.filter((i) => i.statusType === "error").length,
 );
 
+const normalizedSearchKeyword = computed(() =>
+  searchKeyword.value.trim().toLowerCase(),
+);
+
+const displayInventoryList = computed(() =>
+  inventoryList.value.filter((item) => {
+    const matchesCategory =
+      activeCategory.value === "全部" || item.category === activeCategory.value;
+    const matchesKeyword =
+      normalizedSearchKeyword.value.length === 0 ||
+      item.name.toLowerCase().includes(normalizedSearchKeyword.value);
+    return matchesCategory && matchesKeyword;
+  }),
+);
+
 const selectedCount = computed(
   () => inventoryList.value.filter((i) => i.selected).length,
 );
@@ -204,6 +255,10 @@ const selectedIngredients = computed(() =>
 
 const toggleSelectItem = (item: FridgeItemUI) => {
   item.selected = !item.selected;
+};
+
+const openAiRecipeEntry = () => {
+  aiRecipeEntryRef.value?.openPopup();
 };
 
 const handleClearSelection = () => {
@@ -274,5 +329,9 @@ const confirmClearExpired = async () => {
 </script>
 
 <style scoped>
-/* Hidden scrollbar resets are now mainly moved to the global or specific component level */
+::-webkit-scrollbar {
+  display: none;
+  width: 0 !important;
+  height: 0 !important;
+}
 </style>

@@ -41,12 +41,32 @@
       <text class="material-symbols-outlined text-[180px]">eco</text>
     </view>
 
+    <CmConfirmDialog
+      v-model:show="autoRegisterDialog.dialogState.show"
+      :title="autoRegisterDialog.dialogState.title"
+      :description="autoRegisterDialog.dialogState.description"
+      :confirm-text="autoRegisterDialog.dialogState.confirmText"
+      :cancel-text="autoRegisterDialog.dialogState.cancelText"
+      :icon-name="autoRegisterDialog.dialogState.iconName"
+      :tone="autoRegisterDialog.dialogState.tone"
+      :close-on-click-overlay="autoRegisterDialog.dialogState.closeOnClickOverlay"
+      :disabled="autoRegisterDialog.dialogState.disabled"
+      :variant="autoRegisterDialog.dialogState.variant"
+      :actions="autoRegisterDialog.dialogState.actions"
+      :action-description="autoRegisterDialog.dialogState.actionDescription"
+      @confirm="autoRegisterDialog.handleConfirm"
+      @select="autoRegisterDialog.handleSelect"
+      @cancel="autoRegisterDialog.handleCancel"
+      @close="autoRegisterDialog.handleClose"
+    />
+
     <CmToast ref="uToastRef"></CmToast>
   </view>
 </template>
 
 <script setup lang="ts">
 import { ref } from "vue";
+import CmConfirmDialog from "@/components/CmConfirmDialog/CmConfirmDialog.vue";
 import CmToast from "@/components/CmToast/CmToast.vue";
 import LoginFooter from "./components/LoginFooter.vue";
 import LoginForm from "./components/LoginForm.vue";
@@ -56,6 +76,7 @@ import { useLoginFlow } from "./composables/useLoginFlow";
 const uToastRef = ref<any>(null);
 
 const {
+  autoRegisterDialog,
   loading,
   smsSending,
   codeCooldown,

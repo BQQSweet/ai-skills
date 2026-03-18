@@ -1,5 +1,22 @@
 <template>
   <view>
+    <button
+      class="fixed right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-[0_8px_20px_-4px_rgba(255,159,10,0.4),_0_4px_8px_-4px_rgba(255,159,10,0.2)] transition-all active:scale-90 active:shadow-inner border-none p-0 m-0 after:hidden"
+      :class="
+        isFabOpen
+          ? 'bottom-[164px] opacity-0 pointer-events-none'
+          : 'bottom-[168px] opacity-100 pointer-events-auto'
+      "
+      @click="$emit('ai-recipe')"
+    >
+      <text
+        class="material-symbols-outlined text-[28px]"
+        :style="{ fontVariationSettings: '\'FILL\' 1' }"
+      >
+        magic_button
+      </text>
+    </button>
+
     <!-- FAB Menu Overlay -->
     <view
       class="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] z-[45] transition-opacity duration-300"
@@ -80,7 +97,10 @@
 import { ref } from "vue";
 import ScanCamera from "./ScanCamera.vue";
 
-const emit = defineEmits(["added"]);
+const emit = defineEmits<{
+  added: [];
+  "ai-recipe": [];
+}>();
 
 const isFabOpen = ref(false);
 const showScanCamera = ref(false);

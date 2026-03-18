@@ -1,7 +1,8 @@
 <template>
   <view :class="wrapperClass">
     <view :class="fixedHeaderClass">
-      <view class="flex items-center justify-between gap-3">
+      <slot v-if="$slots.header" name="header" />
+      <view v-else class="flex items-center justify-between gap-3">
         <view class="shrink-0">
           <slot name="left">
             <view

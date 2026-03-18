@@ -17,6 +17,7 @@ export interface FridgeItem {
 export interface FridgeItemUI {
   id: string;
   name: string;
+  category: string;
   quantity: string;
   image: string;
   bgClass: string;

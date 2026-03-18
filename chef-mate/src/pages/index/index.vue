@@ -1,41 +1,39 @@
 <template>
   <view
-    class="relative flex flex-col min-h-screen w-full bg-background-light dark:bg-background-dark text-text-main dark:text-white font-sans transition-colors duration-200 overflow-hidden"
+    class="relative flex min-h-screen w-full flex-col overflow-hidden bg-[#fcfaf8] font-sans text-text-main transition-colors duration-200 dark:bg-background-dark dark:text-white"
   >
-    <!-- Header -->
     <HomeHeader
       :nickname="nickname"
       :avatar-url="avatarUrl"
       :unread-count="1"
     />
 
-    <!-- Scrollable Content -->
     <scroll-view
       scroll-y
-      class="flex-1 overflow-y-auto no-scrollbar space-y-8"
+      class="flex-1 overflow-y-auto no-scrollbar"
       :show-scrollbar="false"
     >
-      <CookingPlanCard
-        v-if="recommendedRecipes.length > 0"
-        :recipes="recommendedRecipes"
-        :meal-tag="mealTag"
-        :refreshing="recommendRefreshing"
-        @refresh="handleRefreshRecommendations"
-      />
-      <view
-        v-else
-        class="px-6 mb-8 mt-2 h-64 flex items-center justify-center bg-white/50 dark:bg-black/20 rounded-[30rpx] mx-6"
-      >
-        <text class="text-sm text-gray-400">{{ recommendPlaceholderText }}</text>
-      </view>
+      <view class="space-y-6 pb-24">
+        <CookingPlanCard
+          v-if="recommendedRecipes.length > 0"
+          :recipes="recommendedRecipes"
+          :meal-tag="mealTag"
+          :refreshing="recommendRefreshing"
+          @refresh="handleRefreshRecommendations"
+        />
+        <view
+          v-else
+          class="mx-6 mt-2 flex h-72 items-center justify-center rounded-[32rpx] border border-white/60 bg-white/70 px-6 text-center shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] backdrop-blur-sm dark:border-white/10 dark:bg-black/20"
+        >
+          <text class="text-sm text-slate-400">{{ recommendPlaceholderText }}</text>
+        </view>
 
-      <ExpiryAlerts :items="fridgeItems" />
-      <FamilyFeed />
-      <!-- Safe Area Spacing + Tab bar height -->
-      <view class="h-10"></view>
+        <ExpiryAlerts :items="fridgeItems" />
+        <FamilyFeed />
+        <view class="h-10"></view>
+      </view>
     </scroll-view>
 
-    <!-- Bottom Navigation Component -->
     <CmTabBar :current="0" />
   </view>
 </template>

@@ -101,6 +101,27 @@
     />
 
     <CmConfirmDialog
+      v-model:show="page.interactionDialog.dialogState.show"
+      :title="page.interactionDialog.dialogState.title"
+      :description="page.interactionDialog.dialogState.description"
+      :confirm-text="page.interactionDialog.dialogState.confirmText"
+      :cancel-text="page.interactionDialog.dialogState.cancelText"
+      :icon-name="page.interactionDialog.dialogState.iconName"
+      :tone="page.interactionDialog.dialogState.tone"
+      :close-on-click-overlay="
+        page.interactionDialog.dialogState.closeOnClickOverlay
+      "
+      :disabled="page.interactionDialog.dialogState.disabled"
+      :variant="page.interactionDialog.dialogState.variant"
+      :actions="page.interactionDialog.dialogState.actions"
+      :action-description="page.interactionDialog.dialogState.actionDescription"
+      @confirm="page.interactionDialog.handleConfirm"
+      @select="page.interactionDialog.handleSelect"
+      @cancel="page.interactionDialog.handleCancel"
+      @close="page.interactionDialog.handleClose"
+    />
+
+    <CmConfirmDialog
       v-model:show="page.showDeleteModal"
       title="确认删除"
       description="确定要删除这个购物项吗？"

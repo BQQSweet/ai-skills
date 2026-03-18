@@ -1,91 +1,84 @@
 <template>
-  <view class="px-6 pb-6 mt-2">
-    <view class="flex items-center justify-between mb-4">
-      <text class="text-lg font-bold text-text-main dark:text-white"
-        >家庭协作</text
-      >
+  <view class="px-6 pb-6">
+    <view class="mb-4 flex items-center justify-between">
+      <text class="text-lg font-bold text-[#1d160c] dark:text-white">
+        家庭协作
+      </text>
     </view>
-    <view
-      class="rounded-[24rpx] bg-white dark:bg-[#2d2418] shadow-[0_4px_20px_-2px_rgba(29,22,12,0.06)] p-1 overflow-hidden"
-    >
-      <!-- Loading State -->
+
+    <view class="relative ml-4 mr-2">
       <view
-        v-if="feedStore.loading && feedStore.feedList.length === 0"
-        class="flex items-center justify-center py-12"
-      >
-        <text class="text-text-muted">加载中...</text>
+        v-if="displayItems.length > 0"
+        class="timeline-line absolute bottom-0 left-[21px] top-0 w-[1.5px] opacity-40"
+      ></view>
+
+      <view v-if="feedStore.loading && feedStore.feedList.length === 0" class="rounded-[28rpx] bg-white px-6 py-12 text-center shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] dark:bg-[#2d2418]">
+        <text class="text-[#a17c45] dark:text-orange-200/70">加载中...</text>
       </view>
 
-      <!-- Empty State -->
       <view
         v-else-if="feedStore.feedList.length === 0"
-        class="flex flex-col items-center justify-center py-12"
+        class="rounded-[28rpx] bg-white px-6 py-12 text-center shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] dark:bg-[#2d2418]"
       >
-        <text class="material-symbols-outlined text-4xl text-gray-300 dark:text-gray-600 mb-2">
+        <text class="material-symbols-outlined mb-2 block text-4xl text-slate-300 dark:text-slate-600">
           family_restroom
         </text>
-        <text class="text-text-muted text-sm">暂无家庭动态</text>
+        <text class="text-sm text-slate-400">暂无家庭动态</text>
       </view>
 
-      <!-- Feed Items -->
-      <view
-        v-else
-        v-for="(item, index) in displayItems"
-        :key="item.id"
-        class="flex items-center gap-4 p-4"
-        :class="{
-          'border-b border-gray-50 dark:border-slate-800/50':
-            index < displayItems.length - 1,
-        }"
-        @click="handleFeedClick(item)"
-      >
-        <view class="relative">
-          <image
-            class="w-10 h-10 rounded-full object-cover bg-gray-100"
-            :src="item.avatarUrl || 'https://via.placeholder.com/40'"
-            mode="aspectFill"
-          />
+      <view v-else class="space-y-3">
+        <view
+          v-for="item in displayItems"
+          :key="item.id"
+          class="group flex items-center gap-4"
+          @click="handleFeedClick(item)"
+        >
           <view
-            class="absolute -bottom-1 -right-1 border-2 p-2.5 border-white dark:border-[#2d2418] rounded-full w-4 h-4 flex items-center justify-center"
-            :class="getBadgeStyle(item.actionType).bg"
+            class="relative z-10 flex size-11 shrink-0 items-center justify-center rounded-full bg-[#fcfaf8] dark:bg-background-dark"
           >
-            <text
-              class="material-symbols-outlined text-[10px] font-bold"
-              :class="getBadgeStyle(item.actionType).iconColor"
-              >{{ getBadgeStyle(item.actionType).icon }}</text
-            >
+            <image
+              class="size-11 rounded-full object-cover ring-2 ring-white/60 shadow-md dark:ring-[#2d2418]/60"
+              :src="item.avatarUrl || 'https://via.placeholder.com/40'"
+              mode="aspectFill"
+            />
+            <view
+              class="absolute -right-0.5 top-0 size-3 rounded-full border-2 border-white shadow-sm dark:border-[#fcfaf8]"
+              :class="getTimelineDotClass(item.actionType)"
+            ></view>
           </view>
-        </view>
-        <view class="flex-1">
-          <view class="text-sm text-text-main dark:text-white leading-normal">
-            <text class="font-bold">{{ item.userName }}</text>
-            {{ actionText(item.action) }}
-            <text
-              class="font-bold"
-              :class="
-                canOpenShoppingList(item)
-                  ? 'text-primary cursor-pointer active:opacity-70'
-                  : 'text-primary'
-              "
-              @click.stop="openShoppingList(item)"
-            >
-              {{ item.target }}
-            </text>
-            {{ actionSuffixText(item.actionSuffix) }}
+
+          <view
+            class="glass-card flex-1 rounded-2xl p-3 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] transition-transform group-active:translate-x-1"
+          >
+            <view class="text-[13px] leading-snug text-[#1d160c] dark:text-white">
+              <text class="font-bold opacity-80">{{ item.userName }}</text>
+              {{ actionText(item.action) }}
+              <text
+                class="font-bold text-primary"
+                :class="canOpenShoppingList(item) ? 'cursor-pointer active:opacity-70' : ''"
+                @click.stop="openShoppingList(item)"
+              >
+                {{ item.target }}
+              </text>
+              {{ actionSuffixText(item.actionSuffix) }}
+            </view>
+            <view class="mt-1 flex items-center gap-1.5">
+              <text class="material-symbols-outlined text-[10px] text-[#a17c45]">schedule</text>
+              <text class="text-[10px] font-medium text-[#a17c45]/70">
+                {{ formatTime(item.createdAt) }}
+              </text>
+            </view>
           </view>
-          <text class="block text-xs text-text-muted mt-1">{{
-            formatTime(item.createdAt)
-          }}</text>
         </view>
       </view>
     </view>
 
-    <!-- Quick Action Button -->
     <button
-      class="w-full mt-4 bg-primary/10 border border-primary/20 dark:border-primary/30 after:hidden flex items-center justify-center gap-2 py-1 h-[52px] rounded-xl text-primary hover:bg-primary/20 transition-colors active:opacity-70"
+      class="relative mt-6 flex h-[52px] w-full items-center justify-center gap-2 overflow-hidden rounded-2xl border-none bg-gradient-to-br from-[#ffb347] to-[#ffcc33] text-white shadow-[0_8px_20px_-4px_rgba(255,179,71,0.5)] after:hidden active:scale-[0.98]"
       @click="handleGoShopping"
     >
-      <text class="font-bold text-[15px] leading-none">去买菜</text>
+      <text class="material-symbols-outlined text-xl font-bold">shopping_basket</text>
+      <text class="text-sm font-bold tracking-wide">去买菜</text>
     </button>
   </view>
 </template>
@@ -138,6 +131,15 @@ function getBadgeStyle(actionType: FeedActionType) {
   };
 
   return styles[actionType] || styles.shopping_added;
+}
+
+function getTimelineDotClass(actionType: FeedActionType) {
+  const style = getBadgeStyle(actionType);
+  if (style.bg.includes("green")) return "bg-green-500";
+  if (style.bg.includes("amber")) return "bg-amber-500";
+  if (style.bg.includes("purple")) return "bg-purple-500";
+  if (style.bg.includes("red")) return "bg-red-500";
+  return "bg-blue-500";
 }
 
 // 格式化时间
@@ -200,3 +202,27 @@ const handleGoShopping = () => {
   });
 };
 </script>
+
+<style scoped>
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.dark .glass-card {
+  background: rgba(45, 36, 24, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.timeline-line {
+  background-image: linear-gradient(to bottom, transparent 50%, #e2e8f0 50%);
+  background-size: 1px 12px;
+  background-repeat: repeat-y;
+}
+
+.dark .timeline-line {
+  background-image: linear-gradient(to bottom, transparent 50%, #4a3a25 50%);
+}
+</style>

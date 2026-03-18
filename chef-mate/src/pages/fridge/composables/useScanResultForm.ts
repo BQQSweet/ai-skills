@@ -2,6 +2,7 @@ import { reactive, ref, watch } from "vue";
 import { addFridgeItem } from "@/services/fridge";
 import { useGroupStore } from "@/stores/group";
 import type { RecognizedFridgeData } from "@/types/fridge";
+import { fridgeCategories } from "../constants/fridge";
 
 export function useScanResultForm(options: {
   recognizedData: () => RecognizedFridgeData | null;
@@ -13,17 +14,7 @@ export function useScanResultForm(options: {
   const isLoading = ref(false);
   const isSubmitting = ref(false);
 
-  const categories = [
-    "肉禽",
-    "果蔬",
-    "海鲜",
-    "乳制品",
-    "调味",
-    "主食",
-    "零食",
-    "饮品",
-    "其他",
-  ];
+  const categories: string[] = [...fridgeCategories];
 
   const form = reactive({
     name: "",
