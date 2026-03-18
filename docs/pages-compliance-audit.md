@@ -2,6 +2,8 @@
 
 审查日期：2026-03-17
 
+第二轮整改更新：2026-03-18
+
 审查依据：
 
 - `docs/frontend-page-standards.zh-CN.md`
@@ -406,3 +408,49 @@
 - 在页面入口累积大量局部状态与流程方法
 - 把视图元数据和样式映射长期内联
 - 组件拆分了一层后，又在页面内组件里继续长成新的大组件
+
+## 第二轮整改完成情况
+
+已完成第二轮页面入口整改：
+
+| 页面 | 整改后入口行数 | 状态 | 说明 |
+| --- | ---: | --- | --- |
+| `src/pages/profile/index.vue` | 102 | 已整改 | 页面入口已降为编排层，区块与退出逻辑已拆出 |
+| `src/pages/profile/dietary-preferences.vue` | 118 | 已整改 | 4 个表单区块、表单状态流和静态配置已拆出 |
+| `src/pages/group/invite.vue` | 65 | 已整改 | 邀请页展示区块与复制/分享/刷新逻辑已拆出 |
+| `src/pages/recipe/cooking-steps.vue` | 138 | 已整改 | tips 卡片与 QA popup / 状态流已拆出 |
+| `src/pages/login/index.vue` | 79 | 已整改 | Hero / Form / Footer / 登录状态流已拆出 |
+
+第二轮新增的页面私有文件：
+
+- `src/pages/profile/components/ProfileSummaryCard.vue`
+- `src/pages/profile/components/ProfileStatsSection.vue`
+- `src/pages/profile/components/ProfileKitchenSection.vue`
+- `src/pages/profile/components/ProfileServiceSection.vue`
+- `src/pages/profile/components/ProfileLogoutAction.vue`
+- `src/pages/profile/composables/useProfilePage.ts`
+- `src/pages/profile/constants/profile.ts`
+- `src/pages/profile/components/AllergySelector.vue`
+- `src/pages/profile/components/HabitSelector.vue`
+- `src/pages/profile/components/DislikeInputSection.vue`
+- `src/pages/profile/components/TastePreferenceSection.vue`
+- `src/pages/profile/composables/useDietaryPreferencesForm.ts`
+- `src/pages/profile/constants/profile-dietary.ts`
+- `src/pages/group/components/InviteHeroSection.vue`
+- `src/pages/group/components/InviteCodeCard.vue`
+- `src/pages/group/components/InviteQrSection.vue`
+- `src/pages/group/components/InviteShareActions.vue`
+- `src/pages/group/components/InviteMembersStrip.vue`
+- `src/pages/group/composables/useGroupInvite.ts`
+- `src/pages/recipe/components/StepTipsCard.vue`
+- `src/pages/recipe/components/StepQaPopup.vue`
+- `src/pages/recipe/composables/useStepQa.ts`
+- `src/pages/login/components/LoginHero.vue`
+- `src/pages/login/components/LoginForm.vue`
+- `src/pages/login/components/LoginFooter.vue`
+- `src/pages/login/composables/useLoginFlow.ts`
+
+说明：
+
+- 上述 5 个页面已从“第二批应尽快进入结构重构”的待办状态切换为“已整改”
+- 第三轮组件级整改目标保持不变，尤其是 `ShoppingItem.vue`、`ScanCamera.vue`、`ScanResultEditor.vue` 等组件仍需继续收敛
