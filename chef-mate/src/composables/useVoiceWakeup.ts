@@ -1,4 +1,5 @@
 import { ref, onUnmounted } from "vue";
+import { isWeb as isWebPlatform } from "@uni-helper/uni-env";
 import { useRecipeStore } from "@/stores/recipe";
 
 interface VoiceWakeupOptions {
@@ -13,7 +14,6 @@ interface VoiceWakeupOptions {
 export function useVoiceWakeup(options: VoiceWakeupOptions) {
   const isListening = ref(false); // 是否在监听唤醒词
   const isAwake = ref(false); // 是否已唤醒，等待命令
-  const isWeb = uni.getSystemInfoSync().uniPlatform === "web";
   const recipeStore = useRecipeStore();
 
   const wakeWords = options.wakeWords || ["小西", "小溪", "小希"];
@@ -34,7 +34,7 @@ export function useVoiceWakeup(options: VoiceWakeupOptions) {
   };
 
   const initRecognition = () => {
-    if (!isWeb) return;
+    if (!isWebPlatform) return;
 
     const SpeechRecognition =
       (window as any).SpeechRecognition ||
@@ -175,7 +175,7 @@ export function useVoiceWakeup(options: VoiceWakeupOptions) {
 
   const startListening = () => {
     console.log("[Wakeup] startListening called");
-    if (!isWeb) {
+    if (!isWebPlatform) {
       options.onUnsupported?.("语音唤醒功能仅支持 H5 端");
       return;
     }

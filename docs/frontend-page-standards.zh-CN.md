@@ -320,6 +320,9 @@ Pinia store 应承载领域状态和领域操作。
 - 页面入口受 `src/pages.json` 和 uni-app 生命周期约束
 - 功能专属页面逻辑优先放在页面目录下的 `components/`、`composables/` 和 `constants/`
 - H5 滚动处理等平台相关行为，除非已跨页面复用，否则优先放到页面专属 composable 中
+- 运行时平台判断优先使用 `@uni-helper/uni-env`，例如 `isWeb`、`isH5`、`isMpWeixin`，不要再直接读取 `uni.getSystemInfoSync().uniPlatform`
+- `#ifdef H5`、`#ifdef APP-PLUS` 等条件编译继续保留给编译期平台分支，因为它们会直接裁掉非目标平台代码，而不是只在运行时分支
+- 当代码直接访问浏览器全局对象时，继续保留 `typeof window` / `typeof document` 这类守卫；它们属于运行环境安全保护，不是平台判断的替代品
 
 ### `admin`
 

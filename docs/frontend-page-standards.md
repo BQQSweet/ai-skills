@@ -320,6 +320,9 @@ That shape should be treated as a refactor target, not as a model for future pag
 - Page entry files are constrained by `src/pages.json` and uni-app lifecycle hooks.
 - Prefer page-local `components/`, `composables/`, and `constants/` for feature-specific page logic.
 - Keep platform-specific behavior such as H5 scroll handling inside page-scoped composables unless it is reused.
+- For runtime platform checks, prefer `@uni-helper/uni-env` such as `isWeb`, `isH5`, or `isMpWeixin` instead of reading `uni.getSystemInfoSync().uniPlatform` directly.
+- Keep `#ifdef H5`, `#ifdef APP-PLUS`, and similar directives for compile-time platform branching, because they remove code from unsupported targets instead of only branching at runtime.
+- Keep `typeof window` / `typeof document` guards when code touches browser globals; these checks are environment-safety guards, not replacements for platform detection.
 
 ### `admin`
 

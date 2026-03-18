@@ -1,12 +1,13 @@
-const isWebPlatform = uni.getSystemInfoSync().uniPlatform === "web";
-const useInnerScroll = uni.getSystemInfoSync().uniPlatform !== "web";
+import { isWeb } from "@uni-helper/uni-env";
+
+const useInnerScroll = !isWeb;
 
 let lockedBodyScrollTop = 0;
 
 export function useShoppingScrollLock() {
   function lockBodyScroll() {
     if (
-      !isWebPlatform ||
+      !isWeb ||
       typeof window === "undefined" ||
       typeof document === "undefined"
     ) {
@@ -28,7 +29,7 @@ export function useShoppingScrollLock() {
 
   function unlockBodyScroll() {
     if (
-      !isWebPlatform ||
+      !isWeb ||
       typeof window === "undefined" ||
       typeof document === "undefined"
     ) {

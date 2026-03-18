@@ -1,4 +1,5 @@
 import { ref, onUnmounted } from "vue";
+import { isWeb as isWebPlatform } from "@uni-helper/uni-env";
 import { useRecipeStore } from "@/stores/recipe";
 
 interface VoiceCommandOptions {
@@ -9,7 +10,6 @@ interface VoiceCommandOptions {
 
 export function useVoiceCommand(options: VoiceCommandOptions) {
   const isListening = ref(false);
-  const isWeb = uni.getSystemInfoSync().uniPlatform === "web";
   const recipeStore = useRecipeStore();
 
   let recognition: any = null;
@@ -31,7 +31,7 @@ export function useVoiceCommand(options: VoiceCommandOptions) {
   };
 
   const initRecognition = () => {
-    if (!isWeb) return;
+    if (!isWebPlatform) return;
 
     const SpeechRecognition =
       (window as any).SpeechRecognition ||
@@ -149,7 +149,7 @@ export function useVoiceCommand(options: VoiceCommandOptions) {
 
   const startListening = () => {
     console.log("[VoiceCommand] startListening called");
-    if (!isWeb) {
+    if (!isWebPlatform) {
       options.onUnsupported?.("语音识别功能仅支持 H5 端");
       return;
     }

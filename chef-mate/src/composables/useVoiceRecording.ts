@@ -1,4 +1,5 @@
 import { ref } from "vue";
+import { isWeb as isWebPlatform } from "@uni-helper/uni-env";
 import { useRecipeStore } from "@/stores/recipe";
 
 interface VoiceRecordingOptions {
@@ -9,7 +10,6 @@ interface VoiceRecordingOptions {
 
 export function useVoiceRecording(options: VoiceRecordingOptions) {
   const isRecording = ref(false);
-  const isWeb = uni.getSystemInfoSync().uniPlatform === "web";
   const recipeStore = useRecipeStore();
 
   let recognition: any = null;
@@ -29,7 +29,7 @@ export function useVoiceRecording(options: VoiceRecordingOptions) {
   };
 
   const initRecognition = () => {
-    if (!isWeb) return;
+    if (!isWebPlatform) return;
 
     const SpeechRecognition =
       (window as any).SpeechRecognition ||
@@ -89,7 +89,7 @@ export function useVoiceRecording(options: VoiceRecordingOptions) {
 
   const startVoiceRecording = async () => {
     console.log("[Voice] startVoiceRecording called, isRecording:", isRecording.value);
-    if (isWeb) {
+    if (isWebPlatform) {
       if (!recognition) {
         options.onUnsupported?.(
           "当前浏览器不支持 Web Speech API，推荐使用 iOS Safari 或 Chrome",
@@ -167,7 +167,7 @@ export function useVoiceRecording(options: VoiceRecordingOptions) {
 
   const stopVoiceRecording = () => {
     console.log("[Voice] stopVoiceRecording called, isRecording:", isRecording.value, "isStopping:", isStopping);
-    if (isWeb) {
+    if (isWebPlatform) {
       // 防止重复调用
       if (isStopping || !isRecording.value || !recognition) {
         console.log("[Voice] Skip stop - already stopping or not recording");
