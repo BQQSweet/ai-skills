@@ -19,12 +19,14 @@
         v-if="recommendedRecipes.length > 0"
         :recipes="recommendedRecipes"
         :meal-tag="mealTag"
+        :refreshing="recommendRefreshing"
+        @refresh="handleRefreshRecommendations"
       />
       <view
         v-else
         class="px-6 mb-8 mt-2 h-64 flex items-center justify-center bg-white/50 dark:bg-black/20 rounded-[30rpx] mx-6"
       >
-        <text class="text-sm text-gray-400">正在为您推荐今日菜单...</text>
+        <text class="text-sm text-gray-400">{{ recommendPlaceholderText }}</text>
       </view>
 
       <ExpiryAlerts :items="fridgeItems" />
@@ -49,7 +51,12 @@ import CmTabBar from "@/components/CmTabBar/CmTabBar.vue";
 import { useUserStore } from "@/stores/user";
 import { useFeedStore } from "@/stores/feed";
 import { useGroupStore } from "@/stores/group";
-import { getRecommendedRecipes, type Recipe } from "@/services/recipe";
+import {
+  getRecommendedRecipes,
+  type Recipe,
+  type RecommendedRecipesResponse,
+  type RecommendedRecipesResult,
+} from "@/services/recipe";
 import { getFridgeItems } from "@/services/fridge";
 import type { FridgeItem } from "@/types/fridge";
 
@@ -64,12 +71,58 @@ const avatarUrl = computed(() => userStore.userInfo?.avatarUrl);
 // 推荐食谱
 const recommendedRecipes = ref<Recipe[]>([]);
 const mealTag = ref("今日推荐");
+const recommendRefreshing = ref(false);
+const recommendLoading = ref(true);
 
 // 冰箱食材
 const fridgeItems = ref<FridgeItem[]>([]);
 
+async function loadRecommendedRecipes(refresh = false) {
+  const recipeRes = await getRecommendedRecipes(refresh);
+  applyRecommendationResponse(recipeRes);
+}
+
+const recommendPlaceholderText = computed(() =>
+  recommendLoading.value ? "正在为您推荐今日菜单..." : "暂无推荐食谱，稍后再试",
+);
+
+function applyRecommendationResponse(recipeRes: RecommendedRecipesResult) {
+  if (Array.isArray(recipeRes)) {
+    recommendedRecipes.value = recipeRes;
+    mealTag.value = getDefaultMealTag();
+    return;
+  }
+
+  const normalizedResponse = recipeRes as RecommendedRecipesResponse;
+  recommendedRecipes.value = normalizedResponse.recipes || [];
+  mealTag.value = normalizedResponse.mealTag || getDefaultMealTag();
+}
+
+function getDefaultMealTag() {
+  const hour = new Date().getHours();
+  if (hour >= 5 && hour < 10) return "早餐推荐";
+  if (hour >= 10 && hour < 14) return "午餐推荐";
+  if (hour >= 14 && hour < 17) return "下午茶推荐";
+  if (hour >= 17 && hour < 21) return "晚餐推荐";
+  return "夜宵推荐";
+}
+
+async function handleRefreshRecommendations() {
+  try {
+    recommendRefreshing.value = true;
+    recommendLoading.value = true;
+    await loadRecommendedRecipes(true);
+  } catch (err) {
+    console.error("获取推荐食谱失败:", err);
+  } finally {
+    recommendRefreshing.value = false;
+    recommendLoading.value = false;
+  }
+}
+
 onShow(async () => {
   try {
+    recommendLoading.value = true;
     if (!groupStore.currentGroup) {
       await groupStore.fetchMyGroups();
     }
@@ -87,25 +140,15 @@ onShow(async () => {
       feedStore.clearFeed();
     }
 
-    // Assigned fridge data to ref
     if (fridgeRes) {
       fridgeItems.value = (fridgeRes as FridgeItem[] & { data?: FridgeItem[] })?.data || fridgeRes as FridgeItem[];
     }
 
-    if (recipeRes && recipeRes.length > 0) {
-      // 传递整个数组给轮播组件
-      recommendedRecipes.value = recipeRes;
-
-      // 简单的时间段处理标签
-      const hour = new Date().getHours();
-      if (hour >= 5 && hour < 10) mealTag.value = "早餐推荐";
-      else if (hour >= 10 && hour < 14) mealTag.value = "午餐推荐";
-      else if (hour >= 14 && hour < 17) mealTag.value = "下午茶推荐";
-      else if (hour >= 17 && hour < 21) mealTag.value = "晚餐推荐";
-      else mealTag.value = "夜宵推荐";
-    }
+    applyRecommendationResponse(recipeRes);
   } catch (err) {
     console.error("获取推荐食谱失败:", err);
+  } finally {
+    recommendLoading.value = false;
   }
 });
 </script>

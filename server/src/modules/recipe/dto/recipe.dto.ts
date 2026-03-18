@@ -8,6 +8,7 @@ import {
   Max,
   IsIn,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 
 export class CreateRecipeDto {
@@ -111,4 +112,16 @@ export class QueryRecipeDto {
   @ApiPropertyOptional({ description: '难度筛选' })
   @IsOptional()
   difficulty?: string;
+}
+
+export class RecommendRecipeQueryDto {
+  @ApiPropertyOptional({
+    description: '是否强制刷新推荐，传 1 表示换一批',
+    example: 1,
+  })
+  @Type(() => Number)
+  @IsOptional()
+  @IsInt()
+  @IsIn([1], { message: 'refresh 仅支持传 1' })
+  refresh?: number;
 }

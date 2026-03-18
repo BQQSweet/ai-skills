@@ -3,15 +3,13 @@
     class="relative overflow-hidden rounded-[24rpx] bg-white p-4 shadow-[0_4px_20px_-2px_rgba(29,22,12,0.05)] transition-all"
     :class="cardClass"
   >
-    <view
-      v-if="statusBanner"
-      class="absolute right-0 top-0 rounded-bl-[24rpx] bg-primary/10 px-3 py-1"
-    >
-      <view class="flex items-center gap-1 text-[10px] font-bold uppercase text-primary">
-        <text class="material-symbols-outlined text-[12px]">shopping_cart</text>
-        {{ statusBanner }}
-      </view>
-    </view>
+    <ShoppingItemStatus
+      :status-banner="statusBanner"
+      :source-text="sourceText"
+      :status-meta="statusMeta"
+      :has-in-fridge="item.hasInFridge"
+      :fridge-matched-name="item.fridgeMatchedName"
+    />
 
     <view class="flex items-start gap-4">
       <view class="shrink-0">
@@ -61,72 +59,24 @@
             </text>
           </view>
 
-          <view v-if="showTopActionBar" class="flex shrink-0 items-center gap-2">
-            <view
-              v-if="showClaimIconButton"
-              class="flex h-8 w-8 items-center justify-center rounded-full transition-all cursor-pointer"
-              :class="claimIconClass"
-              @click.stop="$emit('claim', item.id)"
-            >
-              <text
-                class="material-symbols-outlined text-[18px] leading-none"
-                :class="claimIconTextClass"
-              >
-                {{ claimIconName }}
-              </text>
-            </view>
-
-            <view
-              v-if="showAssignIconButton"
-              class="flex h-8 w-8 items-center justify-center rounded-full transition-all cursor-pointer"
-              :class="assignButtonClass"
-              @click.stop="$emit('assign', item)"
-            >
-              <view
-                v-if="showAssignedAvatar"
-                class="flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold"
-                :class="assigneeAvatarClass"
-              >
-                {{ assigneeInitial }}
-              </view>
-              <text
-                v-else
-                class="material-symbols-outlined block text-[18px] leading-none"
-                :class="assignIconTextClass"
-              >
-                person_add
-              </text>
-            </view>
-
-            <view
-              v-if="showDeleteIconButton"
-              class="flex h-8 w-8 items-center justify-center rounded-full bg-red-50 text-red-400 transition-all cursor-pointer active:opacity-80"
-              @click.stop="$emit('delete', item.id)"
-            >
-              <text class="material-symbols-outlined text-[18px] leading-none">delete</text>
-            </view>
-          </view>
+          <ShoppingItemActions
+            :show-top-action-bar="showTopActionBar"
+            :show-claim-icon-button="showClaimIconButton"
+            :show-assign-icon-button="showAssignIconButton"
+            :show-delete-icon-button="showDeleteIconButton"
+            :show-assigned-avatar="showAssignedAvatar"
+            :assignee-initial="assigneeInitial"
+            :assignee-avatar-class="assigneeAvatarClass"
+            :claim-icon-name="claimIconName"
+            :claim-icon-class="claimIconClass"
+            :claim-icon-text-class="claimIconTextClass"
+            :assign-button-class="assignButtonClass"
+            :assign-icon-text-class="assignIconTextClass"
+            @claim="$emit('claim', item.id)"
+            @assign="$emit('assign', item)"
+            @delete="$emit('delete', item.id)"
+          />
         </view>
-
-        <view class="mt-3 flex flex-wrap items-center gap-2 justify-between">
-          <view class="flex flex-wrap items-center gap-2">
-            <CmTag tone="warning">
-              <text>{{ sourceText }}</text>
-            </CmTag>
-            <CmTag v-if="item.hasInFridge" tone="warning" size="xs">冰箱已有</CmTag>
-          </view>
-
-          <text v-if="statusMeta" class="text-[11px] text-slate-400">
-            {{ statusMeta }}
-          </text>
-        </view>
-
-        <text
-          v-if="item.fridgeMatchedName"
-          class="mt-2 block text-[11px] text-amber-600"
-        >
-          冰箱库存中已有 {{ item.fridgeMatchedName }}
-        </text>
       </view>
     </view>
   </view>
@@ -134,7 +84,8 @@
 
 <script setup lang="ts">
 import type { ShoppingItem } from "@/types/shopping";
-import CmTag from "@/components/CmTag/CmTag.vue";
+import ShoppingItemActions from "./ShoppingItemActions.vue";
+import ShoppingItemStatus from "./ShoppingItemStatus.vue";
 import { useShoppingItemPresentation } from "../composables/useShoppingItemPresentation";
 
 const props = defineProps<{

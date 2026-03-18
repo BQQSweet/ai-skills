@@ -25,6 +25,7 @@ import {
   CreateRecipeDto,
   UpdateRecipeDto,
   QueryRecipeDto,
+  RecommendRecipeQueryDto,
 } from './dto/recipe.dto';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { AdminGuard } from '@/common/guards/admin.guard';
@@ -55,8 +56,13 @@ export class RecipeController {
   @Get('recommend')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: '首页基于时间的菜谱推荐' })
-  async recommend(@CurrentUser('id') userId: string) {
-    return this.recipeService.recommend(userId);
+  async recommend(
+    @CurrentUser('id') userId: string,
+    @Query() query: RecommendRecipeQueryDto,
+  ) {
+    return this.recipeService.recommend(userId, {
+      refresh: query.refresh === 1,
+    });
   }
 
   @Post('ai-generate')

@@ -4,6 +4,7 @@ import {
   BadRequestException,
   Logger,
 } from '@nestjs/common';
+import type { Recipe } from '@prisma/client';
 import { PrismaService } from '@/common/prisma.service';
 import { AiService } from '@/ai/ai.service';
 import {
@@ -11,6 +12,22 @@ import {
   UpdateRecipeDto,
   QueryRecipeDto,
 } from './dto/recipe.dto';
+import { RecommendationCacheService } from './recommendation-cache.service';
+import type {
+  RecommendContext,
+  RecommendationResult,
+  RecommendationSignals,
+  ScoredRecipe,
+  StableRecommendationCachePayload,
+} from './recommendation.types';
+
+const STABLE_RECIPE_COUNT = 4;
+const EXPLORE_RECIPE_COUNT = 2;
+const TOTAL_RECIPE_COUNT = STABLE_RECIPE_COUNT + EXPLORE_RECIPE_COUNT;
+const MAX_CANDIDATE_RECIPES = 80;
+const STABLE_CACHE_TTL_SECONDS = 2 * 60 * 60;
+const STRATEGY_VERSION = 'recipe-recommend-v1';
+const ALL_MEAL_TAGS = ['早餐', '午餐', '下午茶', '晚餐', '夜宵'];
 
 @Injectable()
 export class RecipeService {
@@ -19,6 +36,7 @@ export class RecipeService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly aiService: AiService,
+    private readonly recommendationCache: RecommendationCacheService,
   ) {}
 
   /**
@@ -173,86 +191,463 @@ export class RecipeService {
   /**
    * 基于时间与偏好推荐食谱
    */
-  async recommend(userId?: string) {
-    const currentHour = new Date().getHours();
-    let mealTag = '';
+  async recommend(
+    userId?: string,
+    options: { refresh?: boolean } = {},
+  ): Promise<RecommendationResult> {
+    const context = await this.resolveRecommendContext(userId, !!options.refresh);
+    const candidates = await this.loadCandidateRecipes(context);
+    const scoredRecipes = this.scoreRecipes(
+      candidates,
+      this.buildRecommendationSignals(context),
+    );
+    const stableSelection = await this.selectStableRecipes(scoredRecipes, context);
+    const stableIds = new Set(stableSelection.recipes.map((recipe) => recipe.id));
+    const exploreRecipes = this.selectExploreRecipes(
+      scoredRecipes,
+      stableIds,
+      context,
+    );
 
-    // 简单时间段划分
-    if (currentHour >= 5 && currentHour < 10) {
-      mealTag = '早餐';
-    } else if (currentHour >= 10 && currentHour < 14) {
-      mealTag = '午餐';
-    } else if (currentHour >= 14 && currentHour < 17) {
-      mealTag = '下午茶';
-    } else if (currentHour >= 17 && currentHour < 21) {
-      mealTag = '晚餐';
-    } else {
-      mealTag = '夜宵';
+    return this.composeRecommendationResult(
+      scoredRecipes,
+      stableSelection.recipes,
+      exploreRecipes,
+      context,
+      stableSelection.cacheHit,
+    );
+  }
+
+  private async resolveRecommendContext(
+    userId?: string,
+    requestRefresh = false,
+  ): Promise<RecommendContext> {
+    const mealTag = this.getMealTagByHour(new Date().getHours());
+
+    if (!userId) {
+      return {
+        userId,
+        mealTag,
+        tastePreference: null,
+        dietaryPreference: null,
+        preferenceVersion: this.createPreferenceVersion({
+          mealTag,
+          strategyVersion: STRATEGY_VERSION,
+        }),
+        profileSignals: {
+          tastePreference: null,
+          dietaryPreference: null,
+        },
+        behaviorSignals: {
+          favoriteRecipeIds: [],
+          recentFavoriteRecipeIds: [],
+          recentCookedRecipeIds3d: [],
+          recentCookedRecipeIds7d: [],
+        },
+        stableCount: STABLE_RECIPE_COUNT,
+        exploreCount: EXPLORE_RECIPE_COUNT,
+        requestRefresh,
+        strategyVersion: STRATEGY_VERSION,
+      };
     }
 
-    let userTaste = null;
-    let userDietary = null;
+    const sevenDaysAgo = this.getDaysAgoDate(7);
+    const threeDaysAgo = this.getDaysAgoDate(3);
 
-    if (userId) {
-      const user = await this.prisma.user.findUnique({
+    const [user, favorites, histories] = await Promise.all([
+      this.prisma.user.findUnique({
         where: { id: userId },
         select: { taste_preference: true, dietary_preference: true },
-      });
-      if (user) {
-        userTaste = user.taste_preference;
-        userDietary = user.dietary_preference;
-      }
-    }
+      }),
+      this.prisma.recipeFavorite.findMany({
+        where: { user_id: userId },
+        select: { recipe_id: true, created_at: true },
+      }),
+      this.prisma.cookingHistory.findMany({
+        where: {
+          user_id: userId,
+          cooked_at: { gte: sevenDaysAgo },
+        },
+        select: { recipe_id: true, cooked_at: true },
+      }),
+    ]);
 
-    // 收集偏好标签
-    const preferenceTags = [mealTag, userTaste, userDietary].filter(Boolean);
+    const favoriteRecipeIds = favorites.map((item) => item.recipe_id);
+    const recentFavoriteRecipeIds = favorites
+      .filter((item) => item.created_at >= sevenDaysAgo)
+      .map((item) => item.recipe_id);
+    const recentCookedRecipeIds7d = histories.map((item) => item.recipe_id);
+    const recentCookedRecipeIds3d = histories
+      .filter((item) => item.cooked_at >= threeDaysAgo)
+      .map((item) => item.recipe_id);
 
-    // 尝试找出包含部分或全部匹配标签的食谱
-    // Prisma 中对于 PostgreSQL 的 String[] 数组字段查询
+    return {
+      userId,
+      mealTag,
+      tastePreference: user?.taste_preference ?? null,
+      dietaryPreference: user?.dietary_preference ?? null,
+      preferenceVersion: this.createPreferenceVersion({
+        mealTag,
+        tastePreference: user?.taste_preference ?? null,
+        dietaryPreference: user?.dietary_preference ?? null,
+        favoriteRecipeIds: favoriteRecipeIds.slice().sort(),
+        recentCookedRecipeIds7d: recentCookedRecipeIds7d.slice().sort(),
+        strategyVersion: STRATEGY_VERSION,
+      }),
+      profileSignals: {
+        tastePreference: user?.taste_preference ?? null,
+        dietaryPreference: user?.dietary_preference ?? null,
+      },
+      behaviorSignals: {
+        favoriteRecipeIds,
+        recentFavoriteRecipeIds,
+        recentCookedRecipeIds3d,
+        recentCookedRecipeIds7d,
+      },
+      stableCount: STABLE_RECIPE_COUNT,
+      exploreCount: EXPLORE_RECIPE_COUNT,
+      requestRefresh,
+      strategyVersion: STRATEGY_VERSION,
+    };
+  }
+
+  private async loadCandidateRecipes(context: RecommendContext): Promise<Recipe[]> {
     const recipes = await this.prisma.recipe.findMany({
       where: {
         status: 'published',
         deleted_at: null,
-        // 这里使用 array_contains 或者简单起见我们就拉取比较近的随机筛选，或者交由业务逻辑来打分排序
-        // 为了简单高效演示：先查出所有published食谱，在内存中做打分排序并取前5，防止数据量少时查不到
       },
-      take: 50, // 从最近的50条中选
+      take: MAX_CANDIDATE_RECIPES,
       orderBy: { created_at: 'desc' },
     });
 
-    // 所有可能的时间段标签
-    const ALL_MEAL_TAGS = ['早餐', '午餐', '下午茶', '晚餐', '夜宵'];
+    const filteredRecipes = recipes.filter(
+      (recipe) => !this.hasMealTagConflict(recipe, context),
+    );
 
-    const validRecipes = [];
+    // 当当前餐段标签把候选全部筛空时，回退到所有已发布食谱，
+    // 避免首页一直处于“有请求但无可展示内容”的状态。
+    return filteredRecipes.length > 0 ? filteredRecipes : recipes;
+  }
 
-    // 评分排序并过滤
-    for (const recipe of recipes) {
-      let score = 0;
-      const tags = recipe.tags || [];
+  private buildRecommendationSignals(context: RecommendContext) {
+    return {
+      mealTag: context.mealTag,
+      tastePreference: context.tastePreference,
+      dietaryPreference: context.dietaryPreference,
+      mealWeight: 10,
+      tasteWeight: 5,
+      dietaryWeight: 5,
+      recentCookPenalty3d: 12,
+      recentCookPenalty7d: 5,
+      favoriteBoost: 2,
+      recentFavoriteBoost: 1,
+      noveltyMaxBoost: 2,
+      noveltyWindowDays: 14,
+      recentCookedRecipeIds3d: new Set(
+        context.behaviorSignals.recentCookedRecipeIds3d,
+      ),
+      recentCookedRecipeIds7d: new Set(
+        context.behaviorSignals.recentCookedRecipeIds7d,
+      ),
+      favoriteRecipeIds: new Set(context.behaviorSignals.favoriteRecipeIds),
+      recentFavoriteRecipeIds: new Set(
+        context.behaviorSignals.recentFavoriteRecipeIds,
+      ),
+    };
+  }
 
-      // 选出该食谱包含的餐饮时间段标签
-      const recipeMealTags = tags.filter((tag) => ALL_MEAL_TAGS.includes(tag));
+  private scoreRecipes(
+    recipes: Recipe[],
+    signals: ReturnType<RecipeService['buildRecommendationSignals']>,
+  ): ScoredRecipe[] {
+    return recipes
+      .map((recipe) => this.scoreRecipe(recipe, signals))
+      .sort((a, b) => b.score - a.score);
+  }
 
-      // 冲突检测：如果食谱包含了带有时间段的标签，但并不包含当前计算出的 mealTag，则过滤掉
-      if (recipeMealTags.length > 0 && !recipeMealTags.includes(mealTag)) {
-        continue; // 比如当前是晚餐，但食谱只有'早餐'或'下午茶'标签
-      }
+  private scoreRecipe(
+    recipe: Recipe,
+    signals: ReturnType<RecipeService['buildRecommendationSignals']>,
+  ): ScoredRecipe {
+    const tags = recipe.tags || [];
+    const mealMatch = tags.includes(signals.mealTag);
+    const tasteMatch = !!signals.tastePreference
+      && tags.includes(signals.tastePreference);
+    const dietaryMatch = !!signals.dietaryPreference
+      && tags.includes(signals.dietaryPreference);
 
-      if (tags.includes(mealTag)) score += 10;
-      if (userTaste && tags.includes(userTaste)) score += 5;
-      if (userDietary && tags.includes(userDietary)) score += 5;
-
-      // 添加随机扰动，使得每次推荐不一样
-      score += Math.random() * 2;
-      validRecipes.push({ ...recipe, _score: score });
+    let recentCookPenalty = 0;
+    if (signals.recentCookedRecipeIds3d.has(recipe.id)) {
+      recentCookPenalty = signals.recentCookPenalty3d;
+    } else if (signals.recentCookedRecipeIds7d.has(recipe.id)) {
+      recentCookPenalty = signals.recentCookPenalty7d;
     }
 
-    // 按分数降序，取前5名
-    validRecipes.sort((a, b) => b._score - a._score);
-    return validRecipes.slice(0, 5).map((r) => {
-      const { _score, ...rest } = r;
-      return rest;
-    });
+    const favoriteBoost = signals.favoriteRecipeIds.has(recipe.id)
+      ? signals.favoriteBoost
+      : 0;
+    const recentFavoriteBoost = signals.recentFavoriteRecipeIds.has(recipe.id)
+      ? signals.recentFavoriteBoost
+      : 0;
+    const noveltyBoost = this.calculateNoveltyBoost(
+      recipe.created_at,
+      signals.noveltyWindowDays,
+      signals.noveltyMaxBoost,
+    );
+
+    const score =
+      (mealMatch ? signals.mealWeight : 0)
+      + (tasteMatch ? signals.tasteWeight : 0)
+      + (dietaryMatch ? signals.dietaryWeight : 0)
+      + favoriteBoost
+      + recentFavoriteBoost
+      + noveltyBoost
+      - recentCookPenalty;
+
+    const recommendationSignals: RecommendationSignals = {
+      mealMatch,
+      tasteMatch,
+      dietaryMatch,
+      recentCookPenalty,
+      favoriteBoost: favoriteBoost + recentFavoriteBoost,
+      noveltyBoost,
+      diversityPenalty: 0,
+    };
+
+    return {
+      recipe,
+      score,
+      signals: recommendationSignals,
+      stableEligible: !signals.recentCookedRecipeIds3d.has(recipe.id),
+    };
+  }
+
+  private async selectStableRecipes(
+    scoredRecipes: ScoredRecipe[],
+    context: RecommendContext,
+  ): Promise<{ recipes: Recipe[]; cacheHit: boolean }> {
+    const cacheKey = this.buildStableCacheKey(context);
+
+    if (context.requestRefresh) {
+      await this.recommendationCache.delete(cacheKey);
+    } else {
+      const cachedIds = await this.recommendationCache.getStableRecipeIds(cacheKey);
+      const cachedRecipes = this.getRecipesFromIds(scoredRecipes, cachedIds);
+      if (
+        cachedRecipes.length >= Math.min(context.stableCount, scoredRecipes.length)
+      ) {
+        return {
+          recipes: cachedRecipes.slice(0, context.stableCount),
+          cacheHit: true,
+        };
+      }
+    }
+
+    const stablePool = this.getHighScorePool(
+      scoredRecipes.filter((item) => item.stableEligible),
+      context.stableCount,
+    );
+    const selectedStable = this.pickWeightedRecipes(
+      stablePool,
+      context.stableCount,
+    );
+
+    if (selectedStable.length > 0) {
+      const payload: StableRecommendationCachePayload = {
+        recipeIds: selectedStable.map((item) => item.recipe.id),
+        strategyVersion: context.strategyVersion,
+        generatedAt: new Date().toISOString(),
+      };
+      await this.recommendationCache.setStableRecipeIds(
+        cacheKey,
+        payload,
+        STABLE_CACHE_TTL_SECONDS,
+      );
+    }
+
+    return {
+      recipes: selectedStable.map((item) => item.recipe),
+      cacheHit: false,
+    };
+  }
+
+  private selectExploreRecipes(
+    scoredRecipes: ScoredRecipe[],
+    stableIds: Set<string>,
+    context: RecommendContext,
+  ): Recipe[] {
+    const explorePool = this.getHighScorePool(
+      scoredRecipes.filter((item) => !stableIds.has(item.recipe.id)),
+      context.exploreCount,
+    );
+
+    return this.pickWeightedRecipes(explorePool, context.exploreCount).map(
+      (item) => item.recipe,
+    );
+  }
+
+  private composeRecommendationResult(
+    scoredRecipes: ScoredRecipe[],
+    stableRecipes: Recipe[],
+    exploreRecipes: Recipe[],
+    context: RecommendContext,
+    cacheHit: boolean,
+  ): RecommendationResult {
+    const recipes: Recipe[] = [];
+    const selectedIds = new Set<string>();
+
+    for (const recipe of [...stableRecipes, ...exploreRecipes]) {
+      if (selectedIds.has(recipe.id)) {
+        continue;
+      }
+      recipes.push(recipe);
+      selectedIds.add(recipe.id);
+    }
+
+    for (const item of scoredRecipes) {
+      if (recipes.length >= TOTAL_RECIPE_COUNT) {
+        break;
+      }
+      if (selectedIds.has(item.recipe.id)) {
+        continue;
+      }
+      recipes.push(item.recipe);
+      selectedIds.add(item.recipe.id);
+    }
+
+    return {
+      recipes,
+      mealTag: `${context.mealTag}推荐`,
+      stableCount: Math.min(context.stableCount, stableRecipes.length),
+      exploreCount: Math.min(context.exploreCount, exploreRecipes.length),
+      cacheHit,
+      strategyVersion: context.strategyVersion,
+    };
+  }
+
+  private getHighScorePool(
+    scoredRecipes: ScoredRecipe[],
+    desiredCount: number,
+  ): ScoredRecipe[] {
+    const sorted = scoredRecipes.slice().sort((a, b) => b.score - a.score);
+    const poolSize = Math.min(
+      sorted.length,
+      Math.max(desiredCount * 3, desiredCount + 4),
+    );
+    return sorted.slice(0, poolSize);
+  }
+
+  private pickWeightedRecipes(
+    scoredRecipes: ScoredRecipe[],
+    desiredCount: number,
+  ): ScoredRecipe[] {
+    const pool = scoredRecipes.slice();
+    const selected: ScoredRecipe[] = [];
+
+    while (pool.length > 0 && selected.length < desiredCount) {
+      const minScore = Math.min(...pool.map((item) => item.score));
+      const weights = pool.map((item) => Math.max(item.score - minScore + 1, 0.5));
+      const weightSum = weights.reduce((sum, value) => sum + value, 0);
+      let random = Math.random() * weightSum;
+      let chosenIndex = 0;
+
+      for (let index = 0; index < weights.length; index += 1) {
+        random -= weights[index];
+        if (random <= 0) {
+          chosenIndex = index;
+          break;
+        }
+      }
+
+      const [chosen] = pool.splice(chosenIndex, 1);
+      selected.push(chosen);
+    }
+
+    return selected;
+  }
+
+  private getRecipesFromIds(
+    scoredRecipes: ScoredRecipe[],
+    recipeIds: string[] | null,
+  ): Recipe[] {
+    if (!recipeIds || recipeIds.length === 0) {
+      return [];
+    }
+
+    const recipeMap = new Map(
+      scoredRecipes.map((item) => [item.recipe.id, item.recipe]),
+    );
+
+    return recipeIds
+      .map((recipeId) => recipeMap.get(recipeId))
+      .filter((recipe): recipe is Recipe => !!recipe);
+  }
+
+  private buildStableCacheKey(context: RecommendContext): string {
+    return [
+      'recipe:recommend:stable',
+      context.userId || 'anonymous',
+      context.mealTag,
+      context.preferenceVersion,
+    ].join(':');
+  }
+
+  private hasMealTagConflict(recipe: Recipe, context: RecommendContext): boolean {
+    const recipeMealTags = (recipe.tags || []).filter((tag) =>
+      ALL_MEAL_TAGS.includes(tag),
+    );
+
+    return recipeMealTags.length > 0
+      && !recipeMealTags.includes(context.mealTag);
+  }
+
+  private getMealTagByHour(hour: number): string {
+    if (hour >= 5 && hour < 10) {
+      return '早餐';
+    }
+    if (hour >= 10 && hour < 14) {
+      return '午餐';
+    }
+    if (hour >= 14 && hour < 17) {
+      return '下午茶';
+    }
+    if (hour >= 17 && hour < 21) {
+      return '晚餐';
+    }
+    return '夜宵';
+  }
+
+  private getDaysAgoDate(days: number): Date {
+    const date = new Date();
+    date.setDate(date.getDate() - days);
+    return date;
+  }
+
+  private calculateNoveltyBoost(
+    createdAt: Date,
+    noveltyWindowDays: number,
+    noveltyMaxBoost: number,
+  ): number {
+    const ageInMs = Date.now() - createdAt.getTime();
+    const ageInDays = ageInMs / (1000 * 60 * 60 * 24);
+    if (ageInDays >= noveltyWindowDays) {
+      return 0;
+    }
+
+    const freshnessRatio = (noveltyWindowDays - ageInDays) / noveltyWindowDays;
+    return Number((freshnessRatio * noveltyMaxBoost).toFixed(2));
+  }
+
+  private createPreferenceVersion(payload: Record<string, unknown>): string {
+    const raw = JSON.stringify(payload);
+    let hash = 0;
+
+    for (let index = 0; index < raw.length; index += 1) {
+      hash = (hash * 31 + raw.charCodeAt(index)) >>> 0;
+    }
+
+    return hash.toString(16);
   }
 
   /**

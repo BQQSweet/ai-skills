@@ -4,10 +4,19 @@
       <text class="text-lg font-bold text-text-main dark:text-white"
         >今日烹饪计划</text
       >
-      <text
-        class="text-xs font-medium text-primary bg-primary/10 px-3 py-1 rounded-full"
-        >{{ mealTag }}</text
-      >
+      <view class="flex items-center gap-2">
+        <button
+          class="px-3 py-1 m-0 rounded-full border-none after:hidden bg-white text-primary text-xs font-medium shadow-[0_4px_12px_-4px_rgba(255,157,10,0.35)] active:opacity-80 disabled:opacity-60"
+          :disabled="refreshing"
+          @click="emit('refresh')"
+        >
+          {{ refreshing ? "更新中" : "换一批" }}
+        </button>
+        <text
+          class="text-xs font-medium text-primary bg-primary/10 px-3 py-1 rounded-full"
+          >{{ mealTag }}</text
+        >
+      </view>
     </view>
 
     <swiper
@@ -125,12 +134,14 @@ withDefaults(
   defineProps<{
     recipes?: Recipe[];
     mealTag?: string;
+    refreshing?: boolean;
     memberAvatars?: string[];
     extraMemberCount?: number;
   }>(),
   {
     recipes: () => [],
     mealTag: "晚餐推荐",
+    refreshing: false,
     memberAvatars: () => [
       "https://lh3.googleusercontent.com/aida-public/AB6AXuD1xaCumzLqpzkvNproVHkvr7kbITVW7Rrrq_K0jEWYv6MVKLYtxpM9wRnDNa9ch7uia3rw-Vksvv_gBgaOAjk4Et6k7-z-9zXXEh18GBMTX24La3vLU0D4pxKYKG6Lc9_MQYgnOsU0cfFo3JEOxiWPsZxEAzGjXFEvDT3GNIfrKyTVlh4befBHCsI041Bs1uikL95epvlGanoUCMVkHM8INwVyBO56nfmFHMmCDFw9Px9vmWoW_FOPWM8IZEc9ZXfxQSA6gY52Bc8n",
       "https://lh3.googleusercontent.com/aida-public/AB6AXuBMjBXwdgX9O5A9OyGhveJuCy1ou4rtfeI9iP79ElvVJrJzGBDmoiwPfZTSOoIU5O_UUxZEZbUppuxHI4eqVffk8goJJp45M1YxkcoBf6l8njM9VppTY76QsErYo1QyBYzAm0M_xqt0Q5Zsb0fGYFs-P6iH6aKhNrSo86EFLAn5nBY7um8EWYvbfuRffgtgHlaqU1ZtMT8UijqxmW_Cz690QO8yuVbVrVoulJxUkGonHHfNzTrFUICJEPRn_TjbXAMW7I347SaMFWS_",
@@ -138,6 +149,10 @@ withDefaults(
     extraMemberCount: 2,
   },
 );
+
+const emit = defineEmits<{
+  refresh: [];
+}>();
 
 const defaultImageUrl =
   "https://lh3.googleusercontent.com/aida-public/AB6AXuAgpI_IYcGM8oAcWZRTUBl3Vr2rGLHDvyThJDCZFmjiUk8AOcFOviu_oi9jDFeg3xfV2A2ZcLZ0v5la4N_u150o2Fbv_3fUZYxcdXMC_KT_EZ5gsU-2SBs3rCzuZHurAOftI_PZhb8NKSBovhNXpZ_RdMhTs5fwc8Hs_o98xRxPTIdT65NFYdqrE9MrH59O6MGKwffYBcdvcIkcaySy8tTodJU8IEI9AN-R7H_kZIYdZoWiVQ8XxzpYJEDWRJtib94CnadM6IAClRxT";

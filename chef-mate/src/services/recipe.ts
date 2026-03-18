@@ -6,11 +6,24 @@ import type { Recipe } from "@/types/recipe";
 export type { Recipe } from "@/types/recipe";
 export type { RecipeIngredient, RecipeStep, RecipeNutrition } from "@/types/recipe";
 
+export interface RecommendedRecipesResponse {
+  recipes: Recipe[];
+  mealTag: string;
+  stableCount: number;
+  exploreCount: number;
+  cacheHit: boolean;
+  strategyVersion: string;
+}
+
+export type RecommendedRecipesResult = RecommendedRecipesResponse | Recipe[];
+
 /**
  * 获取推荐食谱
  */
-export function getRecommendedRecipes() {
-  return get<Recipe[]>("/api/recipe/recommend");
+export function getRecommendedRecipes(refresh = false) {
+  return get<RecommendedRecipesResult>("/api/recipe/recommend", refresh
+    ? { refresh: 1 }
+    : undefined);
 }
 
 /**
