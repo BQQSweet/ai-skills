@@ -1,5 +1,5 @@
 <template>
-  <view class="px-6 pb-6">
+  <view class="px-6 pb-6 mt-8">
     <view class="mb-4 flex items-center justify-between">
       <text class="text-lg font-bold text-[#1d160c] dark:text-white">
         家庭协作
@@ -12,7 +12,10 @@
         class="timeline-line absolute bottom-0 left-[21px] top-0 w-[1.5px] opacity-40"
       ></view>
 
-      <view v-if="feedStore.loading && feedStore.feedList.length === 0" class="rounded-[28rpx] bg-white px-6 py-12 text-center shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] dark:bg-[#2d2418]">
+      <view
+        v-if="feedStore.loading && feedStore.feedList.length === 0"
+        class="rounded-[28rpx] bg-white px-6 py-12 text-center shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] dark:bg-[#2d2418]"
+      >
         <text class="text-[#a17c45] dark:text-orange-200/70">加载中...</text>
       </view>
 
@@ -20,7 +23,9 @@
         v-else-if="feedStore.feedList.length === 0"
         class="rounded-[28rpx] bg-white px-6 py-12 text-center shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] dark:bg-[#2d2418]"
       >
-        <text class="material-symbols-outlined mb-2 block text-4xl text-slate-300 dark:text-slate-600">
+        <text
+          class="material-symbols-outlined mb-2 block text-4xl text-slate-300 dark:text-slate-600"
+        >
           family_restroom
         </text>
         <text class="text-sm text-slate-400">暂无家庭动态</text>
@@ -50,12 +55,18 @@
           <view
             class="glass-card flex-1 rounded-2xl p-3 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] transition-transform group-active:translate-x-1"
           >
-            <view class="text-[13px] leading-snug text-[#1d160c] dark:text-white">
+            <view
+              class="text-[13px] leading-snug text-[#1d160c] dark:text-white"
+            >
               <text class="font-bold opacity-80">{{ item.userName }}</text>
               {{ actionText(item.action) }}
               <text
                 class="font-bold text-primary"
-                :class="canOpenShoppingList(item) ? 'cursor-pointer active:opacity-70' : ''"
+                :class="
+                  canOpenShoppingList(item)
+                    ? 'cursor-pointer active:opacity-70'
+                    : ''
+                "
                 @click.stop="openShoppingList(item)"
               >
                 {{ item.target }}
@@ -63,7 +74,9 @@
               {{ actionSuffixText(item.actionSuffix) }}
             </view>
             <view class="mt-1 flex items-center gap-1.5">
-              <text class="material-symbols-outlined text-[10px] text-[#a17c45]">schedule</text>
+              <text class="material-symbols-outlined text-[10px] text-[#a17c45]"
+                >schedule</text
+              >
               <text class="text-[10px] font-medium text-[#a17c45]/70">
                 {{ formatTime(item.createdAt) }}
               </text>
@@ -77,7 +90,9 @@
       class="relative mt-6 flex h-[52px] w-full items-center justify-center gap-2 overflow-hidden rounded-2xl border-none bg-gradient-to-br from-[#ffb347] to-[#ffcc33] text-white shadow-[0_8px_20px_-4px_rgba(255,179,71,0.5)] after:hidden active:scale-[0.98]"
       @click="handleGoShopping"
     >
-      <text class="material-symbols-outlined text-xl font-bold">shopping_basket</text>
+      <text class="material-symbols-outlined text-xl font-bold"
+        >shopping_basket</text
+      >
       <text class="text-sm font-bold tracking-wide">去买菜</text>
     </button>
   </view>
@@ -185,8 +200,7 @@ const handleFeedClick = (item: FeedItem) => {
 const canOpenShoppingList = (item: FeedItem) =>
   ["shopping_added", "shopping_purchased", "shopping_reopened"].includes(
     item.actionType,
-  ) &&
-  Boolean(item.targetId);
+  ) && Boolean(item.targetId);
 
 const openShoppingList = (item: FeedItem) => {
   if (!canOpenShoppingList(item)) return;

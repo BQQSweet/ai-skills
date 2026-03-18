@@ -38,7 +38,7 @@
       </view>
     </view>
 
-    <view :class="headerOffsetClass"></view>
+    <view :class="headerOffsetClass" :style="headerOffsetStyle"></view>
 
     <scroll-view
       v-if="useScrollView"
@@ -93,6 +93,7 @@ const props = withDefaults(
     scrollProps?: Record<string, any>;
     headerFixed?: boolean;
     headerOffsetClass?: string;
+    headerOffsetStyle?: string | Record<string, string>;
   }>(),
   {
     title: "",
@@ -109,6 +110,7 @@ const props = withDefaults(
     scrollProps: () => ({}),
     headerFixed: true,
     headerOffsetClass: "pt-[88px]",
+    headerOffsetStyle: "",
   },
 );
 

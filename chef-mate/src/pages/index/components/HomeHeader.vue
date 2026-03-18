@@ -1,5 +1,5 @@
 <template>
-  <view class="flex items-center justify-between px-6 pb-4 pt-12">
+  <view class="home-header-root flex items-center justify-between px-6 pb-4 pt-12">
     <view class="flex items-center gap-4">
       <view class="relative cursor-pointer" @click="handleProfileClick">
         <image

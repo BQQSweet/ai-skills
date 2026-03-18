@@ -4,7 +4,7 @@
     :header-class="'z-20 bg-[#fcfaf8]/95 px-0 backdrop-blur-md dark:bg-background-dark/95'"
     :use-scroll-view="false"
     :content-class="'flex min-h-0 flex-1 flex-col'"
-    :header-offset-class="'pt-[92px]'"
+    :header-offset-style="homeHeaderOffsetStyle"
   >
     <template #header>
       <HomeHeader
@@ -48,8 +48,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import { onShow } from "@dcloudio/uni-app";
+import { computed, nextTick, ref, watch } from "vue";
+import { onReady, onShow } from "@dcloudio/uni-app";
 import HomeHeader from "./components/HomeHeader.vue";
 import CookingPlanCard from "./components/CookingPlanCard.vue";
 import ExpiryAlerts from "./components/ExpiryAlerts.vue";
@@ -70,10 +70,14 @@ import type { FridgeItem } from "@/types/fridge";
 const userStore = useUserStore();
 const groupStore = useGroupStore();
 const feedStore = useFeedStore();
+const homeHeaderHeight = ref(128);
 
 // TODO: 从 userStore 获取
 const nickname = computed(() => userStore.userInfo?.nickname || "Chef");
 const avatarUrl = computed(() => userStore.userInfo?.avatarUrl);
+const homeHeaderOffsetStyle = computed(() => ({
+  paddingTop: `${homeHeaderHeight.value}px`,
+}));
 
 // 推荐食谱
 const recommendedRecipes = ref<Recipe[]>([]);
@@ -127,8 +131,31 @@ async function handleRefreshRecommendations() {
   }
 }
 
+const measureHomeHeader = async () => {
+  await nextTick();
+
+  const query = uni.createSelectorQuery();
+  query.select(".home-header-root").boundingClientRect((rect) => {
+    const targetRect = Array.isArray(rect) ? rect[0] : rect;
+    if (
+      !targetRect ||
+      typeof targetRect.height !== "number" ||
+      targetRect.height <= 0
+    ) {
+      return;
+    }
+    homeHeaderHeight.value = Math.ceil(targetRect.height);
+  });
+  query.exec();
+};
+
+onReady(() => {
+  void measureHomeHeader();
+});
+
 onShow(async () => {
   try {
+    void measureHomeHeader();
     recommendLoading.value = true;
     if (!groupStore.currentGroup) {
       await groupStore.fetchMyGroups();
@@ -159,6 +186,10 @@ onShow(async () => {
   } finally {
     recommendLoading.value = false;
   }
+});
+
+watch(nickname, async () => {
+  await measureHomeHeader();
 });
 </script>
 

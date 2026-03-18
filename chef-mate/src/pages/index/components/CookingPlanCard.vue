@@ -25,7 +25,7 @@
       circular
       :indicator-dots="true"
       indicator-active-color="#ff9d0a"
-      indicator-color="rgba(255,255,255,0.4)"
+      indicator-color="rgba(161,124,69,0.28)"
       previous-margin="0"
       next-margin="40rpx"
     >
