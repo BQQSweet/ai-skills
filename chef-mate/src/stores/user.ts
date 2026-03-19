@@ -12,6 +12,7 @@ import {
   STORAGE_KEYS,
   getStorage,
 } from "@/utils/storage";
+import { normalizeAvatarValue } from "@/utils/avatar";
 import * as authService from "@/services/auth";
 import type {
   UserInfo,
@@ -20,12 +21,46 @@ import type {
   RegisterParams,
 } from "@/types/user";
 
+function normalizeUserInfo(user: UserInfo | null | undefined): UserInfo | null {
+  if (!user) {
+    return null;
+  }
+
+  const avatarUrl = normalizeAvatarValue(user.avatarUrl);
+
+  return {
+    ...user,
+    avatarUrl,
+  };
+}
+
+function getStoredUserInfo(): UserInfo | null {
+  const rawUserInfo = getStorage<string>(STORAGE_KEYS.USER_INFO);
+  if (!rawUserInfo) {
+    return null;
+  }
+
+  try {
+    const parsedUser = JSON.parse(rawUserInfo) as UserInfo;
+    const normalizedUser = normalizeUserInfo(parsedUser);
+
+    if (
+      normalizedUser &&
+      normalizedUser.avatarUrl !== parsedUser.avatarUrl
+    ) {
+      setStorage(STORAGE_KEYS.USER_INFO, JSON.stringify(normalizedUser));
+    }
+
+    return normalizedUser;
+  } catch {
+    return null;
+  }
+}
+
 export const useUserStore = defineStore("user", () => {
   // ========== State ==========
   const token = ref<string>(getToken());
-  const userInfo = ref<UserInfo | null>(
-    JSON.parse(getStorage(STORAGE_KEYS.USER_INFO) || "{}"),
-  );
+  const userInfo = ref<UserInfo | null>(getStoredUserInfo());
   const currentGroupId = ref<string>(
     getStorage(STORAGE_KEYS.CURRENT_GROUP_ID) || "",
   );
@@ -38,11 +73,13 @@ export const useUserStore = defineStore("user", () => {
   // ========== Actions ==========
 
   function applyAuthResult(res: AuthResult) {
+    const normalizedUser = normalizeUserInfo(res.user);
+
     token.value = res.token;
-    userInfo.value = res.user;
+    userInfo.value = normalizedUser;
     setToken(res.token);
     setRefreshToken(res.refreshToken);
-    setStorage(STORAGE_KEYS.USER_INFO, JSON.stringify(res.user));
+    setStorage(STORAGE_KEYS.USER_INFO, JSON.stringify(normalizedUser));
   }
 
   async function syncGroupsFromAuthResult(res: AuthResult) {

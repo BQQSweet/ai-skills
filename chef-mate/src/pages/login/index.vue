@@ -15,20 +15,33 @@
     <view
       class="w-full max-w-[480px] flex-1 flex flex-col p-6 z-10 relative box-border"
     >
-      <LoginHero />
+      <LoginHero :auth-mode="authMode" />
+      <AuthModeTabs :model-value="authMode" @update:model-value="setAuthMode" />
       <LoginForm
-        :model="form"
+        v-if="authMode === 'login'"
+        :model="loginForm"
         :login-type="loginType"
-        :loading="loading"
-        :sms-sending="smsSending"
-        :code-cooldown="codeCooldown"
-        @send-code="handleSendCode"
+        :loading="loginLoading"
+        :sms-sending="loginSmsSending"
+        :code-cooldown="loginCodeCooldown"
+        @send-code="handleLoginCodeSend"
         @toggle-login-type="toggleLoginType"
-        @submit="onSubmit"
+        @submit="submitLogin"
+      />
+      <RegisterForm
+        v-else
+        :model="registerForm"
+        :loading="registerLoading"
+        :sms-sending="registerSmsSending"
+        :code-cooldown="registerCodeCooldown"
+        @send-code="handleRegisterCodeSend"
+        @submit="submitRegister"
       />
       <LoginFooter
+        :auth-mode="authMode"
         :agreed-to-terms="agreedToTerms"
         @wechat-login="handleWechatLogin"
+        @switch-auth-mode="toggleAuthMode"
         @toggle-terms="toggleTerms"
         @agreement="openAgreement"
         @privacy="openPrivacy"
@@ -41,56 +54,72 @@
       <text class="material-symbols-outlined text-[180px]">eco</text>
     </view>
 
-    <CmConfirmDialog
-      v-model:show="autoRegisterDialog.dialogState.show"
-      :title="autoRegisterDialog.dialogState.title"
-      :description="autoRegisterDialog.dialogState.description"
-      :confirm-text="autoRegisterDialog.dialogState.confirmText"
-      :cancel-text="autoRegisterDialog.dialogState.cancelText"
-      :icon-name="autoRegisterDialog.dialogState.iconName"
-      :tone="autoRegisterDialog.dialogState.tone"
-      :close-on-click-overlay="autoRegisterDialog.dialogState.closeOnClickOverlay"
-      :disabled="autoRegisterDialog.dialogState.disabled"
-      :variant="autoRegisterDialog.dialogState.variant"
-      :actions="autoRegisterDialog.dialogState.actions"
-      :action-description="autoRegisterDialog.dialogState.actionDescription"
-      @confirm="autoRegisterDialog.handleConfirm"
-      @select="autoRegisterDialog.handleSelect"
-      @cancel="autoRegisterDialog.handleCancel"
-      @close="autoRegisterDialog.handleClose"
-    />
-
     <CmToast ref="uToastRef"></CmToast>
+    <AuthDocumentPopup
+      :show="documentVisible"
+      :document="currentDocument"
+      @update:show="setDocumentVisible"
+    />
   </view>
 </template>
 
 <script setup lang="ts">
 import { ref } from "vue";
-import CmConfirmDialog from "@/components/CmConfirmDialog/CmConfirmDialog.vue";
 import CmToast from "@/components/CmToast/CmToast.vue";
+import AuthDocumentPopup from "./components/AuthDocumentPopup.vue";
+import AuthModeTabs from "./components/AuthModeTabs.vue";
 import LoginFooter from "./components/LoginFooter.vue";
 import LoginForm from "./components/LoginForm.vue";
 import LoginHero from "./components/LoginHero.vue";
+import RegisterForm from "./components/RegisterForm.vue";
+import { useAuthPage } from "./composables/useAuthPage";
 import { useLoginFlow } from "./composables/useLoginFlow";
+import { useRegisterFlow } from "./composables/useRegisterFlow";
 
 const uToastRef = ref<any>(null);
 
 const {
-  autoRegisterDialog,
-  loading,
-  smsSending,
-  codeCooldown,
+  authMode,
   agreedToTerms,
-  loginType,
-  form,
-  handleSendCode,
-  toggleLoginType,
   toggleTerms,
+  documentVisible,
+  currentDocument,
+  setDocumentVisible,
+  setAuthMode,
+  toggleAuthMode,
   openAgreement,
   openPrivacy,
   handleWechatLogin,
-  onSubmit,
-} = useLoginFlow(uToastRef);
+  redirectAfterAuth,
+} = useAuthPage(uToastRef);
+
+const {
+  loading: loginLoading,
+  smsSending: loginSmsSending,
+  codeCooldown: loginCodeCooldown,
+  loginType,
+  form: loginForm,
+  handleSendCode: handleLoginCodeSend,
+  toggleLoginType,
+  onSubmit: submitLogin,
+} = useLoginFlow({
+  toastRef: uToastRef,
+  agreedToTerms,
+  redirectAfterAuth,
+});
+
+const {
+  loading: registerLoading,
+  smsSending: registerSmsSending,
+  codeCooldown: registerCodeCooldown,
+  form: registerForm,
+  handleSendCode: handleRegisterCodeSend,
+  onSubmit: submitRegister,
+} = useRegisterFlow({
+  toastRef: uToastRef,
+  agreedToTerms,
+  redirectAfterAuth,
+});
 </script>
 
 <style lang="css" scoped>

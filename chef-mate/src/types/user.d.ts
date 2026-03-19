@@ -28,6 +28,9 @@ export interface DietaryPreferences {
   };
 }
 
+export type AuthMode = "login" | "register";
+export type SmsCodeScene = "login" | "register";
+
 /** 登录请求参数 */
 export interface LoginParams {
   type: "code" | "password";
@@ -40,9 +43,9 @@ export interface LoginParams {
 /** 注册请求参数 */
 export interface RegisterParams {
   phone: string;
+  code: string;
   password: string;
   nickname?: string;
-  code?: string;
 }
 
 /** 登录/注册响应 */

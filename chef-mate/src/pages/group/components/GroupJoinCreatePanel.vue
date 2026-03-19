@@ -61,7 +61,6 @@
             :value="inviteCodeArr[index]"
             class="w-10 h-11 text-center text-lg font-black rounded-xl border border-slate-200 bg-white text-slate-900"
             type="text"
-            maxlength="1"
             placeholder="•"
             :focus="focusIndex === index"
             @input="$emit('invite-input', index, $event)"

@@ -141,6 +141,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   refresh: [];
+  "view-steps": [recipe: Recipe];
 }>();
 
 const defaultImageUrl =
@@ -163,7 +164,7 @@ const handleRefreshClick = () => {
 };
 
 const handleViewSteps = (recipe: Recipe) => {
-  uni.$u.toast(`${recipe.title} 的步骤页开发中`);
+  emit("view-steps", recipe);
 };
 
 const ingredientSummary = (recipe: Recipe) =>

@@ -4,7 +4,7 @@
       <view class="flex items-center gap-5">
         <image
           class="aspect-square rounded-full h-24 w-24 border-4 border-white dark:border-slate-800 shadow-sm"
-          :src="avatarUrl"
+          :src="resolvedAvatarUrl"
           mode="aspectFill"
         ></image>
         <view class="flex flex-col justify-center">
@@ -39,7 +39,10 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
+import { computed } from "vue";
+import { resolveAvatarUrl } from "@/utils/avatar";
+
+const props = defineProps<{
   profileName: string;
   avatarUrl: string;
   currentKitchenName: string;
@@ -47,4 +50,6 @@ defineProps<{
   kitchenLevelText: string;
   phoneText: string;
 }>();
+
+const resolvedAvatarUrl = computed(() => resolveAvatarUrl(props.avatarUrl));
 </script>

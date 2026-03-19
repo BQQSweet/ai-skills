@@ -1,6 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEnum, IsOptional, IsString, Length, Matches } from 'class-validator';
 
+export enum SmsCodeScene {
+  LOGIN = 'login',
+  REGISTER = 'register',
+}
+
 /**
  * DTO（Data Transfer Object）用于描述接口入参。
  *
@@ -15,6 +20,10 @@ export class SendSmsDto {
   @IsString()
   @Matches(/^1[3-9]\d{9}$/, { message: '手机号格式不正确' })
   phone: string;
+
+  @ApiProperty({ description: '验证码发送场景', enum: SmsCodeScene })
+  @IsEnum(SmsCodeScene, { message: '不合法的验证码场景' })
+  scene: SmsCodeScene;
 }
 
 export enum LoginType {
@@ -72,6 +81,11 @@ export class RegisterDto {
   @IsString()
   @Matches(/^1[3-9]\d{9}$/, { message: '手机号格式不正确' })
   phone: string;
+
+  @ApiProperty({ description: '短信验证码' })
+  @IsString()
+  @Matches(/^\d{6}$/, { message: '验证码必须为6位数字' })
+  code: string;
 
   @ApiProperty({ description: '密码' })
   @IsString()

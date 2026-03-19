@@ -15,8 +15,9 @@
     </template>
 
     <scroll-view
-      scroll-y
+      :scroll-y="!showRecipePreview"
       class="flex-1 overflow-y-auto no-scrollbar"
+      :class="{ 'home-scroll-locked': showRecipePreview }"
       :show-scrollbar="false"
     >
       <view>
@@ -26,6 +27,7 @@
           :meal-tag="mealTag"
           :refreshing="recommendRefreshing"
           @refresh="handleRefreshRecommendations"
+          @view-steps="handleOpenRecipePreview"
         />
         <view
           v-else
@@ -41,6 +43,13 @@
       </view>
     </scroll-view>
 
+    <RecipeStepsPreviewSheet
+      :show="showRecipePreview"
+      :recipe="previewRecipe"
+      @update:show="handleRecipePreviewVisibilityChange"
+      @enter-details="handleEnterRecipeDetails"
+    />
+
     <template #footer>
       <CmTabBar :current="0" />
     </template>
@@ -55,9 +64,11 @@ import CookingPlanCard from "./components/CookingPlanCard.vue";
 import ExpiryAlerts from "./components/ExpiryAlerts.vue";
 import FamilyFeed from "./components/FamilyFeed.vue";
 import CmTabBar from "@/components/CmTabBar/CmTabBar.vue";
+import RecipeStepsPreviewSheet from "@/pages/recipe/components/RecipeStepsPreviewSheet.vue";
 import { useUserStore } from "@/stores/user";
 import { useFeedStore } from "@/stores/feed";
 import { useGroupStore } from "@/stores/group";
+import { useRecipeStore } from "@/stores/recipe";
 import {
   getRecommendedRecipes,
   type Recipe,
@@ -70,6 +81,7 @@ import type { FridgeItem } from "@/types/fridge";
 const userStore = useUserStore();
 const groupStore = useGroupStore();
 const feedStore = useFeedStore();
+const recipeStore = useRecipeStore();
 const homeHeaderHeight = ref(128);
 
 // TODO: 从 userStore 获取
@@ -81,9 +93,11 @@ const homeHeaderOffsetStyle = computed(() => ({
 
 // 推荐食谱
 const recommendedRecipes = ref<Recipe[]>([]);
+const previewRecipe = ref<Recipe | null>(null);
 const mealTag = ref("今日推荐");
 const recommendRefreshing = ref(false);
 const recommendLoading = ref(true);
+const showRecipePreview = ref(false);
 
 // 冰箱食材
 const fridgeItems = ref<FridgeItem[]>([]);
@@ -129,6 +143,33 @@ async function handleRefreshRecommendations() {
     recommendRefreshing.value = false;
     recommendLoading.value = false;
   }
+}
+
+function handleOpenRecipePreview(recipe: Recipe) {
+  previewRecipe.value = recipe;
+  showRecipePreview.value = true;
+}
+
+function handleRecipePreviewVisibilityChange(value: boolean) {
+  showRecipePreview.value = value;
+
+  if (!value) {
+    previewRecipe.value = null;
+  }
+}
+
+function handleEnterRecipeDetails() {
+  if (!previewRecipe.value) {
+    return;
+  }
+
+  recipeStore.setCurrentRecipe(previewRecipe.value);
+  showRecipePreview.value = false;
+  previewRecipe.value = null;
+
+  uni.navigateTo({
+    url: "/pages/recipe/cooking-steps",
+  });
 }
 
 const measureHomeHeader = async () => {
@@ -205,5 +246,9 @@ watch(nickname, async () => {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+.home-scroll-locked {
+  overflow: hidden;
 }
 </style>

@@ -4,12 +4,15 @@ import { useGroupStore } from "@/stores/group";
 import { useShoppingStore } from "@/stores/shopping";
 import { useUserStore } from "@/stores/user";
 import type { GroupMemberInfo } from "@/types/group";
+import { resolveAvatarUrl } from "@/utils/avatar";
 import type {
   GenerateShoppingListFromRecipeParams,
   ShoppingCategory,
   ShoppingItem,
+  ShoppingList,
 } from "@/types/shopping";
 import type { RecipeIngredient } from "@/types/recipe";
+import type { ShoppingListSwitcherItem } from "../components/ShoppingListSwitcherSheet.vue";
 import {
   getCompletedMeta,
   shoppingCategoryIcons,
@@ -34,6 +37,7 @@ export function useShoppingPage(options: { toastRef: Ref<ToastValue | null> }) {
   const newItemName = ref("");
   const selectedCategory = ref<ShoppingCategory>("other");
   const showCategoryPicker = ref(false);
+  const showListSwitcherSheet = ref(false);
   const refreshing = ref(false);
   const showDeleteModal = ref(false);
   const showCompleteModal = ref(false);
@@ -59,7 +63,7 @@ export function useShoppingPage(options: { toastRef: Ref<ToastValue | null> }) {
       .map((member) => ({
         id: member.id,
         name: member.nickname,
-        avatarUrl: member.avatarUrl || "",
+        avatarUrl: resolveAvatarUrl(member.avatarUrl),
       }));
   });
 
@@ -143,6 +147,19 @@ export function useShoppingPage(options: { toastRef: Ref<ToastValue | null> }) {
   const currentCategoryLabel = computed(
     () => shoppingCategoryLabels[selectedCategory.value],
   );
+  const canSwitchShoppingLists = computed(
+    () => shoppingStore.shoppingLists.length > 1,
+  );
+  const switchableShoppingLists = computed<ShoppingListSwitcherItem[]>(() =>
+    shoppingStore.shoppingLists.map((list) => ({
+      id: list.id,
+      title: getShoppingListDisplayTitle(list),
+      sourceLabel: list.source === "recipe" ? "食谱清单" : "手动补货",
+      sourceTone: list.source === "recipe" ? "primary" : "neutral",
+      statusLabel: getShoppingListStatusLabel(list),
+      isActive: list.id === shoppingStore.activeListId,
+    })),
+  );
   const progressStatusText = computed(() => {
     if (shoppingStore.stats.total === 0) return "待开始";
     if (purchaseProgress.value >= 100) return "已备齐";
@@ -224,6 +241,57 @@ export function useShoppingPage(options: { toastRef: Ref<ToastValue | null> }) {
 
   function showToast(type: string, message: string) {
     options.toastRef.value?.show?.({ type, message });
+  }
+
+  function getShoppingListDisplayTitle(list: ShoppingList) {
+    if (list.source === "recipe") {
+      const recipeTitleFromItem = list.items[0]?.sourceRecipeTitle;
+      if (recipeTitleFromItem) return recipeTitleFromItem;
+      return list.title.replace(/\s*协作采购清单$/, "");
+    }
+
+    return list.title || "协作采购清单";
+  }
+
+  function getShoppingListStatusLabel(list: ShoppingList) {
+    const totalCount = list.items.length;
+    if (totalCount === 0) {
+      return "待开始";
+    }
+
+    const completedCount = list.items.filter(
+      (item) => item.status === "purchased" || item.hasInFridge,
+    ).length;
+
+    if (completedCount >= totalCount) {
+      return "已备齐";
+    }
+
+    const hasInProgressItem = list.items.some(
+      (item) => item.status === "claimed" || item.status === "purchased",
+    );
+
+    if (hasInProgressItem) {
+      return "进行中";
+    }
+
+    return "待开始";
+  }
+
+  function openListSwitcher() {
+    if (!canSwitchShoppingLists.value) return;
+    showListSwitcherSheet.value = true;
+  }
+
+  function closeListSwitcher() {
+    showListSwitcherSheet.value = false;
+  }
+
+  function selectShoppingList(listId: string) {
+    if (listId !== shoppingStore.activeListId) {
+      shoppingStore.setActiveList(listId);
+    }
+    closeListSwitcher();
   }
 
   function parseRouteOptions(options?: Record<string, unknown>) {
@@ -581,6 +649,7 @@ export function useShoppingPage(options: { toastRef: Ref<ToastValue | null> }) {
     newItemName,
     selectedCategory,
     showCategoryPicker,
+    showListSwitcherSheet,
     refreshing,
     showDeleteModal,
     showCompleteModal,
@@ -601,6 +670,8 @@ export function useShoppingPage(options: { toastRef: Ref<ToastValue | null> }) {
     activeListSubTitle,
     pageTitle,
     listSourceLabel,
+    canSwitchShoppingLists,
+    switchableShoppingLists,
     currentCategoryLabel,
     progressStatusText,
     activeSectionDescription,
@@ -613,6 +684,9 @@ export function useShoppingPage(options: { toastRef: Ref<ToastValue | null> }) {
     parseRouteOptions,
     initializePage,
     cleanupPageState,
+    openListSwitcher,
+    closeListSwitcher,
+    selectShoppingList,
     handleAddItem,
     selectCategory,
     handleToggle,

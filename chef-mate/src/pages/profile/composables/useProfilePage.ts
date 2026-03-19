@@ -3,7 +3,7 @@ import { onShow } from "@dcloudio/uni-app";
 import * as authService from "@/services/auth";
 import { useGroupStore } from "@/stores/group";
 import { useUserStore } from "@/stores/user";
-import defaultAvatar from "@/static/svgs/default_avatar.svg";
+import { resolveAvatarUrl } from "@/utils/avatar";
 
 export function useProfilePage() {
   const userStore = useUserStore();
@@ -15,7 +15,7 @@ export function useProfilePage() {
     () => userStore.userInfo?.nickname || "ChefMate 用户",
   );
   const avatarUrl = computed(
-    () => userStore.userInfo?.avatarUrl || defaultAvatar,
+    () => resolveAvatarUrl(userStore.userInfo?.avatarUrl),
   );
   const currentKitchenName = computed(
     () => groupStore.currentGroup?.name || "未加入家庭组",

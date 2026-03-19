@@ -32,6 +32,7 @@
       :subtitle="page.activeListSubTitle"
       :source-label="page.listSourceLabel"
       :is-recipe-list="page.shoppingStore.activeList?.source === 'recipe'"
+      :show-list-switcher-trigger="page.canSwitchShoppingLists"
       :progress="page.purchaseProgress"
       :progress-status="page.progressStatusText"
       :active-members="page.activeMembers"
@@ -42,6 +43,7 @@
       :purchased-count="page.shoppingStore.purchasedItems.length"
       :in-fridge-count="page.inFridgeCount"
       @invite-members="page.handleInviteMembers"
+      @open-list-switcher="page.openListSwitcher"
     />
 
     <ShoppingQuickAddCard
@@ -100,6 +102,17 @@
       @select="page.selectCategory"
     />
 
+    <ShoppingListSwitcherSheet
+      :show="page.showListSwitcherSheet"
+      :items="page.switchableShoppingLists"
+      @update:show="
+        $event
+          ? (page.showListSwitcherSheet = $event)
+          : page.closeListSwitcher()
+      "
+      @select="page.selectShoppingList"
+    />
+
     <CmConfirmDialog
       v-model:show="page.interactionDialog.dialogState.show"
       :title="page.interactionDialog.dialogState.title"
@@ -156,6 +169,7 @@ import ShoppingAssignPopup from "./components/ShoppingAssignPopup.vue";
 import ShoppingCategoryPicker from "./components/ShoppingCategoryPicker.vue";
 import ShoppingCompletedSection from "./components/ShoppingCompletedSection.vue";
 import ShoppingFooterAction from "./components/ShoppingFooterAction.vue";
+import ShoppingListSwitcherSheet from "./components/ShoppingListSwitcherSheet.vue";
 import ShoppingOverviewCard from "./components/ShoppingOverviewCard.vue";
 import ShoppingPendingSection from "./components/ShoppingPendingSection.vue";
 import ShoppingQuickAddCard from "./components/ShoppingQuickAddCard.vue";

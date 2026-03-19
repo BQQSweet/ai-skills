@@ -58,7 +58,7 @@
         >
           <image
             class="h-12 w-12 shrink-0 rounded-full border-2 border-white bg-[#fff1df] shadow-sm"
-            :src="member.avatarUrl || defaultAvatar"
+            :src="resolveAvatarUrl(member.avatarUrl)"
             mode="aspectFill"
           />
           <view class="min-w-0 flex-1">
@@ -100,7 +100,7 @@
 <script setup lang="ts">
 import type { GroupMemberInfo, GroupRole } from "@/types/group";
 import type { ShoppingItem } from "@/types/shopping";
-import defaultAvatar from "@/static/svgs/default_avatar.svg";
+import { resolveAvatarUrl } from "@/utils/avatar";
 
 defineProps<{
   show: boolean;

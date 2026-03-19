@@ -32,7 +32,7 @@
         >
           <image
             class="w-full h-full object-cover"
-            :src="member.avatarUrl || 'https://via.placeholder.com/48'"
+            :src="resolveAvatarUrl(member.avatarUrl)"
             mode="aspectFill"
           />
         </view>
@@ -55,6 +55,7 @@
 
 <script setup lang="ts">
 import type { GroupMemberInfo } from "@/types/group";
+import { resolveAvatarUrl } from "@/utils/avatar";
 
 defineProps<{
   members: GroupMemberInfo[];

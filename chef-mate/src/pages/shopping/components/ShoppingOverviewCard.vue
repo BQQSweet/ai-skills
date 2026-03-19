@@ -7,9 +7,18 @@
     >
       <view class="flex items-start justify-between gap-4">
         <view class="min-w-0 flex-1">
-          <text class="mt-2 block text-[28px] font-black leading-tight text-slate-900">
-            {{ title }}
-          </text>
+          <view class="mt-2 flex items-center gap-2">
+            <text class="min-w-0 flex-1 truncate text-[28px] font-black leading-tight text-slate-900">
+              {{ title }}
+            </text>
+            <view
+              v-if="showListSwitcherTrigger"
+              class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/80 text-slate-700 shadow-sm active:scale-95"
+              @click="$emit('open-list-switcher')"
+            >
+              <text class="material-symbols-outlined text-[20px]">keyboard_arrow_down</text>
+            </view>
+          </view>
           <text class="mt-2 block text-sm text-text-muted">
             {{ subtitle }}
           </text>
@@ -36,7 +45,7 @@
             v-for="member in activeMembers.slice(0, 3)"
             :key="member.id"
             class="h-10 w-10 rounded-full border-2 border-white object-cover"
-            :src="member.avatarUrl"
+            :src="resolveAvatarUrl(member.avatarUrl)"
             mode="aspectFill"
           />
           <view
@@ -113,12 +122,14 @@
 <script setup lang="ts">
 import CmTag from "@/components/CmTag/CmTag.vue";
 import type { ShoppingActiveMember } from "../constants/shopping";
+import { resolveAvatarUrl } from "@/utils/avatar";
 
 defineProps<{
   title: string;
   subtitle: string;
   sourceLabel: string;
   isRecipeList: boolean;
+  showListSwitcherTrigger?: boolean;
   progress: number;
   progressStatus: string;
   activeMembers: ShoppingActiveMember[];
@@ -132,5 +143,6 @@ defineProps<{
 
 defineEmits<{
   "invite-members": [];
+  "open-list-switcher": [];
 }>();
 </script>

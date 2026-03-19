@@ -1,5 +1,7 @@
 import { computed, ref, type Ref } from "vue";
 import { useGroupStore } from "@/stores/group";
+import { useUserStore } from "@/stores/user";
+import type { GroupMemberInfo } from "@/types/group";
 import { groupRoleLabels } from "../constants/group";
 import { useInviteCodeInput } from "./useInviteCodeInput";
 
@@ -7,8 +9,14 @@ interface ToastValue {
   show?: (options: { type: string; message: string }) => void;
 }
 
+interface JoinedGroupSnapshot {
+  name: string;
+  members: GroupMemberInfo[];
+}
+
 export function useGroupManage(options: { toastRef: Ref<ToastValue | null> }) {
   const groupStore = useGroupStore();
+  const userStore = useUserStore();
   const inviteInput = useInviteCodeInput();
 
   const loading = ref(false);
@@ -18,7 +26,9 @@ export function useGroupManage(options: { toastRef: Ref<ToastValue | null> }) {
   const showAddGroupPanel = ref(false);
   const creatingGroup = ref(false);
   const joiningGroup = ref(false);
+  const showJoinWelcomePopup = ref(false);
   const newGroupName = ref("");
+  const joinedGroupSnapshot = ref<JoinedGroupSnapshot | null>(null);
 
   const currentGroup = computed(() => groupStore.currentGroup);
   const memberList = computed(() => currentGroup.value?.members || []);
@@ -43,6 +53,27 @@ export function useGroupManage(options: { toastRef: Ref<ToastValue | null> }) {
 
   function openAddGroupPanel() {
     showAddGroupPanel.value = true;
+  }
+
+  function buildJoinedGroupSnapshot(): JoinedGroupSnapshot | null {
+    const joinedGroup = groupStore.currentGroup;
+    if (!joinedGroup) {
+      return null;
+    }
+
+    return {
+      name: joinedGroup.name,
+      members: [...(joinedGroup.members || [])],
+    };
+  }
+
+  function handleDismissJoinWelcomePopup() {
+    showJoinWelcomePopup.value = false;
+  }
+
+  function handleEnterKitchenJourney() {
+    showJoinWelcomePopup.value = false;
+    uni.switchTab({ url: "/pages/index/index" });
   }
 
   async function loadGroupState() {
@@ -135,9 +166,10 @@ export function useGroupManage(options: { toastRef: Ref<ToastValue | null> }) {
     joiningGroup.value = true;
     try {
       await groupStore.joinGroup(inviteInput.inviteCode.value);
+      joinedGroupSnapshot.value = buildJoinedGroupSnapshot();
       resetAddGroupForm();
       showAddGroupPanel.value = false;
-      showToast("success", "加入成功，已切换到新厨房");
+      showJoinWelcomePopup.value = Boolean(joinedGroupSnapshot.value);
     } catch (error: any) {
       showToast("error", error?.msg || "邀请码无效或已失效");
     } finally {
@@ -187,11 +219,14 @@ export function useGroupManage(options: { toastRef: Ref<ToastValue | null> }) {
     showAddGroupPanel,
     creatingGroup,
     joiningGroup,
+    showJoinWelcomePopup,
     newGroupName,
     currentGroup,
     memberList,
     isOwner,
     currentRoleLabel,
+    currentUserId: userStore.userId,
+    joinedGroupSnapshot,
     inviteCodeArr: inviteInput.inviteCodeArr,
     focusIndex: inviteInput.focusIndex,
     toggleAddGroupPanel,
@@ -204,6 +239,8 @@ export function useGroupManage(options: { toastRef: Ref<ToastValue | null> }) {
     handleSwitchGroup,
     handleCreateGroup,
     handleJoinGroup,
+    handleDismissJoinWelcomePopup,
+    handleEnterKitchenJourney,
     confirmLeaveGroup,
     confirmDisbandGroup,
     handleInviteCodeInput: inviteInput.handleInviteCodeInput,

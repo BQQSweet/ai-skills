@@ -2,7 +2,12 @@
  * 认证相关 API
  */
 import { post } from './request';
-import type { LoginParams, RegisterParams, AuthResult } from '@/types/user';
+import type {
+  LoginParams,
+  RegisterParams,
+  AuthResult,
+  SmsCodeScene,
+} from '@/types/user';
 
 /** 手机号+密码登录 */
 export function login(params: LoginParams): Promise<AuthResult> {
@@ -21,8 +26,11 @@ export function register(params: RegisterParams): Promise<AuthResult> {
 }
 
 /** 发送短信验证码 */
-export function sendSmsCode(phone: string): Promise<void> {
-  return post("/api/auth/sms-code", { phone }, { noAuth: true });
+export function sendSmsCode(phone: string, scene: SmsCodeScene): Promise<void> {
+  return post("/api/auth/sms-code", { phone, scene }, {
+    noAuth: true,
+    showError: false,
+  });
 }
 
 /** 退出登录 */

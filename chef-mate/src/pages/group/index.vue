@@ -95,6 +95,19 @@
       @confirm="page.confirmDisbandGroup"
     />
 
+    <GroupJoinWelcomePopup
+      :show="page.showJoinWelcomePopup"
+      :group-name="page.joinedGroupSnapshot?.name || ''"
+      :members="page.joinedGroupSnapshot?.members || []"
+      :current-user-id="page.currentUserId"
+      @update:show="
+        $event
+          ? (page.showJoinWelcomePopup = $event)
+          : page.handleDismissJoinWelcomePopup()
+      "
+      @enter="page.handleEnterKitchenJourney"
+    />
+
     <up-toast ref="uToastRef"></up-toast>
   </CmPageShell>
 </template>
@@ -107,6 +120,7 @@ import CurrentGroupCard from "./components/CurrentGroupCard.vue";
 import GroupDangerZone from "./components/GroupDangerZone.vue";
 import GroupEmptyState from "./components/GroupEmptyState.vue";
 import GroupJoinCreatePanel from "./components/GroupJoinCreatePanel.vue";
+import GroupJoinWelcomePopup from "./components/GroupJoinWelcomePopup.vue";
 import GroupSwitcherSection from "./components/GroupSwitcherSection.vue";
 import MemberListSection from "./components/MemberListSection.vue";
 import { groupRoleLabels, groupRoleTones } from "./constants/group";

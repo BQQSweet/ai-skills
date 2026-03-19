@@ -4,7 +4,7 @@
       <view class="relative cursor-pointer" @click="handleProfileClick">
         <image
           class="h-12 w-12 rounded-full border-2 border-white shadow-sm bg-gray-100 dark:border-[#2d2418]"
-          :src="avatarUrl || defaultAvatar"
+          :src="resolvedAvatarUrl"
           mode="aspectFill"
         />
         <view
@@ -42,7 +42,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import dayjs from "dayjs";
-import defaultAvatar from "@/static/svgs/default_avatar.svg";
+import { resolveAvatarUrl } from "@/utils/avatar";
 
 const props = withDefaults(
   defineProps<{
@@ -56,6 +56,8 @@ const props = withDefaults(
     unreadCount: 1,
   },
 );
+
+const resolvedAvatarUrl = computed(() => resolveAvatarUrl(props.avatarUrl));
 
 const greeting = computed(() => {
   const hour = dayjs().hour();

@@ -1,36 +1,33 @@
 import { debounce } from "lodash";
-import { onShow } from "@dcloudio/uni-app";
-import { onUnmounted, reactive, ref } from "vue";
-import { useConfirmDialog } from "@/composables/useConfirmDialog";
-import * as authService from "@/services/auth";
+import { onUnmounted, reactive, ref, type Ref } from "vue";
 import { useUserStore } from "@/stores/user";
+import { getRequestErrorMessage, showToast, type ToastRefLike, useSmsCode } from "./useSmsCode";
 
-export function useLoginFlow(uToastRef: { value?: any }) {
+interface UseLoginFlowOptions {
+  toastRef: ToastRefLike;
+  agreedToTerms: Ref<boolean>;
+  redirectAfterAuth: () => void;
+}
+
+const PHONE_REGEXP = /^1[3-9]\d{9}$/;
+const CODE_REGEXP = /^\d{6}$/;
+
+export function useLoginFlow(options: UseLoginFlowOptions) {
   const userStore = useUserStore();
-  const autoRegisterDialog = useConfirmDialog();
-
-  onShow(() => {
-    if (userStore.isLoggedIn) {
-      if (userStore.currentGroupId) {
-        uni.switchTab({ url: "/pages/index/index" });
-      } else {
-        uni.reLaunch({ url: "/pages/guide/index" });
-      }
-    }
-  });
-
   const loading = ref(false);
-  const smsSending = ref(false);
-  const codeCooldown = ref(0);
-  const codeCooldownTimer = ref<ReturnType<typeof setInterval> | null>(null);
-  const agreedToTerms = ref(true);
   const loginType = ref<"code" | "password">("code");
 
   const form = reactive({
-    phone: "17760385717",
-    code: "123456",
+    phone: "",
+    code: "",
     account: "",
     password: "",
+  });
+
+  const { smsSending, codeCooldown, handleSendCode } = useSmsCode({
+    getPhone: () => form.phone,
+    scene: "login",
+    toastRef: options.toastRef,
   });
 
   function toggleLoginType() {
@@ -41,7 +38,7 @@ export function useLoginFlow(uToastRef: { value?: any }) {
     if (
       loginType.value === "password" &&
       !form.phone &&
-      /^1[3-9]\d{9}$/.test(form.account.trim())
+      PHONE_REGEXP.test(form.account.trim())
     ) {
       form.phone = form.account.trim();
     }
@@ -49,136 +46,11 @@ export function useLoginFlow(uToastRef: { value?: any }) {
     loginType.value = loginType.value === "code" ? "password" : "code";
   }
 
-  function startCodeCooldown() {
-    codeCooldown.value = 60;
-
-    if (codeCooldownTimer.value) {
-      clearInterval(codeCooldownTimer.value);
-    }
-
-    codeCooldownTimer.value = setInterval(() => {
-      codeCooldown.value--;
-      if (codeCooldown.value <= 0 && codeCooldownTimer.value) {
-        clearInterval(codeCooldownTimer.value);
-        codeCooldownTimer.value = null;
-      }
-    }, 1000);
-  }
-
-  async function sendCodeRequest() {
-    if (smsSending.value || codeCooldown.value > 0) return;
-
-    if (!form.phone || form.phone.length !== 11) {
-      uToastRef.value?.show({
-        type: "error",
-        message: "请输入正确的手机号",
-      });
-      return;
-    }
-
-    try {
-      smsSending.value = true;
-      await authService.sendSmsCode(form.phone);
-      uToastRef.value?.show({
-        type: "success",
-        message: "验证码已发送",
-      });
-      startCodeCooldown();
-    } finally {
-      smsSending.value = false;
-    }
-  }
-
-  const debouncedSendCode = debounce(sendCodeRequest, 300, {
-    leading: true,
-    trailing: false,
-  });
-
-  function handleSendCode() {
-    debouncedSendCode();
-  }
-
-  function toggleTerms() {
-    agreedToTerms.value = !agreedToTerms.value;
-  }
-
-  function openAgreement() {
-    uToastRef.value?.show({
-      type: "default",
-      message: "用户协议",
-    });
-  }
-
-  function openPrivacy() {
-    uToastRef.value?.show({
-      type: "default",
-      message: "隐私保护指引",
-    });
-  }
-
-  function handleWechatLogin() {
-    uToastRef.value?.show({
-      type: "default",
-      message: "微信登录开发中",
-    });
-  }
-
-  function getErrorMessage(err: any) {
-    if (typeof err?.msg === "string") return err.msg;
-    if (typeof err?.message === "string") return err.message;
-    return "登录失败，请稍后重试";
-  }
-
-  function redirectAfterLogin() {
-    setTimeout(() => {
-      if (userStore.currentGroupId) {
-        uni.reLaunch({ url: "/pages/index/index" });
-      } else {
-        uni.reLaunch({ url: "/pages/guide/index" });
-      }
-    }, 1000);
-  }
-
-  async function promptAutoRegister(account: string, password: string) {
-    const confirm = await autoRegisterDialog.openConfirm({
-      title: "账号未注册",
-      description: `手机号 ${account} 尚未注册，是否自动创建账号并登录？`,
-      confirmText: "自动注册",
-      cancelText: "取消",
-      iconName: "person_add",
-    });
-
-    if (!confirm) return;
-
-    loading.value = true;
-    try {
-      await userStore.register({
-        phone: account,
-        password,
-      });
-      uToastRef.value?.show({
-        type: "success",
-        message: "注册并登录成功",
-      });
-      redirectAfterLogin();
-    } catch (err: any) {
-      uToastRef.value?.show({
-        type: "error",
-        message: getErrorMessage(err),
-      });
-    } finally {
-      loading.value = false;
-    }
-  }
-
   async function handleSubmit() {
     if (loading.value) return;
 
-    if (!agreedToTerms.value) {
-      uToastRef.value?.show({
-        type: "error",
-        message: "请先阅读并同意用户协议和隐私保护指引",
-      });
+    if (!options.agreedToTerms.value) {
+      showToast(options.toastRef, "error", "请先阅读并同意用户协议和隐私保护指引");
       return;
     }
 
@@ -189,23 +61,29 @@ export function useLoginFlow(uToastRef: { value?: any }) {
     const password = form.password.trim();
 
     if (loginType.value === "code") {
-      if (!phone || !code) {
-        uToastRef.value?.show({
-          type: "error",
-          message: "请填写完整信息",
-        });
+      if (!PHONE_REGEXP.test(phone)) {
+        showToast(options.toastRef, "error", "请输入正确的手机号");
         return;
       }
+
+      if (!CODE_REGEXP.test(code)) {
+        showToast(options.toastRef, "error", "请输入 6 位短信验证码");
+        return;
+      }
+
       payload.phone = phone;
       payload.code = code;
     } else {
-      if (!account || !password) {
-        uToastRef.value?.show({
-          type: "error",
-          message: "请填写完整信息",
-        });
+      if (!PHONE_REGEXP.test(account)) {
+        showToast(options.toastRef, "error", "请输入正确的手机号");
         return;
       }
+
+      if (password.length < 6 || password.length > 32) {
+        showToast(options.toastRef, "error", "请输入 6-32 位密码");
+        return;
+      }
+
       payload.account = account;
       payload.password = password;
     }
@@ -213,23 +91,10 @@ export function useLoginFlow(uToastRef: { value?: any }) {
     loading.value = true;
     try {
       await userStore.login(payload);
-      uToastRef.value?.show({
-        type: "success",
-        message: "登录成功",
-      });
-      redirectAfterLogin();
+      showToast(options.toastRef, "success", "登录成功");
+      options.redirectAfterAuth();
     } catch (err: any) {
-      const message = getErrorMessage(err);
-
-      if (loginType.value === "password" && message === "该账号未注册") {
-        await promptAutoRegister(account, password);
-        return;
-      }
-
-      uToastRef.value?.show({
-        type: "error",
-        message,
-      });
+      showToast(options.toastRef, "error", getRequestErrorMessage(err, "登录失败，请稍后重试"));
     } finally {
       loading.value = false;
     }
@@ -241,32 +106,21 @@ export function useLoginFlow(uToastRef: { value?: any }) {
   });
 
   function onSubmit() {
-    debouncedHandleSubmit();
+    void debouncedHandleSubmit();
   }
 
   onUnmounted(() => {
-    debouncedSendCode.cancel();
     debouncedHandleSubmit.cancel();
-    if (codeCooldownTimer.value) {
-      clearInterval(codeCooldownTimer.value);
-      codeCooldownTimer.value = null;
-    }
   });
 
   return {
-    autoRegisterDialog,
     loading,
     smsSending,
     codeCooldown,
-    agreedToTerms,
     loginType,
     form,
     handleSendCode,
     toggleLoginType,
-    toggleTerms,
-    openAgreement,
-    openPrivacy,
-    handleWechatLogin,
     onSubmit,
   };
 }

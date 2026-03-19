@@ -374,17 +374,17 @@ export class GroupGuard implements CanActivate {
 
 | 方法 | 路径                 | 描述           | 请求参数                  | 响应                          |
 | ---- | -------------------- | -------------- | ------------------------- | ----------------------------- |
-| POST | `/api/auth/register` | 手机号注册     | `{phone, password, code}` | `{token, user}`               |
-| POST | `/api/auth/login`    | 登录           | `{phone, password}`       | `{token, refreshToken, user}` |
+| POST | `/api/auth/register` | 手机号注册     | `{phone, code, password, nickname?}` | `{token, refreshToken, user}` |
+| POST | `/api/auth/login`    | 登录           | `{type, phone?, code?, account?, password?}` | `{token, refreshToken, user}` |
 | POST | `/api/auth/refresh`  | 刷新 Token     | `{refreshToken}`          | `{token, refreshToken}`       |
-| POST | `/api/auth/sms/send` | 发送短信验证码 | `{phone}`                 | `{expiresIn}`                 |
+| POST | `/api/auth/sms-code` | 发送短信验证码 | `{phone, scene}`          | `{expiresIn}`                 |
 
 #### 核心业务逻辑
 
-1. 注册：校验短信验证码 → bcrypt 加密密码 → 创建用户 → 签发 JWT
-2. 登录：查询用户 → bcrypt 验证密码 → 签发 accessToken(2h) + refreshToken(7d)
+1. 注册：校验注册短信验证码 → bcrypt 加密密码 → 创建用户 → 签发 JWT
+2. 登录：支持密码登录与验证码登录；验证码登录仅允许已注册账号使用
 3. Token 刷新：验证 refreshToken → 签发新的 token 对
-4. 短信验证码存 Redis，key=`sms:{phone}`，TTL=5分钟，限流每分钟 1 次
+4. 短信验证码存 Redis，按场景区分 key，TTL=5分钟，限流每分钟 1 次
 
 ### 5.2 模块 2：家庭组管理
 

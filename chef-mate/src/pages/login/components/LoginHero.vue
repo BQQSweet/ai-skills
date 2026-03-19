@@ -18,12 +18,29 @@
       <view
         class="text-md flex items-center text-notoserifsc font-medium text-text-muted tracking-wide"
       >
-        让做饭
+        {{ subtitle }}
         <view
           class="w-1 h-1 mx-1 rounded-full bg-primary shadow-[0_0_8px_rgba(var(--primary),0.8)] animate-pulse"
         ></view>
-        变简单
+        {{ description }}
       </view>
     </view>
   </view>
 </template>
+
+<script setup lang="ts">
+import { computed } from "vue";
+import type { AuthMode } from "@/types/user";
+
+const props = defineProps<{
+  authMode: AuthMode;
+}>();
+
+const subtitle = computed(() =>
+  props.authMode === "login" ? "让做饭" : "注册账号",
+);
+
+const description = computed(() =>
+  props.authMode === "login" ? "变简单" : "开启家庭厨房协作",
+);
+</script>

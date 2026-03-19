@@ -1,6 +1,6 @@
 <template>
   <view class="flex-1 flex flex-col justify-end items-center pt-8 pb-4 gap-8">
-    <view class="w-full flex flex-col items-center gap-4">
+    <view v-if="authMode === 'login'" class="w-full flex flex-col items-center gap-4">
       <view class="relative w-full flex items-center justify-center opacity-40">
         <view class="flex-1 h-px bg-gray-300"></view>
         <text class="px-4 text-xs text-text-muted bg-background-light">
@@ -14,6 +14,16 @@
       >
         <CmIcon name="weixin" is-svg size="48rpx"></CmIcon>
       </view>
+    </view>
+
+    <view
+      v-else
+      class="flex items-center gap-2 text-sm text-text-muted"
+    >
+      <text>已经有账号了？</text>
+      <text class="font-bold text-primary" @click="$emit('switch-auth-mode')">
+        返回登录
+      </text>
     </view>
 
     <view
@@ -55,14 +65,17 @@
 
 <script setup lang="ts">
 import CmIcon from "@/components/CmIcon/CmIcon.vue";
+import type { AuthMode } from "@/types/user";
 
 defineProps<{
   agreedToTerms: boolean;
+  authMode: AuthMode;
 }>();
 
 defineEmits<{
   "wechat-login": [];
   "toggle-terms": [];
+  "switch-auth-mode": [];
   agreement: [];
   privacy: [];
 }>();

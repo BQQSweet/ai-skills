@@ -43,7 +43,7 @@
           >
             <image
               class="size-11 rounded-full object-cover ring-2 ring-white/60 shadow-md dark:ring-[#2d2418]/60"
-              :src="item.avatarUrl || 'https://via.placeholder.com/40'"
+              :src="resolveAvatarUrl(item.avatarUrl)"
               mode="aspectFill"
             />
             <view
@@ -103,6 +103,7 @@ import { computed, watch } from "vue";
 import { useFeedStore } from "@/stores/feed";
 import { useGroupStore } from "@/stores/group";
 import type { FeedItem, FeedActionType } from "@/types/feed";
+import { resolveAvatarUrl } from "@/utils/avatar";
 
 const feedStore = useFeedStore();
 const groupStore = useGroupStore();

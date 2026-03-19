@@ -13,7 +13,7 @@
       >
         <image
           class="w-12 h-12 rounded-full bg-slate-100 border border-white shadow-sm"
-          :src="member.avatarUrl || defaultAvatar"
+          :src="resolveAvatarUrl(member.avatarUrl)"
           mode="aspectFill"
         />
         <view class="flex-1 min-w-0">
@@ -36,8 +36,8 @@
 
 <script setup lang="ts">
 import CmTag from "@/components/CmTag/CmTag.vue";
-import defaultAvatar from "@/static/svgs/default_avatar.svg";
 import type { GroupMemberInfo, GroupRole } from "@/types/group";
+import { resolveAvatarUrl } from "@/utils/avatar";
 
 defineProps<{
   members: GroupMemberInfo[];

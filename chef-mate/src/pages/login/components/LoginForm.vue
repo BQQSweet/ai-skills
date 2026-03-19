@@ -19,7 +19,7 @@
       >
         <template #suffix>
           <button
-            class="absolute right-2 top-2 bottom-2 flex items-center justify-center px-4 bg-primary/10 text-primary text-sm font-bold border-none rounded-xl min-w-[100px] transition-colors active:bg-primary/20 disabled:opacity-50 disabled:bg-primary/5 after:hidden"
+            class="absolute right-2 top-2 bottom-2 flex items-center justify-center px-4 bg-primary/10 text-primary text-sm font-bold border-none rounded-sm min-w-[100px] transition-colors active:bg-primary/20 disabled:opacity-50 disabled:bg-primary/5 after:hidden"
             :disabled="codeCooldown > 0 || smsSending"
             @click="$emit('send-code')"
           >
@@ -40,6 +40,7 @@
         v-model="model.account"
         icon="person"
         placeholder="请输入手机号"
+        maxlength="11"
       />
 
       <CmInput
@@ -47,6 +48,7 @@
         icon="key"
         password
         placeholder="请输入密码"
+        maxlength="32"
       />
     </template>
 

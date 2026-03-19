@@ -175,7 +175,7 @@
 
 说明：
 
-- 验证码发送、登录提交、自动注册、冷却倒计时已收敛到 `useLoginFlow.ts`
+- 登录页认证逻辑已拆分为 `useAuthPage.ts`、`useLoginFlow.ts`、`useRegisterFlow.ts` 与 `useSmsCode.ts`
 - 品牌区、表单区、页脚区已拆为局部组件
 
 ### `profile`

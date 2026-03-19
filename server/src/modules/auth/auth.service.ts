@@ -8,7 +8,17 @@ import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '@/common/prisma.service';
-import { SendSmsDto, LoginDto, LoginType, RegisterDto } from './dto/auth.dto';
+import {
+  SendSmsDto,
+  LoginDto,
+  LoginType,
+  RegisterDto,
+  SmsCodeScene,
+} from './dto/auth.dto';
+import { pickRandomDefaultAvatarPath } from './default-avatar-library';
+
+const SMS_CODE_TTL_SECONDS = 300;
+const SMS_CODE_COOLDOWN_THRESHOLD_SECONDS = 240;
 
 /**
  * AuthService 负责认证领域的核心业务：
@@ -40,23 +50,27 @@ export class AuthService {
    * 生成并发送短信验证码 (模拟)
    */
   async sendSmsCode(dto: SendSmsDto): Promise<void> {
-    const { phone } = dto;
+    const { phone, scene } = dto;
+    await this.ensureSmsSceneAvailability(scene, phone);
+
+    const codeKey = this.getSmsCodeKey(scene, phone);
     // 检查是否已经在冷却中
-    const ttl = await this.redisClient.ttl(`auth:code:${phone}`);
-    if (ttl > 240) {
+    const ttl = await this.redisClient.ttl(codeKey);
+    if (ttl > SMS_CODE_COOLDOWN_THRESHOLD_SECONDS) {
       // 限制一分钟内只能发送一次（5分钟有效期，剩下 > 4分钟说明还没过一分钟）
       throw new BadRequestException('验证码发送过于频繁，请稍后再试');
     }
 
     // 随机生成 6 位验证码
-    // const code = Math.floor(100000 + Math.random() * 900000).toString();
-    const code = '123456'; // 目前为测试方便，写死为 123456
+    const code = this.generateSmsCode();
 
     // 将验证码存入 Redis，有效期 5 分钟
-    await this.redisClient.setex(`auth:code:${phone}`, 300, code);
+    await this.redisClient.setex(codeKey, SMS_CODE_TTL_SECONDS, code);
 
     // TODO: 真实对接短信平台发送代码
-    console.log(`[SMS Simulation] Sending code ${code} to phone ${phone}`);
+    console.log(
+      `[SMS Simulation] Sending ${scene} code ${code} to phone ${phone}`,
+    );
   }
 
   /**
@@ -109,8 +123,11 @@ export class AuthService {
    */
   async register(dto: RegisterDto): Promise<any> {
     const phone = dto.phone.trim();
+    const code = dto.code.trim();
     const password = dto.password.trim();
     const nickname = dto.nickname?.trim() || `CM_${phone.slice(-4)}`;
+
+    await this.consumeSmsCode(SmsCodeScene.REGISTER, phone, code);
 
     const existing = await this.prisma.user.findUnique({
       where: { phone },
@@ -122,11 +139,13 @@ export class AuthService {
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
+    const avatarUrl = pickRandomDefaultAvatarPath();
     const user = await this.prisma.user.create({
       data: {
         phone,
         password_hash: passwordHash,
         nickname,
+        avatar_url: avatarUrl,
       },
     });
 
@@ -137,7 +156,7 @@ export class AuthService {
    * 构造前端真正需要的认证返回值。
    *
    * 这里把“签 token”和“补充用户所在家庭组信息”收口到一个地方，
-   * 这样登录、注册、验证码静默注册等入口都能复用同一套返回格式。
+   * 这样登录、注册等入口都能复用同一套返回格式。
    */
   private async buildAuthResult(user: {
     id: string;
@@ -204,39 +223,23 @@ export class AuthService {
   }
 
   /**
-   * 验证验证码并获取/创建用户
+   * 验证验证码并获取已存在用户
    *
    * 流程：
-   * 1. 去 Redis 校验验证码
-   * 2. 验证成功后删除验证码，避免重复使用
-   * 3. 查找手机号对应用户
-   * 4. 如果用户不存在，则自动创建一个默认账号（静默注册）
+   * 1. 检查手机号对应用户是否存在
+   * 2. 去 Redis 校验登录验证码
+   * 3. 验证成功后删除验证码，避免重复使用
    */
   private async verifyCodeAndGetUser(phone: string, code: string) {
-    const storedCode = await this.redisClient.get(`auth:code:${phone}`);
-    if (!storedCode || storedCode !== code) {
-      throw new BadRequestException('验证码不正确或已过期');
-    }
-
-    // 验证成功，删除验证码
-    await this.redisClient.del(`auth:code:${phone}`);
-
-    // 查找用户，如果没有则静默注册
-    let user = await this.prisma.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { phone },
     });
 
     if (!user) {
-      // 生成默认密码、昵称等
-      const defaultPassword = await bcrypt.hash('123456', 10);
-      user = await this.prisma.user.create({
-        data: {
-          phone,
-          password_hash: defaultPassword,
-          nickname: `CM_${phone.slice(-4)}`,
-        },
-      });
+      throw new UnauthorizedException('该账号未注册');
     }
+
+    await this.consumeSmsCode(SmsCodeScene.LOGIN, phone, code);
 
     return user;
   }
@@ -262,5 +265,55 @@ export class AuthService {
     }
 
     return user;
+  }
+
+  private getSmsCodeKey(scene: SmsCodeScene, phone: string) {
+    return `auth:code:${scene}:${phone}`;
+  }
+
+  private generateSmsCode() {
+    const nodeEnv =
+      this.configService.get<string>('app.nodeEnv') ||
+      process.env.NODE_ENV ||
+      'development';
+
+    if (nodeEnv !== 'production') {
+      return '123456';
+    }
+
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  }
+
+  private async ensureSmsSceneAvailability(
+    scene: SmsCodeScene,
+    phone: string,
+  ) {
+    const existing = await this.prisma.user.findUnique({
+      where: { phone },
+      select: { id: true },
+    });
+
+    if (scene === SmsCodeScene.REGISTER && existing) {
+      throw new BadRequestException('该账号已注册，请直接登录');
+    }
+
+    if (scene === SmsCodeScene.LOGIN && !existing) {
+      throw new BadRequestException('该账号未注册，请先注册');
+    }
+  }
+
+  private async consumeSmsCode(
+    scene: SmsCodeScene,
+    phone: string,
+    code: string,
+  ) {
+    const codeKey = this.getSmsCodeKey(scene, phone);
+    const storedCode = await this.redisClient.get(codeKey);
+
+    if (!storedCode || storedCode !== code) {
+      throw new BadRequestException('验证码不正确或已过期');
+    }
+
+    await this.redisClient.del(codeKey);
   }
 }
