@@ -109,7 +109,8 @@ function finalizeClose() {
   isRenderedVisible.value = false;
   emit("update:show", false);
   emit("close");
-  resetDragState();
+  syncBackgroundScrollLock();
+  syncViewportTracking();
 }
 
 function getTouchClientY(event: any) {
@@ -276,7 +277,6 @@ function syncViewportTracking() {
     return;
   }
 
-  resetDragState();
   stopViewportTracking();
 }
 

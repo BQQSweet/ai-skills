@@ -15,15 +15,21 @@
         >
           <view class="min-w-0 flex-1">
             <view class="flex items-center gap-2 text-primary">
-              <text class="material-symbols-outlined text-[22px]">restaurant_menu</text>
+              <text class="material-symbols-outlined text-[22px]"
+                >restaurant_menu</text
+              >
               <text class="text-sm font-bold tracking-[0.24em] text-primary/80">
                 SWITCH LIST
               </text>
             </view>
-            <text class="mt-3 block text-[22px] font-black leading-tight text-[#1d160c] dark:text-white">
+            <text
+              class="mt-3 block text-[22px] font-black leading-tight text-[#1d160c] dark:text-white"
+            >
               切换采购清单
             </text>
-            <text class="mt-2 block text-sm font-medium text-[#a17c45] dark:text-orange-200/70">
+            <text
+              class="mt-2 block text-sm font-medium text-[#a17c45] dark:text-orange-200/70"
+            >
               快速切换当前家庭组里的采购清单
             </text>
           </view>
@@ -46,14 +52,16 @@
           class="flex items-center gap-4 rounded-[28rpx] border px-4 py-4 transition-all"
           :class="
             item.isActive
-              ? 'border-primary/25 bg-primary/5 shadow-[0_16px_36px_-24px_rgba(255,157,10,0.6)]'
-              : 'border-transparent bg-white shadow-soft dark:bg-white/5'
+              ? 'border-primary/25 bg-primary/5 shadow-[0_16px_24px_-24px_rgba(255,157,10,0.6)]'
+              : 'border-primary/20 bg-primary/5 shadow-[0_10px_24px_-20px_rgba(109,76,44,0.18)] dark:border-white/10 dark:bg-white/5'
           "
           @click="emit('select', item.id)"
         >
           <view class="min-w-0 flex-1">
             <view class="flex items-center gap-2">
-              <text class="truncate text-[16px] font-black text-[#1d160c] dark:text-white">
+              <text
+                class="truncate text-[16px] font-black text-[#1d160c] dark:text-white"
+              >
                 {{ item.title }}
               </text>
               <CmTag
@@ -64,7 +72,9 @@
                 {{ item.sourceLabel }}
               </CmTag>
             </view>
-            <text class="mt-2 block text-sm font-medium text-[#a17c45] dark:text-orange-200/70">
+            <text
+              class="mt-2 block text-sm font-medium text-[#8b6b44] dark:text-orange-200/70"
+            >
               {{ item.statusLabel }}
             </text>
           </view>
@@ -74,7 +84,7 @@
             :class="
               item.isActive
                 ? 'border-primary bg-primary text-white'
-                : 'border-slate-200 text-slate-300 dark:border-white/10 dark:text-white/20'
+                : 'border-[#efe2d2] bg-white/75 text-[#b6a389] dark:border-white/10 dark:bg-white/5 dark:text-white/20'
             "
           >
             <text class="material-symbols-outlined text-[18px]">check</text>
