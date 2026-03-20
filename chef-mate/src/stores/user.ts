@@ -18,6 +18,7 @@ import type {
   UserInfo,
   DietaryPreferences,
   AuthResult,
+  RefreshTokenResult,
   RegisterParams,
 } from "@/types/user";
 
@@ -80,6 +81,12 @@ export const useUserStore = defineStore("user", () => {
     setToken(res.token);
     setRefreshToken(res.refreshToken);
     setStorage(STORAGE_KEYS.USER_INFO, JSON.stringify(normalizedUser));
+  }
+
+  function applyRefreshedTokens(res: RefreshTokenResult) {
+    token.value = res.token;
+    setToken(res.token);
+    setRefreshToken(res.refreshToken);
   }
 
   async function syncGroupsFromAuthResult(res: AuthResult) {
@@ -161,6 +168,7 @@ export const useUserStore = defineStore("user", () => {
     userId,
     nickname,
     dietaryPreferences,
+    applyRefreshedTokens,
     login,
     register,
     logout,

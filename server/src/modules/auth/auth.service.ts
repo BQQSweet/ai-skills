@@ -13,12 +13,34 @@ import {
   LoginDto,
   LoginType,
   RegisterDto,
+  RefreshTokenDto,
   SmsCodeScene,
 } from './dto/auth.dto';
 import { pickRandomDefaultAvatarPath } from './default-avatar-library';
 
 const SMS_CODE_TTL_SECONDS = 300;
 const SMS_CODE_COOLDOWN_THRESHOLD_SECONDS = 240;
+const ACCESS_TOKEN_TYPE = 'access';
+const REFRESH_TOKEN_TYPE = 'refresh';
+
+type AccessTokenPayload = {
+  sub: string;
+  phone: string;
+  role: string;
+  tokenType: typeof ACCESS_TOKEN_TYPE;
+};
+
+type RefreshTokenPayload = {
+  sub: string;
+  tokenType: typeof REFRESH_TOKEN_TYPE;
+};
+
+type JwtPayload = {
+  sub?: string;
+  phone?: string;
+  role?: string;
+  tokenType?: typeof ACCESS_TOKEN_TYPE | typeof REFRESH_TOKEN_TYPE;
+};
 
 /**
  * AuthService 负责认证领域的核心业务：
@@ -152,6 +174,24 @@ export class AuthService {
     return this.buildAuthResult(user);
   }
 
+  async refreshToken(dto: RefreshTokenDto) {
+    const payload = await this.verifyRefreshToken(dto.refreshToken);
+    const user = await this.prisma.user.findUnique({
+      where: { id: payload.sub },
+      select: {
+        id: true,
+        phone: true,
+        role: true,
+      },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('用户不存在或已失效');
+    }
+
+    return this.issueTokenPair(user);
+  }
+
   /**
    * 构造前端真正需要的认证返回值。
    *
@@ -167,17 +207,7 @@ export class AuthService {
     preferences: any;
     created_at: Date;
   }) {
-    // access token 用于日常接口鉴权；refresh token 预留给未来刷新登录态使用
-    const payload = { sub: user.id, phone: user.phone, role: user.role };
-    const token = await this.jwtService.signAsync(payload);
-    const refreshToken = await this.jwtService.signAsync(
-      { sub: user.id },
-      {
-        expiresIn: this.configService.get<string>(
-          'jwt.refreshExpiresIn',
-        ) as any,
-      },
-    );
+    const { token, refreshToken } = await this.issueTokenPair(user);
 
     // 登录成功后顺手把用户所属家庭组一起返回，前端首页/切组场景可以直接使用
     const groupMemberships = await this.prisma.groupMember.findMany({
@@ -212,6 +242,63 @@ export class AuthService {
         role: m.role,
       })),
     };
+  }
+
+  private async issueTokenPair(user: {
+    id: string;
+    phone: string;
+    role: string;
+  }) {
+    const accessPayload: AccessTokenPayload = {
+      sub: user.id,
+      phone: user.phone,
+      role: user.role,
+      tokenType: ACCESS_TOKEN_TYPE,
+    };
+    const refreshPayload: RefreshTokenPayload = {
+      sub: user.id,
+      tokenType: REFRESH_TOKEN_TYPE,
+    };
+
+    const token = await this.jwtService.signAsync(accessPayload);
+    const refreshToken = await this.jwtService.signAsync(refreshPayload, {
+      expiresIn: this.configService.get<string>('jwt.refreshExpiresIn') as any,
+    });
+
+    return { token, refreshToken };
+  }
+
+  private async verifyRefreshToken(token: string) {
+    let payload: JwtPayload;
+
+    try {
+      payload = await this.jwtService.verifyAsync<JwtPayload>(token, {
+        secret: this.configService.get<string>('jwt.secret'),
+      });
+    } catch {
+      throw new UnauthorizedException('刷新凭证已过期或无效');
+    }
+
+    if (!this.isRefreshTokenPayload(payload)) {
+      throw new UnauthorizedException('刷新凭证类型不正确');
+    }
+
+    return { sub: payload.sub };
+  }
+
+  private isRefreshTokenPayload(payload: JwtPayload): payload is JwtPayload & {
+    sub: string;
+  } {
+    if (payload.tokenType === REFRESH_TOKEN_TYPE) {
+      return typeof payload.sub === 'string';
+    }
+
+    return (
+      !payload.tokenType &&
+      typeof payload.sub === 'string' &&
+      typeof payload.phone === 'undefined' &&
+      typeof payload.role === 'undefined'
+    );
   }
 
   /**

@@ -1,4 +1,7 @@
-import { InternalServerErrorException } from '@nestjs/common';
+import {
+  InternalServerErrorException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
@@ -36,6 +39,7 @@ describe('AuthService', () => {
 
   const jwtService = {
     signAsync: jest.fn(),
+    verifyAsync: jest.fn(),
   };
 
   const configService = {
@@ -46,6 +50,10 @@ describe('AuthService', () => {
 
       if (key === 'jwt.refreshExpiresIn') {
         return '7d';
+      }
+
+      if (key === 'jwt.secret') {
+        return 'test-secret';
       }
 
       return undefined;
@@ -67,9 +75,15 @@ describe('AuthService', () => {
     mockRedisClient.del.mockResolvedValue(1);
     prisma.user.findUnique.mockResolvedValue(null);
     prisma.groupMember.findMany.mockResolvedValue([]);
-    jwtService.signAsync
-      .mockResolvedValueOnce('access-token')
-      .mockResolvedValueOnce('refresh-token');
+    jwtService.signAsync.mockImplementation((payload: { tokenType?: string }) =>
+      Promise.resolve(
+        payload?.tokenType === 'refresh' ? 'refresh-token' : 'access-token',
+      ),
+    );
+    jwtService.verifyAsync.mockResolvedValue({
+      sub: 'user-1',
+      tokenType: 'refresh',
+    });
     mockBcryptHash.mockResolvedValue('hashed-password');
   });
 
@@ -102,6 +116,22 @@ describe('AuthService', () => {
         avatar_url: '/uploads/default-avatars/chef-avatar-03.svg',
       },
     });
+    expect(jwtService.signAsync).toHaveBeenNthCalledWith(1, {
+      sub: 'user-1',
+      phone: '13800138000',
+      role: 'user',
+      tokenType: 'access',
+    });
+    expect(jwtService.signAsync).toHaveBeenNthCalledWith(
+      2,
+      {
+        sub: 'user-1',
+        tokenType: 'refresh',
+      },
+      {
+        expiresIn: '7d',
+      },
+    );
     expect(result.user.avatarUrl).toBe(
       '/uploads/default-avatars/chef-avatar-03.svg',
     );
@@ -126,5 +156,86 @@ describe('AuthService', () => {
     ).rejects.toThrow('默认头像库未配置，请联系管理员');
 
     expect(prisma.user.create).not.toHaveBeenCalled();
+  });
+
+  it('refreshes token pair with a valid refresh token', async () => {
+    prisma.user.findUnique.mockResolvedValue({
+      id: 'user-1',
+      phone: '13800138000',
+      role: 'user',
+    });
+
+    const result = await service.refreshToken({
+      refreshToken: 'valid-refresh-token',
+    });
+
+    expect(jwtService.verifyAsync).toHaveBeenCalledWith('valid-refresh-token', {
+      secret: 'test-secret',
+    });
+    expect(jwtService.signAsync).toHaveBeenNthCalledWith(1, {
+      sub: 'user-1',
+      phone: '13800138000',
+      role: 'user',
+      tokenType: 'access',
+    });
+    expect(jwtService.signAsync).toHaveBeenNthCalledWith(
+      2,
+      {
+        sub: 'user-1',
+        tokenType: 'refresh',
+      },
+      {
+        expiresIn: '7d',
+      },
+    );
+    expect(result).toEqual({
+      token: 'access-token',
+      refreshToken: 'refresh-token',
+    });
+  });
+
+  it('accepts legacy refresh token payloads without tokenType', async () => {
+    jwtService.verifyAsync.mockResolvedValue({
+      sub: 'user-1',
+    });
+    prisma.user.findUnique.mockResolvedValue({
+      id: 'user-1',
+      phone: '13800138000',
+      role: 'user',
+    });
+
+    const result = await service.refreshToken({
+      refreshToken: 'legacy-refresh-token',
+    });
+
+    expect(result).toEqual({
+      token: 'access-token',
+      refreshToken: 'refresh-token',
+    });
+  });
+
+  it('rejects access tokens passed to refresh', async () => {
+    jwtService.verifyAsync.mockResolvedValue({
+      sub: 'user-1',
+      phone: '13800138000',
+      role: 'user',
+      tokenType: 'access',
+    });
+
+    await expect(
+      service.refreshToken({
+        refreshToken: 'access-token',
+      }),
+    ).rejects.toThrow(new UnauthorizedException('刷新凭证类型不正确'));
+  });
+
+  it('rejects invalid refresh tokens', async () => {
+    jwtService.verifyAsync.mockRejectedValue(new Error('jwt expired'));
+
+    await expect(
+      service.refreshToken({
+        refreshToken: 'expired-refresh-token',
+      }),
+    ).rejects.toThrow(new UnauthorizedException('刷新凭证已过期或无效'));
   });
 });

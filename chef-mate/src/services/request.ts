@@ -5,8 +5,6 @@
 import {
   getToken,
   getRefreshToken,
-  setToken,
-  setRefreshToken,
   clearAuth,
 } from "@/utils/storage";
 import { BASE_URL } from "@/utils/env";
@@ -23,6 +21,8 @@ interface RequestOptions {
   noAuth?: boolean;
   /** 是否自动展示业务错误提示 */
   showError?: boolean;
+  /** 内部标记：是否已经在本次请求上尝试过刷新 */
+  _hasRetriedAfterRefresh?: boolean;
 }
 
 type RequestConfig = Pick<RequestOptions, "header" | "noAuth" | "showError">;
@@ -65,34 +65,47 @@ async function handleAuthExpired(message = "登录已过期，请重新登录") 
   }, 800);
 }
 
-/** 刷新 Token */
-async function refreshTokenRequest(): Promise<string> {
+function shouldAttemptTokenRefresh(options: RequestOptions) {
+  return (
+    !options.noAuth &&
+    options.url !== "/api/auth/refresh" &&
+    !options._hasRetriedAfterRefresh
+  );
+}
+
+async function refreshTokenRequest(): Promise<void> {
   const refreshToken = getRefreshToken();
   if (!refreshToken) {
     throw new Error("No refresh token");
   }
 
-  const res = await new Promise<UniApp.RequestSuccessCallbackResult>(
-    (resolve, reject) => {
-      uni.request({
-        url: `${BASE_URL}/api/auth/refresh`,
-        method: "POST",
-        data: { refreshToken },
-        header: { "Content-Type": "application/json" },
-        success: resolve,
-        fail: reject,
-      });
-    },
-  );
+  const authService = await import("@/services/auth");
+  const { useUserStore } = await import("@/stores/user");
+  const result = await authService.refreshToken({ refreshToken });
+  useUserStore().applyRefreshedTokens(result);
+}
 
-  const data = res.data as ApiResponse<{ token: string; refreshToken: string }>;
-  if (data.code === 0) {
-    setToken(data.data.token);
-    setRefreshToken(data.data.refreshToken);
-    return data.data.token;
+async function retryRequestAfterRefresh<T>(options: RequestOptions) {
+  try {
+    if (!isRefreshing) {
+      isRefreshing = true;
+      refreshPromise = refreshTokenRequest().then(() => getToken());
+    }
+
+    await refreshPromise;
+    isRefreshing = false;
+    refreshPromise = null;
+
+    return request<T>({
+      ...options,
+      _hasRetriedAfterRefresh: true,
+    });
+  } catch {
+    isRefreshing = false;
+    refreshPromise = null;
+    await handleAuthExpired();
+    throw new Error("登录已过期，请重新登录");
   }
-
-  throw new Error("Token refresh failed");
 }
 
 /**
@@ -117,13 +130,23 @@ export function request<T = any>(options: RequestOptions): Promise<T> {
       data: options.data,
       header,
       success: async (res) => {
+        const data = res.data as ApiResponse<T>;
+
+        if (res.statusCode === 401 && shouldAttemptTokenRefresh(options)) {
+          try {
+            const retryResult = await retryRequestAfterRefresh<T>(options);
+            resolve(retryResult);
+          } catch {
+            reject(new Error("登录已过期，请重新登录"));
+          }
+          return;
+        }
+
         if (res.statusCode === 401 && !options.noAuth) {
           await handleAuthExpired();
           reject(new Error("登录已过期，请重新登录"));
           return;
         }
-
-        const data = res.data as ApiResponse<T>;
 
         if (data.code === 0) {
           resolve(data.data);
@@ -131,26 +154,19 @@ export function request<T = any>(options: RequestOptions): Promise<T> {
         }
 
         // Token 过期，尝试刷新
-        if (data.code === 1002 && !options.noAuth) {
+        if (data.code === 1002 && shouldAttemptTokenRefresh(options)) {
           try {
-            if (!isRefreshing) {
-              isRefreshing = true;
-              refreshPromise = refreshTokenRequest();
-            }
-
-            await refreshPromise;
-            isRefreshing = false;
-            refreshPromise = null;
-
-            // 用新 Token 重试原请求
-            const retryResult = await request<T>(options);
+            const retryResult = await retryRequestAfterRefresh<T>(options);
             resolve(retryResult);
           } catch {
-            isRefreshing = false;
-            refreshPromise = null;
-            await handleAuthExpired();
             reject(new Error("登录已过期，请重新登录"));
           }
+          return;
+        }
+
+        if (data.code === 1002 && !options.noAuth) {
+          await handleAuthExpired();
+          reject(new Error("登录已过期，请重新登录"));
           return;
         }
 

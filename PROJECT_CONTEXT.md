@@ -158,7 +158,7 @@ Behavioral conventions:
 
 - API base URL comes from `VITE_API_BASE_URL`
 - auth token is injected automatically in `src/services/request.ts`
-- if token expires, client clears auth and redirects to the login page
+- if the access token expires, client attempts refresh-token renewal first and only clears auth if refresh fails
 - some file upload flows use `uni.uploadFile` or `fetch` directly instead of the generic request wrapper
 
 Frontend prototype workflow:
