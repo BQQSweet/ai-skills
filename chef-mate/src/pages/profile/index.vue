@@ -1,14 +1,9 @@
 <template>
   <CmPageShell
     title="个人中心"
-    :background-class="
-      'relative flex min-h-screen w-full flex-col overflow-x-hidden bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100'
-    "
-    :header-class="
-      'z-20 bg-background-light/95 dark:bg-background-dark/95 px-4 pt-12 pb-2 backdrop-blur-lg'
-    "
+    :background-class="'relative flex min-h-screen w-full flex-col overflow-x-hidden bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100'"
+    :header-class="'z-20 bg-background-light/95 dark:bg-background-dark/95 px-4 pt-12 pb-2 backdrop-blur-lg'"
     :use-scroll-view="false"
-    :header-offset-class="'pt-[80px]'"
   >
     <template #left>
       <view class="h-10 w-10"></view>
@@ -75,7 +70,11 @@ import ProfileLogoutAction from "./components/ProfileLogoutAction.vue";
 import ProfileServiceSection from "./components/ProfileServiceSection.vue";
 import ProfileStatsSection from "./components/ProfileStatsSection.vue";
 import ProfileSummaryCard from "./components/ProfileSummaryCard.vue";
-import { profileKitchenCards, profileServiceItems, profileStats } from "./constants/profile";
+import {
+  profileKitchenCards,
+  profileServiceItems,
+  profileStats,
+} from "./constants/profile";
 import { useProfilePage } from "./composables/useProfilePage";
 
 const {

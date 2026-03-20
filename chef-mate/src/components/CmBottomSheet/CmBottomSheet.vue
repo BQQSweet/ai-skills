@@ -35,7 +35,6 @@
         scroll-y
         enable-flex
         class="cm-bottom-sheet-scroll-body"
-        @touchmove.stop="handleScrollableBodyTouchMove"
       >
         <view class="cm-bottom-sheet-scroll-content" :class="bodyClass">
           <slot />
@@ -205,8 +204,6 @@ function handleDragCancel() {
   isDragging.value = false;
   dragOffsetY.value = 0;
 }
-
-function handleScrollableBodyTouchMove() {}
 
 function handlePanelTouchMove() {}
 
@@ -394,6 +391,7 @@ onBeforeUnmount(() => {
 .cm-bottom-sheet-body--scrollable {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 .cm-bottom-sheet-scroll-body {
@@ -416,6 +414,7 @@ onBeforeUnmount(() => {
 .cm-bottom-sheet-scroll-body :deep(.uni-scroll-view) {
   height: 100%;
   max-height: 100%;
+  overscroll-behavior: contain;
 }
 
 .cm-bottom-sheet-scroll-body :deep(.uni-scroll-view-content) {

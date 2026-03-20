@@ -1,5 +1,3 @@
-import { isWeb } from "@uni-helper/uni-env";
-
 let lockCount = 0;
 let lockedScrollTop = 0;
 
@@ -12,11 +10,7 @@ let originalOverflow = "";
 
 export function useOverlayScrollLock() {
   function lockBodyScroll() {
-    if (
-      !isWeb ||
-      typeof window === "undefined" ||
-      typeof document === "undefined"
-    ) {
+    if (typeof window === "undefined" || typeof document === "undefined") {
       return;
     }
 
@@ -44,7 +38,6 @@ export function useOverlayScrollLock() {
 
   function unlockBodyScroll() {
     if (
-      !isWeb ||
       typeof window === "undefined" ||
       typeof document === "undefined" ||
       lockCount === 0
