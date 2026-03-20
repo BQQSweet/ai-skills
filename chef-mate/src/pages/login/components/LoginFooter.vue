@@ -1,5 +1,5 @@
 <template>
-  <view class="flex-1 flex flex-col justify-end items-center pt-8 pb-4 gap-8">
+  <view class="flex-1 flex flex-col justify-end items-center pt-6 pb-4 gap-6">
     <view v-if="authMode === 'login'" class="w-full flex flex-col items-center gap-4">
       <view class="relative w-full flex items-center justify-center opacity-40">
         <view class="flex-1 h-px bg-gray-300"></view>
@@ -18,12 +18,14 @@
 
     <view
       v-else
-      class="flex items-center gap-2 text-sm text-text-muted"
+      class="flex items-center justify-center"
     >
-      <text>已经有账号了？</text>
-      <text class="font-bold text-primary" @click="$emit('switch-auth-mode')">
+      <button
+        class="px-3 py-1.5 border-none bg-transparent text-sm font-medium text-text-muted transition-colors duration-300 active:text-primary after:hidden"
+        @click="$emit('switch-auth-mode')"
+      >
         返回登录
-      </text>
+      </button>
     </view>
 
     <view

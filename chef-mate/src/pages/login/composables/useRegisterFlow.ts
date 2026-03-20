@@ -20,7 +20,6 @@ export function useRegisterFlow(options: UseRegisterFlowOptions) {
     phone: "",
     code: "",
     password: "",
-    confirmPassword: "",
   });
 
   const { smsSending, codeCooldown, handleSendCode } = useSmsCode({
@@ -40,7 +39,6 @@ export function useRegisterFlow(options: UseRegisterFlowOptions) {
     const phone = form.phone.trim();
     const code = form.code.trim();
     const password = form.password.trim();
-    const confirmPassword = form.confirmPassword.trim();
 
     if (!PHONE_REGEXP.test(phone)) {
       showToast(options.toastRef, "error", "请输入正确的手机号");
@@ -54,11 +52,6 @@ export function useRegisterFlow(options: UseRegisterFlowOptions) {
 
     if (password.length < 6 || password.length > 32) {
       showToast(options.toastRef, "error", "请输入 6-32 位密码");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      showToast(options.toastRef, "error", "两次输入的密码不一致");
       return;
     }
 

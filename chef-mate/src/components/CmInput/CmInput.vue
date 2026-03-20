@@ -12,10 +12,17 @@
       </slot>
     </view>
     <input
-      class="w-full h-10 bg-white dark:bg-background-input border border-gray-100 dark:border-gray-200 text-text-main dark:text-text-main rounded-[20rpx] text-md transition-all duration-300 shadow-sm focus:border-primary focus:shadow-[0_0_0_2px_rgba(var(--primary),0.2)]"
-      :class="[icon || $slots.prefix ? 'pl-14' : 'pl-5', inputClass]"
-      :type="type"
-      :password="password"
+      class="w-full h-10 bg-white dark:bg-background-input border text-text-main dark:text-text-main rounded-[20rpx] text-md transition-all duration-300"
+      :class="[
+        icon || $slots.prefix ? 'pl-14' : 'pl-5',
+        showBuiltInPasswordToggle ? 'pr-14' : 'pr-5',
+        isFocused
+          ? 'border-primary shadow-[0_0_0_4px_rgba(var(--primary),0.14),0_12px_24px_-18px_rgba(var(--primary),0.6)]'
+          : 'border-gray-100 dark:border-gray-200 shadow-sm',
+        inputClass,
+      ]"
+      :type="resolvedType"
+      :password="resolvedPassword"
       :placeholder="placeholder"
       placeholder-class="text-gray-400 dark:text-gray-400"
       :value="modelValue"
@@ -25,11 +32,21 @@
       @blur="handleBlur"
     />
     <slot name="suffix"></slot>
+    <view
+      v-if="showBuiltInPasswordToggle"
+      class="absolute inset-y-0 right-4 flex items-center justify-center transition-all duration-300 active:scale-95"
+      :class="isFocused ? 'text-primary' : 'text-text-muted/70'"
+      @click="togglePasswordVisibility"
+    >
+      <text class="material-symbols-outlined text-[20px] leading-none">
+        {{ isPasswordVisible ? "visibility" : "visibility_off" }}
+      </text>
+    </view>
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref, useSlots } from "vue";
 
 const props = withDefaults(
   defineProps<{
@@ -51,6 +68,8 @@ const props = withDefaults(
     customClass?: string;
     /** input 本身的自定义样式类（可以用于覆盖 padding 等） */
     inputClass?: string;
+    /** 密码框是否展示显示/隐藏切换按钮 */
+    passwordToggle?: boolean;
   }>(),
   {
     type: "text",
@@ -59,7 +78,8 @@ const props = withDefaults(
     maxlength: -1,
     dark: false,
     customClass: "",
-    inputClass: "pr-5",
+    inputClass: "",
+    passwordToggle: false,
   },
 );
 
@@ -69,7 +89,21 @@ const emit = defineEmits<{
   (e: "blur", event: Event): void;
 }>();
 
+const slots = useSlots();
 const isFocused = ref(false);
+const isPasswordVisible = ref(false);
+
+const showBuiltInPasswordToggle = computed(
+  () => props.password && props.passwordToggle && !slots.suffix,
+);
+
+const resolvedType = computed(() =>
+  showBuiltInPasswordToggle.value ? "text" : props.type,
+);
+
+const resolvedPassword = computed(
+  () => props.password && (!showBuiltInPasswordToggle.value || !isPasswordVisible.value),
+);
 
 function handleInput(e: any) {
   emit("update:modelValue", e.detail.value);
@@ -83,5 +117,9 @@ function handleFocus(e: any) {
 function handleBlur(e: any) {
   isFocused.value = false;
   emit("blur", e);
+}
+
+function togglePasswordVisibility() {
+  isPasswordVisible.value = !isPasswordVisible.value;
 }
 </script>

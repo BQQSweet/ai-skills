@@ -1,7 +1,7 @@
 <template>
-  <view class="flex-1 flex flex-col justify-end items-center pb-10">
+  <view class="flex-1 flex flex-col justify-end items-center pt-4 pb-5">
     <view
-      class="w-24 h-24 bg-gradient-to-br from-primary/20 to-primary/5 rounded-[26px] flex items-center justify-center shadow-[0_10px_15px_-3px_rgba(var(--primary),0.1)] mb-6 backdrop-blur-sm overflow-hidden"
+      class="w-20 h-20 bg-gradient-to-br from-primary/20 to-primary/5 rounded-[22px] flex items-center justify-center shadow-[0_10px_15px_-3px_rgba(var(--primary),0.1)] mb-4 backdrop-blur-sm overflow-hidden"
     >
       <image
         class="w-full h-full object-cover"
@@ -10,11 +10,11 @@
       ></image>
     </view>
     <text
-      class="text-4xl text-quicksand font-bold tracking-tight bg-gradient-to-r from-primary to-primary-light bg-clip-text text-transparent mb-2"
+      class="text-[38px] text-quicksand font-bold tracking-tight bg-gradient-to-r from-primary to-primary-light bg-clip-text text-transparent mb-1"
     >
       ChefMate
     </text>
-    <view class="flex items-center justify-center gap-2 mt-1 mb-2">
+    <view class="flex items-center justify-center gap-2 mt-0.5 mb-1.5">
       <view
         class="text-md flex items-center text-notoserifsc font-medium text-text-muted tracking-wide"
       >

@@ -1,5 +1,5 @@
 <template>
-  <view class="w-full flex flex-col gap-5">
+  <view class="w-full flex flex-col gap-4">
     <template v-if="loginType === 'code'">
       <CmInput
         v-model="model.phone"
@@ -19,7 +19,7 @@
       >
         <template #suffix>
           <button
-            class="absolute right-2 top-2 bottom-2 flex items-center justify-center px-4 bg-primary/10 text-primary text-sm font-bold border-none rounded-sm min-w-[100px] transition-colors active:bg-primary/20 disabled:opacity-50 disabled:bg-primary/5 after:hidden"
+            class="absolute right-2 top-2 bottom-2 flex items-center justify-center px-4 bg-transparent text-primary text-sm font-semibold border border-primary/30 rounded-full min-w-[100px] transition-all duration-300 active:bg-primary/5 active:border-primary active:text-primary-dark disabled:text-primary/45 disabled:border-primary/15 disabled:bg-transparent after:hidden"
             :disabled="codeCooldown > 0 || smsSending"
             @click="$emit('send-code')"
           >
@@ -47,12 +47,13 @@
         v-model="model.password"
         icon="key"
         password
+        password-toggle
         placeholder="请输入密码"
         maxlength="32"
       />
     </template>
 
-    <view class="flex justify-center px-2 -mt-2 mb-2">
+    <view class="flex justify-center px-2 -mt-1 mb-1">
       <text
         class="text-sm text-text-muted transition-colors duration-300 active:text-primary hover:text-primary"
         @click="$emit('toggle-login-type')"
@@ -62,7 +63,7 @@
     </view>
 
     <button
-      class="mt-2 w-full h-14 bg-primary rounded-full shadow-[0_10px_15px_-3px_rgba(var(--primary),0.4)] border-none p-0 transition-all duration-300 overflow-hidden relative group active:scale-98 active:bg-primary-dark after:hidden"
+      class="mt-1 w-full h-14 bg-primary rounded-full shadow-[0_14px_24px_-14px_rgba(var(--primary),0.6)] border-none p-0 transition-all duration-300 overflow-hidden relative group active:translate-y-[2px] active:scale-[0.985] active:bg-primary-dark active:shadow-[0_8px_18px_-12px_rgba(var(--primary),0.48)] after:hidden"
       :loading="loading"
       @click="$emit('submit')"
     >
