@@ -48,6 +48,15 @@ export interface RegisterParams {
   nickname?: string;
 }
 
+export interface RefreshTokenParams {
+  refreshToken: string;
+}
+
+export interface RefreshTokenResult {
+  token: string;
+  refreshToken: string;
+}
+
 /** 登录/注册响应 */
 export interface AuthResult {
   token: string;

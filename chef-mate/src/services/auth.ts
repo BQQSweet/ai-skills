@@ -6,6 +6,8 @@ import type {
   LoginParams,
   RegisterParams,
   AuthResult,
+  RefreshTokenParams,
+  RefreshTokenResult,
   SmsCodeScene,
 } from '@/types/user';
 
@@ -28,6 +30,16 @@ export function register(params: RegisterParams): Promise<AuthResult> {
 /** 发送短信验证码 */
 export function sendSmsCode(phone: string, scene: SmsCodeScene): Promise<void> {
   return post("/api/auth/sms-code", { phone, scene }, {
+    noAuth: true,
+    showError: false,
+  });
+}
+
+/** 刷新登录 Token */
+export function refreshToken(
+  params: RefreshTokenParams,
+): Promise<RefreshTokenResult> {
+  return post<RefreshTokenResult>("/api/auth/refresh", params, {
     noAuth: true,
     showError: false,
   });

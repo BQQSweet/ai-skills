@@ -1,7 +1,12 @@
 import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
-import { SendSmsDto, LoginDto, RegisterDto } from './dto/auth.dto';
+import {
+  SendSmsDto,
+  LoginDto,
+  RegisterDto,
+  RefreshTokenDto,
+} from './dto/auth.dto';
 
 @ApiTags('auth')
 @Controller('api/auth')
@@ -43,6 +48,14 @@ export class AuthController {
   async register(@Body() registerDto: RegisterDto) {
     // 注册成功后直接返回登录态，前端不需要再额外调一次登录接口
     return this.authService.register(registerDto);
+  }
+
+  @Post('refresh')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '刷新 Token' })
+  @ApiResponse({ status: 200, description: '刷新成功，返回新的 Token 对' })
+  async refresh(@Body() refreshTokenDto: RefreshTokenDto) {
+    return this.authService.refreshToken(refreshTokenDto);
   }
 
   @Post('logout')

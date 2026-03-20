@@ -38,9 +38,17 @@ export class JwtAuthGuard implements CanActivate {
 
     try {
       // verifyAsync 不仅会解码，还会校验签名和过期时间
-      const payload = await this.jwtService.verifyAsync(token, {
+      const payload = await this.jwtService.verifyAsync<{
+        sub?: string;
+        phone?: string;
+        role?: string;
+        tokenType?: 'access' | 'refresh';
+      }>(token, {
         secret: this.configService.get<string>('jwt.secret'),
       });
+      if (!this.isAccessTokenPayload(payload)) {
+        throw new UnauthorizedException('登录凭证类型不正确');
+      }
       // 这里只挂业务里常用的核心字段，避免后续代码反复自己解析 token
       request.user = {
         id: payload.sub,
@@ -52,5 +60,32 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     return true;
+  }
+
+  private isAccessTokenPayload(payload: {
+    sub?: string;
+    phone?: string;
+    role?: string;
+    tokenType?: 'access' | 'refresh';
+  }): payload is {
+    sub: string;
+    phone: string;
+    role: string;
+    tokenType?: 'access';
+  } {
+    if (payload.tokenType === 'access') {
+      return (
+        typeof payload.sub === 'string' &&
+        typeof payload.phone === 'string' &&
+        typeof payload.role === 'string'
+      );
+    }
+
+    return (
+      !payload.tokenType &&
+      typeof payload.sub === 'string' &&
+      typeof payload.phone === 'string' &&
+      typeof payload.role === 'string'
+    );
   }
 }

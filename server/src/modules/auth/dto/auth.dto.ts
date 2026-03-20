@@ -1,5 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsOptional, IsString, Length, Matches } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Length,
+  Matches,
+} from 'class-validator';
 
 export enum SmsCodeScene {
   LOGIN = 'login',
@@ -97,4 +104,11 @@ export class RegisterDto {
   @IsString()
   @Length(1, 50, { message: '昵称长度需为 1 到 50 位' })
   nickname?: string;
+}
+
+export class RefreshTokenDto {
+  @ApiProperty({ description: '刷新 Token' })
+  @IsString()
+  @IsNotEmpty({ message: 'refreshToken 不能为空' })
+  refreshToken: string;
 }
