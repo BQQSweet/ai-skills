@@ -2,17 +2,13 @@
   <CmBottomSheet
     :show="show"
     max-height="80vh"
-    :scrollable-body="!isWeb"
-    :body-class="isWeb ? '' : 'px-6 py-5'"
+    scrollable-body
+    body-class="px-6 py-5"
     :close-on-click-overlay="true"
     :drag-to-close="true"
     :show-drag-handle="true"
     :safe-area-inset-bottom="true"
-    :panel-class="
-      isWeb
-        ? 'recipe-ingredient-selection-sheet flex h-[75vh] flex-col bg-[#fcfaf8] dark:bg-[#2d2418]'
-        : 'recipe-ingredient-selection-sheet bg-[#fcfaf8] dark:bg-[#2d2418]'
-    "
+    panel-class="recipe-ingredient-selection-sheet bg-[#fcfaf8] dark:bg-[#2d2418]"
     @update:show="emit('update:show', $event)"
     @close="emit('close')"
   >
@@ -46,94 +42,7 @@
       </view>
     </template>
 
-    <view v-if="isWeb" class="flex h-full min-h-0 flex-1 overflow-hidden">
-      <scroll-view
-        scroll-y
-        enable-flex
-        class="h-full flex-1 min-h-0 px-6 py-5"
-        style="height: 100%;"
-      >
-        <view class="flex flex-col gap-6 pb-2">
-          <view v-if="ingredientItems.length > 0" class="flex flex-col gap-3">
-            <view class="flex items-center justify-between">
-              <text class="text-base font-black text-[#1d160c] dark:text-white">
-                食材
-              </text>
-              <text class="text-xs font-semibold text-primary/80">
-                默认已选
-              </text>
-            </view>
-            <view class="flex flex-col gap-3">
-              <view
-                v-for="item in ingredientItems"
-                :key="item.key"
-                class="flex items-center gap-4 rounded-[28rpx] border border-[#f0e4d4] bg-[#fffaf2] px-4 py-4 shadow-[0_12px_28px_-24px_rgba(109,76,44,0.2)]"
-                @click="emit('toggle', item.key)"
-              >
-                <view
-                  class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition-all"
-                  :class="
-                    isSelected(item.key)
-                      ? 'border-primary bg-primary text-white'
-                      : 'border-[#dbcab4] bg-white text-transparent'
-                  "
-                >
-                  <text class="material-symbols-outlined text-[16px]">check</text>
-                </view>
-                <view class="min-w-0 flex-1">
-                  <text class="block truncate text-[16px] font-black text-[#1d160c] dark:text-white">
-                    {{ item.name }}
-                  </text>
-                  <text class="mt-1 block text-sm font-medium text-[#8b6b44] dark:text-orange-200/70">
-                    {{ item.quantity }}{{ item.unit }}
-                  </text>
-                </view>
-              </view>
-            </view>
-          </view>
-
-          <view v-if="seasoningItems.length > 0" class="flex flex-col gap-3">
-            <view class="flex items-center justify-between">
-              <text class="text-base font-black text-[#1d160c] dark:text-white">
-                调料
-              </text>
-              <text class="text-xs font-semibold text-slate-400">
-                按需勾选
-              </text>
-            </view>
-            <view class="flex flex-col gap-3">
-              <view
-                v-for="item in seasoningItems"
-                :key="item.key"
-                class="flex items-center gap-4 rounded-[28rpx] border border-[#efe4d3] bg-[#f7f2ea] px-4 py-4 shadow-[0_10px_24px_-20px_rgba(109,76,44,0.18)]"
-                @click="emit('toggle', item.key)"
-              >
-                <view
-                  class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition-all"
-                  :class="
-                    isSelected(item.key)
-                      ? 'border-primary bg-primary text-white'
-                      : 'border-[#dbcab4] bg-white text-transparent'
-                  "
-                >
-                  <text class="material-symbols-outlined text-[16px]">check</text>
-                </view>
-                <view class="min-w-0 flex-1">
-                  <text class="block truncate text-[16px] font-black text-[#1d160c] dark:text-white">
-                    {{ item.name }}
-                  </text>
-                  <text class="mt-1 block text-sm font-medium text-[#8b6b44] dark:text-orange-200/70">
-                    {{ item.quantity }}{{ item.unit }}
-                  </text>
-                </view>
-              </view>
-            </view>
-          </view>
-        </view>
-      </scroll-view>
-    </view>
-
-    <view v-else class="flex flex-col gap-6 pb-2">
+    <view class="flex flex-col gap-6 pb-2">
       <view v-if="ingredientItems.length > 0" class="flex flex-col gap-3">
         <view class="flex items-center justify-between">
           <text class="text-base font-black text-[#1d160c] dark:text-white">
@@ -239,7 +148,6 @@
 import { computed } from "vue";
 import CmBottomSheet from "@/components/CmBottomSheet/CmBottomSheet.vue";
 import type { ClassifiedRecipeIngredient } from "@/types/shopping";
-import { isWeb } from "@uni-helper/uni-env";
 
 type SelectableClassifiedRecipeIngredient = ClassifiedRecipeIngredient & {
   key: string;

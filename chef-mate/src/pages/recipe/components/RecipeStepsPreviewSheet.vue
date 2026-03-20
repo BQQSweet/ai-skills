@@ -2,15 +2,11 @@
   <CmBottomSheet
     :show="show"
     max-height="80vh"
-    :scrollable-body="!isWeb"
-    :body-class="isWeb ? '' : 'px-6 py-6'"
+    scrollable-body
+    body-class="px-6 py-6"
     :close-on-click-overlay="true"
     :safe-area-inset-bottom="true"
-    :panel-class="
-      isWeb
-        ? 'recipe-steps-preview-sheet flex h-[75vh] flex-col bg-[#fcfaf8] dark:bg-[#2d2418]'
-        : 'recipe-steps-preview-sheet bg-[#fcfaf8] dark:bg-[#2d2418]'
-    "
+    panel-class="recipe-steps-preview-sheet bg-[#fcfaf8] dark:bg-[#2d2418]"
     @update:show="emit('update:show', $event)"
     @close="emit('close')"
   >
@@ -44,71 +40,8 @@
       </view>
     </template>
 
-    <view v-if="isWeb" class="flex h-full min-h-0 flex-1 overflow-hidden">
-      <scroll-view
-        scroll-y
-        enable-flex
-        class="h-full flex-1 min-h-0 px-6 py-6"
-        style="height: 100%;"
-      >
-        <view v-if="displaySteps.length > 0" class="flex flex-col gap-7 pb-2">
-          <view
-            v-for="(step, index) in displaySteps"
-            :key="`${recipe?.id || 'preview'}-${index}`"
-            class="flex gap-4"
-          >
-            <view class="flex w-10 shrink-0 flex-col items-center">
-              <view
-                class="flex h-8 w-8 items-center justify-center rounded-full border-2 border-primary bg-primary/10 text-sm font-black text-primary"
-              >
-                {{ index + 1 }}
-              </view>
-              <view
-                v-if="index < displaySteps.length - 1"
-                class="mt-2 w-[4rpx] flex-1 rounded-full bg-primary/15"
-              />
-            </view>
-
-            <view class="min-w-0 flex-1 pb-2">
-              <view class="flex items-center gap-2">
-                <text class="text-base font-black text-[#1d160c] dark:text-white">
-                  {{ stepHeading(index) }}
-                </text>
-                <text
-                  v-if="step.duration_min"
-                  class="rounded-full bg-primary/10 px-2 py-1 text-[22rpx] font-bold text-primary"
-                >
-                  {{ step.duration_min }} 分钟
-                </text>
-              </view>
-              <text class="mt-2 block text-sm leading-7 text-[#7a6140] dark:text-orange-200/75">
-                {{ step.instruction }}
-              </text>
-            </view>
-          </view>
-        </view>
-
-        <view
-          v-else
-          class="flex min-h-full flex-col items-center justify-center rounded-[32rpx] border border-dashed border-slate-200 bg-white/60 px-8 text-center dark:border-white/10 dark:bg-white/5"
-        >
-          <view
-            class="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary"
-          >
-            <text class="material-symbols-outlined text-[32px]">receipt_long</text>
-          </view>
-          <text class="mt-4 text-base font-bold text-[#1d160c] dark:text-white">
-            暂无步骤信息
-          </text>
-          <text class="mt-2 text-sm leading-6 text-slate-400">
-            当前推荐结果里还没有可预览的步骤内容，请稍后再试。
-          </text>
-        </view>
-      </scroll-view>
-    </view>
-
     <view
-      v-else-if="displaySteps.length > 0"
+      v-if="displaySteps.length > 0"
       class="flex flex-col gap-7 pb-2"
     >
       <view
@@ -190,7 +123,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import type { Recipe, RecipeStep } from "@/types/recipe";
-import { isWeb } from "@uni-helper/uni-env";
 
 const props = defineProps<{
   show: boolean;

@@ -13,6 +13,7 @@
       class="cm-bottom-sheet-panel"
       :class="panelClass"
       :style="panelStyle"
+      @touchmove.stop="handlePanelTouchMove"
       @transitionend="handlePanelTransitionEnd"
     >
       <view
@@ -40,7 +41,11 @@
           <slot />
         </view>
       </scroll-view>
-      <view v-else class="cm-bottom-sheet-body" :class="bodyClass">
+      <view
+        v-else
+        class="cm-bottom-sheet-body"
+        :class="[bodyClass, { 'cm-bottom-sheet-body--scrollable': useWebScrollableBody }]"
+      >
         <slot />
       </view>
       <view
@@ -115,6 +120,10 @@ const overlayStyle = {
 
 const useInternalScrollableBody = computed(
   () => props.scrollableBody && !isWeb,
+);
+
+const useWebScrollableBody = computed(
+  () => props.scrollableBody && isWeb,
 );
 
 const panelStyle = computed(() => ({
@@ -198,6 +207,8 @@ function handleDragCancel() {
 }
 
 function handleScrollableBodyTouchMove() {}
+
+function handlePanelTouchMove() {}
 
 function handlePanelTransitionEnd() {
   if (!isClosingByGesture.value || !pendingCloseReason.value) {
@@ -378,6 +389,11 @@ onBeforeUnmount(() => {
   flex-direction: column;
   flex: 1;
   overflow: hidden;
+}
+
+.cm-bottom-sheet-body--scrollable {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .cm-bottom-sheet-scroll-body {
