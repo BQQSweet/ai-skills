@@ -54,7 +54,7 @@
       <text class="material-symbols-outlined text-[180px]">eco</text>
     </view>
 
-    <CmToast ref="uToastRef"></CmToast>
+    <CmTopNoticeBar ref="uToastRef"></CmTopNoticeBar>
     <AuthDocumentPopup
       :show="documentVisible"
       :document="currentDocument"
@@ -65,7 +65,7 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
-import CmToast from "@/components/CmToast/CmToast.vue";
+import CmTopNoticeBar from "@/components/CmTopNoticeBar/CmTopNoticeBar.vue";
 import AuthDocumentPopup from "./components/AuthDocumentPopup.vue";
 import AuthModeTabs from "./components/AuthModeTabs.vue";
 import LoginFooter from "./components/LoginFooter.vue";
