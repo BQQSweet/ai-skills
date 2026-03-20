@@ -1,33 +1,27 @@
 <template>
   <view
     v-if="visible"
-    class="fixed inset-0 z-[99999] pointer-events-none flex justify-center items-start pt-[15vh] transition-opacity duration-300"
-    :class="opacity > 0 ? 'opacity-100' : 'opacity-0'"
+    class="fixed inset-x-0 top-0 z-[99999] pointer-events-none flex items-start justify-center px-4"
+    :class="wrapperClass"
+    :style="wrapperStyle"
   >
     <view
-      class="flex items-center gap-2.5 px-5 py-3.5 rounded-[20rpx] shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] max-w-[85vw] transform transition-transform duration-300 pointer-events-auto"
-      :class="[
-        opacity > 0 ? 'translate-y-0 scale-100' : '-translate-y-4 scale-95',
-        typeStyles[currentType].bg,
-      ]"
+      class="cm-toast-card pointer-events-auto flex max-w-[85vw] items-center gap-3 rounded-full px-5 py-3 transition-[transform,opacity] duration-250 ease-out"
+      :class="[cardMotionClass, typeStyles[currentType].accentClass]"
     >
       <text
-        v-if="currentType !== 'loading'"
-        class="material-symbols-outlined text-[20px]"
-        :style="{ fontVariationSettings: '\'FILL\' 1' }"
-        :class="typeStyles[currentType].iconColor"
+        class="cm-toast-icon material-symbols-outlined text-[20px] leading-none"
+        :class="[
+          typeStyles[currentType].iconClass,
+          currentType === 'loading' ? 'animate-spin' : '',
+        ]"
       >
         {{ typeStyles[currentType].icon }}
       </text>
-      <!-- Loading spinner -->
-      <view
-        v-else
-        class="w-5 h-5 rounded-full border-2 border-primary border-t-transparent animate-spin"
-      ></view>
 
       <text
-        class="text-[15px] font-medium leading-relaxed tracking-wide truncate max-w-[65vw]"
-        :class="typeStyles[currentType].textColor"
+        class="max-w-[65vw] truncate text-[15px] font-semibold leading-[1.2] tracking-[0.01em]"
+        :class="typeStyles[currentType].textClass"
       >
         {{ currentMessage }}
       </text>
@@ -36,9 +30,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, onUnmounted, ref } from "vue";
 
 type ToastType = "success" | "error" | "warning" | "loading" | "default";
+type ToastPhase = "entering" | "shown" | "leaving";
 
 interface ShowOptions {
   message: string;
@@ -47,49 +42,96 @@ interface ShowOptions {
 }
 
 const visible = ref(false);
-const opacity = ref(0);
+const phase = ref<ToastPhase>("entering");
 const currentMessage = ref("");
 const currentType = ref<ToastType>("default");
-let hideTimer: ReturnType<typeof setTimeout> | null = null;
+const isWeb = typeof window !== "undefined" && typeof document !== "undefined";
+const nativeStatusBarHeight = ref(getStatusBarHeight());
+let autoCloseTimer: ReturnType<typeof setTimeout> | null = null;
+let animationTimer: ReturnType<typeof setTimeout> | null = null;
 
 const typeStyles: Record<
   ToastType,
-  { bg: string; icon: string; iconColor: string; textColor: string }
+  { icon: string; accentClass: string; iconClass: string; textClass: string }
 > = {
   success: {
-    bg: "bg-green-50/95 backdrop-blur-md border border-green-200/50",
     icon: "check_circle",
-    iconColor: "text-green-500",
-    textColor: "text-green-800",
+    accentClass: "text-[#4ADE80]",
+    iconClass: "text-[#4ADE80]",
+    textClass: "text-[#4ADE80]",
   },
   error: {
-    bg: "bg-red-50/95 backdrop-blur-md border border-red-200/50",
-    icon: "error",
-    iconColor: "text-red-500",
-    textColor: "text-red-800",
+    icon: "warning",
+    accentClass: "text-[#F87171]",
+    iconClass: "text-[#F87171]",
+    textClass: "text-[#F87171]",
   },
   warning: {
-    bg: "bg-orange-50/95 backdrop-blur-md border border-orange-200/50",
     icon: "warning",
-    iconColor: "text-orange-500",
-    textColor: "text-orange-800",
+    accentClass: "text-[#F59E0B]",
+    iconClass: "text-[#F59E0B]",
+    textClass: "text-[#F59E0B]",
   },
   loading: {
-    bg: "bg-white/95 backdrop-blur-md border border-gray-100",
     icon: "sync",
-    iconColor: "text-primary",
-    textColor: "text-slate-700",
+    accentClass: "text-[#FF9D1A]",
+    iconClass: "text-[#FF9D1A]",
+    textClass: "text-[#FF9D1A]",
   },
   default: {
-    bg: "bg-slate-800/90 backdrop-blur-md",
     icon: "info",
-    iconColor: "text-white/90",
-    textColor: "text-white/90",
+    accentClass: "text-[#9A5B00]",
+    iconClass: "text-[#9A5B00]",
+    textClass: "text-[#9A5B00]",
   },
 };
 
+const wrapperClass = computed(() =>
+  isWeb ? "cm-toast-wrap cm-toast-wrap--web" : "cm-toast-wrap",
+);
+
+const wrapperStyle = computed(() =>
+  isWeb
+    ? { paddingTop: "calc(env(safe-area-inset-top, 0px) + 20px)" }
+    : { paddingTop: `${nativeStatusBarHeight.value + 20}px` },
+);
+
+const cardMotionClass = computed(() => {
+  if (phase.value === "shown") {
+    return "translate-y-0 scale-100 opacity-100";
+  }
+
+  if (phase.value === "leaving") {
+    return "translate-y-1 scale-[0.985] opacity-0";
+  }
+
+  return "-translate-y-3 scale-[0.98] opacity-100";
+});
+
+function getStatusBarHeight() {
+  if (isWeb) return 0;
+
+  try {
+    return Math.max(uni.getSystemInfoSync().statusBarHeight || 0, 0);
+  } catch {
+    return 0;
+  }
+}
+
+function clearTimers() {
+  if (autoCloseTimer) {
+    clearTimeout(autoCloseTimer);
+    autoCloseTimer = null;
+  }
+
+  if (animationTimer) {
+    clearTimeout(animationTimer);
+    animationTimer = null;
+  }
+}
+
 const show = (options: ShowOptions | string) => {
-  if (hideTimer) clearTimeout(hideTimer);
+  clearTimers();
 
   if (typeof options === "string") {
     currentMessage.value = options;
@@ -100,26 +142,45 @@ const show = (options: ShowOptions | string) => {
   }
 
   visible.value = true;
-  // 小延迟确保 DOM 渲染，才能有过渡效果
-  setTimeout(() => {
-    opacity.value = 1;
+  phase.value = "entering";
+  animationTimer = setTimeout(() => {
+    phase.value = "shown";
+    animationTimer = null;
   }, 20);
 
   if (currentType.value !== "loading") {
     const duration =
       typeof options === "object" && options.duration ? options.duration : 2000;
-    hideTimer = setTimeout(() => {
+    autoCloseTimer = setTimeout(() => {
       close();
     }, duration);
   }
 };
 
 const close = () => {
-  opacity.value = 0;
-  hideTimer = setTimeout(() => {
+  if (!visible.value) return;
+
+  if (autoCloseTimer) {
+    clearTimeout(autoCloseTimer);
+    autoCloseTimer = null;
+  }
+
+  if (animationTimer) {
+    clearTimeout(animationTimer);
+    animationTimer = null;
+  }
+
+  phase.value = "leaving";
+  animationTimer = setTimeout(() => {
     visible.value = false;
-  }, 300); // Wait for transition
+    phase.value = "entering";
+    animationTimer = null;
+  }, 250);
 };
+
+onUnmounted(() => {
+  clearTimers();
+});
 
 // 暴露供父组件调用
 defineExpose({
@@ -128,4 +189,25 @@ defineExpose({
 });
 </script>
 
-<style scoped></style>
+<style scoped>
+.cm-toast-wrap--web {
+  padding-top: calc(constant(safe-area-inset-top) + 20px);
+  padding-top: calc(env(safe-area-inset-top, 0px) + 20px);
+}
+
+.cm-toast-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 0.5px solid rgba(234, 234, 234, 0.92);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+}
+
+.cm-toast-icon {
+  font-variation-settings:
+    "FILL" 0,
+    "wght" 300,
+    "GRAD" 0,
+    "opsz" 20;
+}
+</style>
