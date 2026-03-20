@@ -8,6 +8,7 @@ import { PrismaService } from '@/common/prisma.service';
 import {
   AddShoppingItemDto,
   AssignShoppingItemDto,
+  ClassifyRecipeIngredientsDto,
   CreateShoppingListDto,
   GenerateShoppingListFromRecipeDto,
   UpdateShoppingItemDto,
@@ -18,6 +19,44 @@ type ShoppingListRecord = Awaited<
 >[number];
 
 type ShoppingItemRecord = ShoppingListRecord['items'][number];
+type RecipeIngredientType = 'ingredient' | 'seasoning';
+
+const SEASONING_KEYWORDS = [
+  '食用油',
+  '植物油',
+  '菜籽油',
+  '玉米油',
+  '花生油',
+  '橄榄油',
+  '香油',
+  '麻油',
+  '芝麻油',
+  '盐',
+  '糖',
+  '冰糖',
+  '白砂糖',
+  '鸡精',
+  '味精',
+  '生抽',
+  '老抽',
+  '酱油',
+  '蚝油',
+  '料酒',
+  '醋',
+  '米醋',
+  '陈醋',
+  '淀粉',
+  '玉米淀粉',
+  '胡椒粉',
+  '白胡椒粉',
+  '黑胡椒',
+  '辣椒粉',
+  '孜然粉',
+  '豆瓣酱',
+  '甜面酱',
+  '番茄酱',
+  '沙茶酱',
+];
 
 @Injectable()
 export class ShoppingService {
@@ -25,6 +64,27 @@ export class ShoppingService {
 
   private normalizeName(name: string) {
     return name.trim().toLowerCase();
+  }
+
+  private normalizeIngredientName(name: string) {
+    return name
+      .trim()
+      .toLowerCase()
+      .replace(/[　\s]+/g, '')
+      .replace(/[：:]/g, '');
+  }
+
+  private classifyIngredientType(name: string): RecipeIngredientType {
+    const normalizedName = this.normalizeIngredientName(name);
+    if (!normalizedName) {
+      return 'ingredient';
+    }
+
+    const isSeasoning = SEASONING_KEYWORDS.some((keyword) =>
+      normalizedName.includes(this.normalizeIngredientName(keyword)),
+    );
+
+    return isSeasoning ? 'seasoning' : 'ingredient';
   }
 
   /**
@@ -313,6 +373,22 @@ export class ShoppingService {
     return this.getSerializedListById(shoppingList.id);
   }
 
+  classifyRecipeIngredients(dto: ClassifyRecipeIngredientsDto) {
+    return {
+      ingredients: dto.ingredients.map((item) => {
+        const type = this.classifyIngredientType(item.name);
+        return {
+          name: item.name,
+          quantity: item.quantity,
+          unit: item.unit,
+          optional: item.optional,
+          type,
+          selectedByDefault: type === 'ingredient',
+        };
+      }),
+    };
+  }
+
   async createShoppingListFromRecipe(
     groupId: string,
     userId: string,
@@ -320,7 +396,7 @@ export class ShoppingService {
   ) {
     await this.verifyGroupMembership(groupId, userId);
 
-    const ingredients = dto.ingredients.filter((item) => !item.optional);
+    const ingredients = dto.ingredients;
     if (!ingredients.length) {
       throw new BadRequestException('该食谱没有需要采购的食材');
     }

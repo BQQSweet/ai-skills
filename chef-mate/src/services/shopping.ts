@@ -4,6 +4,8 @@
 import { get, post, put, del } from "./request";
 import type {
   AssignShoppingItemParams,
+  ClassifyRecipeIngredientsParams,
+  ClassifyRecipeIngredientsResult,
   GenerateShoppingListFromRecipeParams,
   AddShoppingItemParams,
   ShoppingItem,
@@ -37,6 +39,16 @@ export function createShoppingListFromRecipe(
   params: GenerateShoppingListFromRecipeParams,
 ): Promise<ShoppingList> {
   return post<ShoppingList>(`/api/shopping/${groupId}/from-recipe`, params);
+}
+
+/** 分类食谱原料中的食材和调料 */
+export function classifyRecipeIngredients(
+  params: ClassifyRecipeIngredientsParams,
+): Promise<ClassifyRecipeIngredientsResult> {
+  return post<ClassifyRecipeIngredientsResult>(
+    "/api/shopping/classify-recipe-ingredients",
+    params,
+  );
 }
 
 /** 添加购物清单项 */

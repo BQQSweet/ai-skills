@@ -156,10 +156,10 @@ import {
   deleteFridgeItem,
   clearExpiredItems,
 } from "@/services/fridge";
-import { BASE_URL } from "@/utils/env";
 import { useGroupStore } from "@/stores/group";
 import type { FridgeItem, FridgeItemUI } from "@/types/fridge";
 import { getExpiryStatus } from "@/utils/expiry";
+import { resolveMediaUrl } from "@/utils/media";
 
 const aiRecipeEntryRef = ref<{ openPopup: () => void } | null>(null);
 const searchKeyword = ref("");
@@ -189,11 +189,7 @@ function transformItem(raw: FridgeItem): FridgeItemUI {
     name: raw.name,
     category: raw.category,
     quantity: `${raw.quantity}${raw.unit}`,
-    image: raw.photo_url
-      ? raw.photo_url.startsWith("http")
-        ? raw.photo_url
-        : `${BASE_URL}${raw.photo_url}`
-      : "",
+    image: resolveMediaUrl(raw.photo_url) || "",
     bgClass: style.bgClass,
     emoji: style.emoji,
     ...expire,

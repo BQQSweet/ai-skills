@@ -16,6 +16,7 @@ import {
   CreateShoppingListDto,
   AddShoppingItemDto,
   UpdateShoppingItemDto,
+  ClassifyRecipeIngredientsDto,
   GenerateShoppingListFromRecipeDto,
   AssignShoppingItemDto,
 } from './dto/shopping.dto';
@@ -28,6 +29,15 @@ import { CurrentUser } from '@/common/decorators/current-user.decorator';
 @UseGuards(JwtAuthGuard)
 export class ShoppingController {
   constructor(private readonly shoppingService: ShoppingService) {}
+
+  @Post('classify-recipe-ingredients')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '分类食谱原料中的食材和调料' })
+  async classifyRecipeIngredients(
+    @Body() dto: ClassifyRecipeIngredientsDto,
+  ) {
+    return this.shoppingService.classifyRecipeIngredients(dto);
+  }
 
   @Post(':groupId/from-recipe')
   @HttpCode(HttpStatus.OK)

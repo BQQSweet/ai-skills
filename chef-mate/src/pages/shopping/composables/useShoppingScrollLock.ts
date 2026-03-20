@@ -1,7 +1,5 @@
 import { isWeb } from "@uni-helper/uni-env";
 
-const useInnerScroll = !isWeb;
-
 let lockedBodyScrollTop = 0;
 
 export function useShoppingScrollLock() {
@@ -50,7 +48,6 @@ export function useShoppingScrollLock() {
   }
 
   return {
-    useInnerScroll,
     lockBodyScroll,
     unlockBodyScroll,
   };

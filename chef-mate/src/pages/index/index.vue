@@ -27,6 +27,7 @@
           :meal-tag="mealTag"
           :refreshing="recommendRefreshing"
           @refresh="handleRefreshRecommendations"
+          @start-cooking="ingredientSelection.openIngredientSelection"
           @view-steps="handleOpenRecipePreview"
         />
         <view
@@ -50,6 +51,22 @@
       @enter-details="handleEnterRecipeDetails"
     />
 
+    <RecipeIngredientSelectionSheet
+      :show="ingredientSelection.showIngredientSelectionSheet"
+      :recipe-title="ingredientSelection.selectionRecipeTitle"
+      :items="ingredientSelection.classifiedRecipeIngredients"
+      :selected-keys="ingredientSelection.selectedIngredientKeys"
+      :confirming="ingredientSelection.confirmingIngredientSelection"
+      @update:show="
+        $event
+          ? null
+          : ingredientSelection.closeIngredientSelection()
+      "
+      @toggle="ingredientSelection.toggleIngredientSelection"
+      @confirm="ingredientSelection.confirmSelectedIngredients"
+      @close="ingredientSelection.handleIngredientSelectionClosed"
+    />
+
     <template #footer>
       <CmTabBar :current="0" />
     </template>
@@ -57,12 +74,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from "vue";
+import { computed, nextTick, reactive, ref, watch } from "vue";
 import { onReady, onShow } from "@dcloudio/uni-app";
 import HomeHeader from "./components/HomeHeader.vue";
 import CookingPlanCard from "./components/CookingPlanCard.vue";
 import ExpiryAlerts from "./components/ExpiryAlerts.vue";
 import FamilyFeed from "./components/FamilyFeed.vue";
+import RecipeIngredientSelectionSheet from "./components/RecipeIngredientSelectionSheet.vue";
+import { useRecipeIngredientSelection } from "./composables/useRecipeIngredientSelection";
 import CmTabBar from "@/components/CmTabBar/CmTabBar.vue";
 import RecipeStepsPreviewSheet from "@/pages/recipe/components/RecipeStepsPreviewSheet.vue";
 import { useUserStore } from "@/stores/user";
@@ -83,6 +102,7 @@ const groupStore = useGroupStore();
 const feedStore = useFeedStore();
 const recipeStore = useRecipeStore();
 const homeHeaderHeight = ref(128);
+const ingredientSelection = reactive(useRecipeIngredientSelection());
 
 // TODO: 从 userStore 获取
 const nickname = computed(() => userStore.userInfo?.nickname || "Chef");

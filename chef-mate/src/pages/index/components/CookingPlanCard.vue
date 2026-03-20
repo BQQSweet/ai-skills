@@ -141,6 +141,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   refresh: [];
+  "start-cooking": [recipe: Recipe];
   "view-steps": [recipe: Recipe];
 }>();
 
@@ -171,17 +172,7 @@ const ingredientSummary = (recipe: Recipe) =>
   recipe.ingredients?.slice(0, 2).map((item) => item.name).join("/") || "家常";
 
 const handleStartCooking = (recipe: Recipe) => {
-  const query = [
-    `recipeId=${encodeURIComponent(recipe.id || "")}`,
-    `recipeTitle=${encodeURIComponent(recipe.title || "")}`,
-    `ingredients=${encodeURIComponent(
-      JSON.stringify(recipe.ingredients || []),
-    )}`,
-  ].join("&");
-
-  uni.navigateTo({
-    url: `/pages/shopping/index?${query}`,
-  });
+  emit("start-cooking", recipe);
 };
 </script>
 

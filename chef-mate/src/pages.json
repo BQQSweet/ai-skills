@@ -91,7 +91,8 @@
       "path": "pages/shopping/index",
       "style": {
         "navigationBarTitleText": "购物清单",
-        "navigationStyle": "custom"
+        "navigationStyle": "custom",
+        "disableScroll": true
       }
     },
     {

@@ -195,4 +195,65 @@ describe('ShoppingService', () => {
       service.claimAndPurchaseShoppingItem('item-1', 'user-2'),
     ).rejects.toThrow(new ForbiddenException('该任务已由其他成员认领'));
   });
+
+  it('classifies common main ingredients as ingredient', () => {
+    const result = service.classifyRecipeIngredients({
+      recipeTitle: '番茄炒蛋',
+      ingredients: [
+        { name: '番茄', quantity: 2, unit: '个' },
+        { name: '鸡蛋', quantity: 3, unit: '个' },
+      ],
+    });
+
+    expect(result.ingredients).toEqual([
+      expect.objectContaining({
+        name: '番茄',
+        type: 'ingredient',
+        selectedByDefault: true,
+      }),
+      expect.objectContaining({
+        name: '鸡蛋',
+        type: 'ingredient',
+        selectedByDefault: true,
+      }),
+    ]);
+  });
+
+  it('classifies common seasonings as seasoning', () => {
+    const result = service.classifyRecipeIngredients({
+      recipeTitle: '番茄炒蛋',
+      ingredients: [
+        { name: '食用油', quantity: 10, unit: 'ml' },
+        { name: '生抽', quantity: 1, unit: '勺' },
+      ],
+    });
+
+    expect(result.ingredients).toEqual([
+      expect.objectContaining({
+        name: '食用油',
+        type: 'seasoning',
+        selectedByDefault: false,
+      }),
+      expect.objectContaining({
+        name: '生抽',
+        type: 'seasoning',
+        selectedByDefault: false,
+      }),
+    ]);
+  });
+
+  it('falls back unknown items to ingredient', () => {
+    const result = service.classifyRecipeIngredients({
+      recipeTitle: '自定义菜谱',
+      ingredients: [{ name: '秘制风味块', quantity: 1, unit: '块' }],
+    });
+
+    expect(result.ingredients[0]).toEqual(
+      expect.objectContaining({
+        name: '秘制风味块',
+        type: 'ingredient',
+        selectedByDefault: true,
+      }),
+    );
+  });
 });

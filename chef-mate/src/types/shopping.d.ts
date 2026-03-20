@@ -84,6 +84,32 @@ export interface GenerateShoppingListFromRecipeParams {
   targetListId?: string;
 }
 
+export type ClassifiedRecipeIngredientType = "ingredient" | "seasoning";
+
+export interface ClassifiedRecipeIngredient {
+  name: string;
+  quantity: number;
+  unit: string;
+  optional?: boolean;
+  type: ClassifiedRecipeIngredientType;
+  selectedByDefault: boolean;
+}
+
+export interface ClassifyRecipeIngredientsParams {
+  recipeId?: string;
+  recipeTitle?: string;
+  ingredients: Array<{
+    name: string;
+    quantity: number;
+    unit: string;
+    optional?: boolean;
+  }>;
+}
+
+export interface ClassifyRecipeIngredientsResult {
+  ingredients: ClassifiedRecipeIngredient[];
+}
+
 export interface AssignShoppingItemParams {
   assignedTo: string;
 }

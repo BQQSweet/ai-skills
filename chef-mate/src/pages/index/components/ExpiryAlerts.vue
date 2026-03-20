@@ -31,7 +31,14 @@
           class="flex size-10 shrink-0 items-center justify-center rounded-xl"
           :class="item.iconBg"
         >
+          <image
+            v-if="item.imageUrl"
+            class="h-full w-full rounded-xl object-cover"
+            :src="item.imageUrl"
+            mode="aspectFill"
+          />
           <text
+            v-else
             class="material-symbols-outlined text-2xl"
             :class="item.iconColor"
             :style="{ fontVariationSettings: '\'FILL\' 1' }"
@@ -107,7 +114,17 @@
                 class="flex h-full w-full items-center justify-center rounded-lg"
                 :class="item.iconBg"
               >
-                <text class="material-symbols-outlined text-xl" :class="item.iconColor">
+                <image
+                  v-if="item.imageUrl"
+                  class="h-full w-full rounded-lg object-cover"
+                  :src="item.imageUrl"
+                  mode="aspectFill"
+                />
+                <text
+                  v-else
+                  class="material-symbols-outlined text-xl"
+                  :class="item.iconColor"
+                >
                   {{ item.icon }}
                 </text>
               </view>
@@ -131,6 +148,7 @@
 import { computed } from "vue";
 import type { FridgeItem } from "@/types/fridge";
 import { calculateExpireDays } from "@/utils/expiry";
+import { resolveMediaUrl } from "@/utils/media";
 
 export interface ExpiryAlert {
   icon: string;
@@ -144,8 +162,13 @@ export interface ExpiryAlert {
   progressWidth: string;
   dotColor?: string;
   subtitleColor?: string;
+  imageUrl?: string;
   dimmed?: boolean;
 }
+
+type SortableExpiryAlert = ExpiryAlert & {
+  days: number;
+};
 
 const props = withDefaults(
   defineProps<{
@@ -179,10 +202,11 @@ const alerts = computed<ExpiryAlert[]>(() => {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-  const processed: ExpiryAlert[] = [];
+  const processed: SortableExpiryAlert[] = [];
 
   for (const item of props.items) {
     const diffDays = calculateExpireDays(item.expire_date);
+    const imageUrl = resolveMediaUrl(item.photo_url);
 
     const createdDate = new Date(item.created_at || now);
     const storedTime =
@@ -201,6 +225,7 @@ const alerts = computed<ExpiryAlert[]>(() => {
         subtitle: "建议立即清理",
         shortTitle: item.name,
         badgeText: "立即处理",
+        imageUrl,
         iconBg: "bg-red-50 dark:bg-red-900/20",
         iconColor: "text-red-500",
         dotColor: "bg-red-500",
@@ -208,7 +233,7 @@ const alerts = computed<ExpiryAlert[]>(() => {
         progressColor: "bg-gradient-to-r from-orange-400 to-red-500",
         progressWidth: "85%",
         days: diffDays,
-      } as ExpiryAlert & { days: number });
+      });
     } else if (diffDays <= 3 || item.status === "expiring") {
       processed.push({
         icon: "eco",
@@ -216,13 +241,14 @@ const alerts = computed<ExpiryAlert[]>(() => {
         subtitle: `剩余 ${diffDays} 天`,
         shortTitle: item.name,
         badgeText: `仅剩 ${diffDays} 天`,
+        imageUrl,
         iconBg: "bg-orange-50 dark:bg-orange-900/20",
         iconColor: "text-amber-500",
         dotColor: "bg-amber-500",
         progressColor: "bg-amber-500",
         progressWidth: diffDays <= 1 ? "82%" : diffDays === 2 ? "68%" : "56%",
         days: diffDays,
-      } as ExpiryAlert & { days: number });
+      });
     } else if (storedDays >= 3) {
       processed.push({
         icon: "kitchen",
@@ -230,13 +256,14 @@ const alerts = computed<ExpiryAlert[]>(() => {
         subtitle: `已存放 ${storedDays} 天`,
         shortTitle: item.name,
         badgeText: `${storedDays} 天`,
+        imageUrl,
         iconBg: "bg-blue-50 dark:bg-blue-900/20",
         iconColor: "text-blue-500",
         dotColor: "bg-blue-500",
         progressColor: "bg-blue-500",
         progressWidth: storedDays >= 6 ? "70%" : "52%",
         days: diffDays, // Use diffDays for sorting priority (expiring > stored long)
-      } as ExpiryAlert & { days: number });
+      });
     }
   }
 
@@ -258,7 +285,7 @@ const alerts = computed<ExpiryAlert[]>(() => {
   }
 
   // Sort by urgency: shortest days first
-  return processed.sort((a: any, b: any) => a.days - b.days);
+  return processed.sort((a, b) => a.days - b.days);
 });
 
 const hasUrgent = computed(() =>

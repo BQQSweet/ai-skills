@@ -29,7 +29,18 @@
       <view v-if="$slots.header" class="cm-bottom-sheet-header">
         <slot name="header" />
       </view>
-      <view class="cm-bottom-sheet-body">
+      <scroll-view
+        v-if="useInternalScrollableBody"
+        scroll-y
+        enable-flex
+        class="cm-bottom-sheet-scroll-body"
+        @touchmove.stop="handleScrollableBodyTouchMove"
+      >
+        <view class="cm-bottom-sheet-scroll-content" :class="bodyClass">
+          <slot />
+        </view>
+      </scroll-view>
+      <view v-else class="cm-bottom-sheet-body" :class="bodyClass">
         <slot />
       </view>
       <view
@@ -54,6 +65,9 @@ const props = withDefaults(
   defineProps<{
     show: boolean;
     round?: number | string;
+    maxHeight?: string;
+    scrollableBody?: boolean;
+    bodyClass?: string;
     closeOnClickOverlay?: boolean;
     safeAreaInsetBottom?: boolean;
     lockBackgroundScroll?: boolean;
@@ -64,6 +78,9 @@ const props = withDefaults(
   }>(),
   {
     round: 32,
+    maxHeight: "",
+    scrollableBody: false,
+    bodyClass: "",
     closeOnClickOverlay: true,
     safeAreaInsetBottom: true,
     lockBackgroundScroll: true,
@@ -96,11 +113,16 @@ const overlayStyle = {
   WebkitBackdropFilter: "blur(14px)",
 };
 
+const useInternalScrollableBody = computed(
+  () => props.scrollableBody && !isWeb,
+);
+
 const panelStyle = computed(() => ({
   "--cm-bottom-sheet-browser-inset": `${browserBottomInset.value}px`,
   transform: isClosingByGesture.value
     ? "translateY(100%)"
     : `translateY(${dragOffsetY.value}px)`,
+  maxHeight: props.maxHeight || undefined,
   transition:
     isDragging.value ? "none" : "transform 0.22s ease-out",
 }));
@@ -174,6 +196,8 @@ function handleDragCancel() {
   isDragging.value = false;
   dragOffsetY.value = 0;
 }
+
+function handleScrollableBodyTouchMove() {}
 
 function handlePanelTransitionEnd() {
   if (!isClosingByGesture.value || !pendingCloseReason.value) {
@@ -317,10 +341,13 @@ onBeforeUnmount(() => {
 <style scoped>
 .cm-bottom-sheet-panel {
   display: flex;
+  min-width: 0;
   min-height: 0;
+  height: auto;
   flex-direction: column;
   width: 100%;
   overflow: hidden;
+  box-sizing: border-box;
   border-top-left-radius: 48rpx;
   border-top-right-radius: 48rpx;
   background: #ffffff;
@@ -351,6 +378,33 @@ onBeforeUnmount(() => {
   flex-direction: column;
   flex: 1;
   overflow: hidden;
+}
+
+.cm-bottom-sheet-scroll-body {
+  display: block;
+  flex: 1;
+  min-height: 0;
+  height: 0;
+  width: 100%;
+  overflow: hidden;
+}
+
+.cm-bottom-sheet-scroll-content {
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.cm-bottom-sheet-scroll-body :deep(.uni-scroll-view) {
+  height: 100%;
+  max-height: 100%;
+}
+
+.cm-bottom-sheet-scroll-body :deep(.uni-scroll-view-content) {
+  min-height: 100%;
+  height: auto;
 }
 
 .cm-bottom-sheet-footer {

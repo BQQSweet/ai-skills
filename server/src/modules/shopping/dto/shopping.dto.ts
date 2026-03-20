@@ -128,6 +128,28 @@ export class RecipeShoppingIngredientDto {
   optional?: boolean;
 }
 
+export class ClassifyRecipeIngredientsDto {
+  @ApiPropertyOptional({ description: '关联食谱 ID' })
+  @IsOptional()
+  @IsUUID('4', { message: '食谱ID格式不正确' })
+  recipeId?: string;
+
+  @ApiPropertyOptional({ description: '食谱标题', example: '西红柿炒鸡蛋' })
+  @IsOptional()
+  @IsString()
+  @Length(1, 100, { message: '食谱标题长度为 1~100 个字符' })
+  recipeTitle?: string;
+
+  @ApiProperty({
+    description: '食谱所需原料',
+    type: [RecipeShoppingIngredientDto],
+  })
+  @ValidateNested({ each: true })
+  @Type(() => RecipeShoppingIngredientDto)
+  @ArrayMinSize(1, { message: '至少需要一个原料' })
+  ingredients: RecipeShoppingIngredientDto[];
+}
+
 export class GenerateShoppingListFromRecipeDto {
   @ApiPropertyOptional({ description: '关联食谱 ID' })
   @IsOptional()

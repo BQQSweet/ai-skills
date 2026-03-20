@@ -30,15 +30,13 @@ export function useShoppingPage(options: { toastRef: Ref<ToastValue | null> }) {
   const groupStore = useGroupStore();
   const userStore = useUserStore();
   const completion = useShoppingCompletionTransition();
-  const { useInnerScroll, lockBodyScroll, unlockBodyScroll } =
-    useShoppingScrollLock();
+  const { lockBodyScroll, unlockBodyScroll } = useShoppingScrollLock();
   const interactionDialog = useConfirmDialog();
 
   const newItemName = ref("");
   const selectedCategory = ref<ShoppingCategory>("other");
   const showCategoryPicker = ref(false);
   const showListSwitcherSheet = ref(false);
-  const refreshing = ref(false);
   const showDeleteModal = ref(false);
   const showCompleteModal = ref(false);
   const showCompletedSection = ref(false);
@@ -199,23 +197,6 @@ export function useShoppingPage(options: { toastRef: Ref<ToastValue | null> }) {
   const isOwner = computed(() => groupStore.currentGroup?.role === "owner");
   const isPageScrollLocked = computed(
     () => showAssignMemberPopup.value || showCategoryPicker.value,
-  );
-  const contentWrapperClass = computed(() =>
-    [
-      useInnerScroll ? "shopping-scroll" : "",
-      isPageScrollLocked.value ? "shopping-scroll-locked" : "",
-    ]
-      .filter(Boolean)
-      .join(" "),
-  );
-  const scrollContainerProps = computed(() =>
-    useInnerScroll
-      ? {
-          "scroll-y": !isPageScrollLocked.value,
-          "refresher-enabled": true,
-          "refresher-triggered": refreshing.value,
-        }
-      : {},
   );
   const contentPaddingClass = computed(() =>
     shoppingStore.purchasedItems.length > 0 ? "pb-36" : "pb-12",
@@ -621,12 +602,8 @@ export function useShoppingPage(options: { toastRef: Ref<ToastValue | null> }) {
   }
 
   async function handleRefresh() {
-    refreshing.value = true;
-    try {
-      await loadShoppingLists();
-    } finally {
-      refreshing.value = false;
-    }
+    if (shoppingStore.loading) return;
+    await loadShoppingLists();
   }
 
   function handleShare() {
@@ -645,12 +622,10 @@ export function useShoppingPage(options: { toastRef: Ref<ToastValue | null> }) {
     shoppingStore,
     userStore,
     interactionDialog,
-    useInnerScroll,
     newItemName,
     selectedCategory,
     showCategoryPicker,
     showListSwitcherSheet,
-    refreshing,
     showDeleteModal,
     showCompleteModal,
     showCompletedSection,
@@ -676,8 +651,7 @@ export function useShoppingPage(options: { toastRef: Ref<ToastValue | null> }) {
     progressStatusText,
     activeSectionDescription,
     isOwner,
-    contentWrapperClass,
-    scrollContainerProps,
+    isPageScrollLocked,
     contentPaddingClass,
     assignmentItemCategoryLabel,
     assignmentItemCategoryIcon,

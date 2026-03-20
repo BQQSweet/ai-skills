@@ -1,8 +1,12 @@
 <template>
   <view :class="wrapperClass">
-    <view :class="fixedHeaderClass">
+    <view class="cm-page-shell__fixed-header" :class="fixedHeaderClass">
       <slot v-if="$slots.header" name="header" />
-      <view v-else class="flex items-center justify-between gap-3">
+      <view
+        v-else
+        class="cm-page-shell__default-header flex items-center justify-between gap-3"
+        :style="defaultHeaderInnerStyle"
+      >
         <view class="shrink-0">
           <slot name="left">
             <view
@@ -38,7 +42,7 @@
       </view>
     </view>
 
-    <view :class="headerOffsetClass" :style="headerOffsetStyle"></view>
+    <view :class="resolvedHeaderOffsetClass" :style="resolvedHeaderOffsetStyle"></view>
 
     <scroll-view
       v-if="useScrollView"
@@ -77,7 +81,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { isWeb } from "@uni-helper/uni-env";
+import {
+  computed,
+  getCurrentInstance,
+  nextTick,
+  onMounted,
+  ref,
+  useSlots,
+  watch,
+} from "vue";
 
 const props = withDefaults(
   defineProps<{
@@ -102,14 +115,14 @@ const props = withDefaults(
     backgroundClass:
       "relative flex min-h-screen w-full flex-col overflow-x-hidden bg-background-light dark:bg-background-dark font-display",
     headerClass:
-      "sticky top-0 z-30 bg-background-light/80 dark:bg-background-dark/80 px-6 pt-12 pb-4 backdrop-blur-lg",
+      "z-30 bg-background-light/80 dark:bg-background-dark/80 px-6 pb-4 backdrop-blur-lg",
     contentClass: "",
     contentPaddingClass: "",
     footerClass: "",
     scrollViewClass: "",
     scrollProps: () => ({}),
     headerFixed: true,
-    headerOffsetClass: "pt-[88px]",
+    headerOffsetClass: "",
     headerOffsetStyle: "",
   },
 );
@@ -118,6 +131,11 @@ defineEmits<{
   back: [];
   refresh: [];
 }>();
+
+const instance = getCurrentInstance();
+const slots = useSlots();
+const measuredHeaderHeight = ref(88);
+const nativeStatusBarHeight = ref(getStatusBarHeight());
 
 const wrapperClass = computed(() => props.backgroundClass);
 
@@ -128,10 +146,51 @@ const fixedHeaderClass = computed(() => {
   return [positionClass, props.headerClass].filter(Boolean).join(" ");
 });
 
+const hasExplicitHeaderTopPadding = computed(() =>
+  /\b(?:pt|py)-[^\s]+/.test(props.headerClass),
+);
+const hasExplicitHeaderOffset = computed(
+  () => Boolean(props.headerOffsetClass) || Boolean(props.headerOffsetStyle),
+);
+
+const shouldApplyDefaultHeaderInset = computed(
+  () => !useCustomHeaderSlot.value && !hasExplicitHeaderTopPadding.value,
+);
+const shouldMeasureHeaderOffset = computed(
+  () => props.headerFixed && !hasExplicitHeaderOffset.value,
+);
+
+const defaultHeaderInnerStyle = computed(() => {
+  if (!shouldApplyDefaultHeaderInset.value) return "";
+
+  const paddingTop = isWeb
+    ? "calc(env(safe-area-inset-top) + 12px)"
+    : `${nativeStatusBarHeight.value + 12}px`;
+
+  return {
+    paddingTop,
+  };
+});
+
+const resolvedHeaderOffsetClass = computed(() =>
+  shouldMeasureHeaderOffset.value ? "" : props.headerOffsetClass,
+);
+
+const resolvedHeaderOffsetStyle = computed(() => {
+  if (props.headerOffsetStyle) return props.headerOffsetStyle;
+  if (!shouldMeasureHeaderOffset.value) return "";
+
+  return {
+    paddingTop: `${measuredHeaderHeight.value}px`,
+  };
+});
+
 const contentWrapperClass = computed(() => {
   const base = props.useScrollView ? "flex-1 min-h-0" : "flex-1";
   return [base, props.scrollViewClass, props.contentClass].filter(Boolean).join(" ");
 });
+
+const useCustomHeaderSlot = computed(() => Boolean(slots.header));
 
 function readScrollProp<T>(
   camelKey: string,
@@ -170,4 +229,51 @@ const normalizedScrollProps = computed(() => ({
   lowerThreshold: readScrollProp<number>("lowerThreshold", "lower-threshold"),
   upperThreshold: readScrollProp<number>("upperThreshold", "upper-threshold"),
 }));
+
+function getStatusBarHeight() {
+  if (isWeb) return 0;
+
+  try {
+    return Math.max(uni.getSystemInfoSync().statusBarHeight || 0, 0);
+  } catch {
+    return 0;
+  }
+}
+
+async function measureHeaderHeight() {
+  if (!shouldMeasureHeaderOffset.value || !instance?.proxy) return;
+
+  await nextTick();
+
+  const query = uni.createSelectorQuery().in(instance.proxy);
+  query.select(".cm-page-shell__fixed-header").boundingClientRect((rect) => {
+    const headerRect = Array.isArray(rect) ? rect[0] : rect;
+    if (!headerRect || typeof headerRect.height !== "number" || headerRect.height <= 0) {
+      return;
+    }
+
+    measuredHeaderHeight.value = Math.ceil(headerRect.height);
+  });
+  query.exec();
+}
+
+watch(
+  () => [
+    props.title,
+    props.subtitle,
+    props.headerClass,
+    props.headerFixed,
+    props.headerOffsetClass,
+    props.headerOffsetStyle,
+  ],
+  () => {
+    void measureHeaderHeight();
+  },
+  { flush: "post" },
+);
+
+onMounted(() => {
+  nativeStatusBarHeight.value = getStatusBarHeight();
+  void measureHeaderHeight();
+});
 </script>
