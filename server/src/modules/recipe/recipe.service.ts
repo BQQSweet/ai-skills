@@ -106,6 +106,7 @@ export class RecipeService {
         servings: dto.servings ?? 2,
         cover_url: dto.cover_url,
         source_type: dto.source_type ?? 'manual',
+        source_url: dto.source_url,
         tags: dto.tags ?? [],
         status: dto.status ?? 'published',
         created_by: userId,
@@ -173,6 +174,80 @@ export class RecipeService {
         ingredients: dto.ingredients ?? undefined,
         steps: dto.steps ?? undefined,
         nutrition: dto.nutrition ?? undefined,
+        source_url: dto.source_url ?? undefined,
+      },
+    });
+  }
+
+  async saveParsedRecipe(
+    dto: {
+      title: string;
+      description?: string;
+      ingredients: any[];
+      steps: any[];
+      nutrition?: any;
+      difficulty: string;
+      cook_time: number;
+      servings?: number;
+      cover_url?: string | null;
+      source_url?: string | null;
+      tags?: string[];
+    },
+    userId?: string,
+    sourceType = 'video_parsed',
+  ) {
+    return this.prisma.recipe.create({
+      data: {
+        title: dto.title,
+        description: dto.description,
+        ingredients: dto.ingredients,
+        steps: dto.steps,
+        nutrition: dto.nutrition,
+        difficulty: dto.difficulty,
+        cook_time: dto.cook_time,
+        servings: dto.servings ?? 2,
+        cover_url: dto.cover_url || null,
+        source_type: sourceType,
+        source_url: dto.source_url || null,
+        tags: dto.tags ?? [],
+        status: 'published',
+        created_by: userId,
+      },
+    });
+  }
+
+  async updateParsedRecipe(
+    id: string,
+    dto: {
+      title?: string;
+      description?: string;
+      ingredients?: any[];
+      steps?: any[];
+      nutrition?: any;
+      difficulty?: string;
+      cook_time?: number;
+      servings?: number;
+      cover_url?: string | null;
+      source_url?: string | null;
+      tags?: string[];
+    },
+  ) {
+    await this.findOne(id);
+
+    return this.prisma.recipe.update({
+      where: { id },
+      data: {
+        title: dto.title ?? undefined,
+        description: dto.description ?? undefined,
+        ingredients: dto.ingredients ?? undefined,
+        steps: dto.steps ?? undefined,
+        nutrition: dto.nutrition ?? undefined,
+        difficulty: dto.difficulty ?? undefined,
+        cook_time: dto.cook_time ?? undefined,
+        servings: dto.servings ?? undefined,
+        cover_url: dto.cover_url ?? undefined,
+        source_url: dto.source_url ?? undefined,
+        tags: dto.tags ?? undefined,
       },
     });
   }

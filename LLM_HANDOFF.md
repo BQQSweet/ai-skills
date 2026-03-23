@@ -45,6 +45,10 @@ If the task is about:
 - AI recipe generation:
   - user flow: `chef-mate/src/pages/fridge/ai-recipe.vue`, `chef-mate/src/services/recipe.ts`, `server/src/modules/recipe`
   - admin flow: `admin/src/api/recipe.ts`, `server/src/ai`
+- video-to-recipe parsing:
+  - user flow: `chef-mate/src/pages/recipe/from-video.vue`, `chef-mate/src/services/recipe.ts`
+  - backend flow: `server/src/modules/recipe/video`, `server/src/modules/recipe/recipe.controller.ts`
+  - supports `strict` / `assisted` modes and result-page regeneration without re-upload when evidence cache is still valid
 - fridge scan/items: `server/src/modules/fridge`, `chef-mate/src/pages/fridge`, `chef-mate/src/services/fridge.ts`
 - cooking guide/voice: `chef-mate/src/pages/recipe`, `chef-mate/src/services/recipe.ts`, `server/src/modules/recipe`
 - shopping/group/feed: matching folders in `chef-mate/src/services/*` and `server/src/modules/*`

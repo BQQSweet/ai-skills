@@ -41,6 +41,7 @@ Useful documents:
 - `docs/ChefMate-前端开发设计文档.md`: frontend page flows and component ideas
 - `docs/frontend-page-standards.md`: shared page componentization and frontend review standard for `chef-mate` and `admin`
 - `docs/ChefMate-后端开发设计文档.md`: backend architecture, API conventions, AI module design
+- `docs/video-recipe-checklist.md`: deploy/integration checklist for the local video parsing feature
 
 Important note: `server/README.md` is still the default Nest starter README, not a real project overview.
 
@@ -90,7 +91,7 @@ Backend module map:
 - `user`: profile and user-related APIs
 - `group`: family group and invite flows
 - `fridge`: ingredient recognition and fridge inventory
-- `recipe`: recipe CRUD, recommendation, AI generation by ingredients, step Q&A, TTS, voice command parsing
+- `recipe`: recipe CRUD, recommendation, AI generation by ingredients, step Q&A, TTS, voice command parsing, local video parsing jobs
 - `cooking`: cooking-session style logic
 - `shopping`: shared shopping lists and item purchase flow
 - `task`: household collaborative tasks
@@ -112,6 +113,13 @@ Representative controllers:
 - `server/src/modules/recipe/recipe.controller.ts`
 - `server/src/modules/fridge/fridge.controller.ts`
 - `server/src/ai/ai.controller.ts`
+
+Video recipe parsing endpoints:
+
+- `POST /api/recipe/from-video`: upload a local MP4/MOV file and create an async parse job
+- `GET /api/recipe/jobs/:jobId`: poll job status and fetch the saved recipe when completed
+- `POST /api/recipe/jobs/:jobId/regenerate`: regenerate the completed result from cached evidence in either `strict` or `assisted` mode without re-uploading the source video
+- in `strict` mode, action-like OCR subtitles now have higher priority than visual inference when the two conflict
 
 ### 4.2 `chef-mate`
 
@@ -139,6 +147,8 @@ Main user-facing pages:
 - `pages/index/index`: home page with recommended recipes, fridge alerts, family feed
 - `pages/fridge/index`: fridge inventory and scan/import flows
 - `pages/fridge/ai-recipe`: AI recipe ideas from available ingredients
+- `pages/recipe/from-video`: upload a local cooking video and parse it into a structured recipe
+- this page now supports a default `strict` mode, an opt-in `assisted` mode, and post-result mode switching with regeneration
 - `pages/recipe/cooking-guide`: immersive cooking guidance
 - `pages/recipe/cooking-steps`: full recipe steps
 - `pages/shopping/index`: shopping list

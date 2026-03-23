@@ -1,10 +1,25 @@
 import { get, post } from "./request";
 import { getToken } from "@/utils/storage";
 import { BASE_URL } from "@/utils/env";
-import type { Recipe } from "@/types/recipe";
+import type {
+  Recipe,
+  SubmitVideoRecipeJobResult,
+  VideoRecipeJobStatus,
+  VideoRecipeMode,
+} from "@/types/recipe";
 
 export type { Recipe } from "@/types/recipe";
-export type { RecipeIngredient, RecipeStep, RecipeNutrition } from "@/types/recipe";
+export type {
+  RecipeIngredient,
+  RecipeStep,
+  RecipeNutrition,
+  SubmitVideoRecipeJobResult,
+  VideoRecipeJobStatus,
+  VideoRecipeSelectedFile,
+  VideoRecipeIngredientAvailability,
+  VideoRecipePageState,
+  VideoRecipeMode,
+} from "@/types/recipe";
 
 export interface RecommendedRecipesResponse {
   recipes: Recipe[];
@@ -139,4 +154,56 @@ export function parseCommandIntent(text: string) {
     confidence: number;
     original_text: string;
   }>("/api/recipe/parse-intent", { text });
+}
+
+/**
+ * 上传本地视频并创建解析任务
+ */
+export function submitVideoRecipe(filePath: string, mode: VideoRecipeMode) {
+  return new Promise<SubmitVideoRecipeJobResult>((resolve, reject) => {
+    uni.uploadFile({
+      url: `${BASE_URL}/api/recipe/from-video`,
+      filePath,
+      name: "file",
+      formData: {
+        mode,
+      },
+      header: {
+        Authorization: `Bearer ${getToken()}`,
+      },
+      success: (uploadFileRes) => {
+        try {
+          const res = JSON.parse(uploadFileRes.data);
+          if (res.code === 0) {
+            resolve(res.data);
+            return;
+          }
+          reject(new Error(res.msg || "视频上传失败"));
+        } catch (error) {
+          reject(error);
+        }
+      },
+      fail: (error) => {
+        reject(error);
+      },
+    });
+  });
+}
+
+/**
+ * 查询视频解析任务状态
+ */
+export function getVideoRecipeJobStatus(jobId: string) {
+  return get<VideoRecipeJobStatus>(`/api/recipe/jobs/${jobId}`);
+}
+
+export function regenerateVideoRecipe(
+  jobId: string,
+  mode: VideoRecipeMode,
+) {
+  return post<{
+    jobId: string;
+    mode: VideoRecipeMode;
+    recipe: Recipe;
+  }>(`/api/recipe/jobs/${jobId}/regenerate`, { mode });
 }

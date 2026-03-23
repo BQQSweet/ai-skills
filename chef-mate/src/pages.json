@@ -67,6 +67,13 @@
       }
     },
     {
+      "path": "pages/recipe/from-video",
+      "style": {
+        "navigationBarTitleText": "视频解析食谱",
+        "navigationStyle": "custom"
+      }
+    },
+    {
       "path": "pages/profile/index",
       "style": {
         "navigationBarTitleText": "个人中心",

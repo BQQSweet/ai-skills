@@ -1,18 +1,23 @@
 import { computed, ref } from "vue";
 import { useGroupStore } from "@/stores/group";
 import { classifyRecipeIngredients } from "@/services/shopping";
-import type { Recipe } from "@/services/recipe";
+import type { Recipe } from "@/types/recipe";
 import type { ClassifiedRecipeIngredient } from "@/types/shopping";
 
 type SelectableClassifiedRecipeIngredient = ClassifiedRecipeIngredient & {
   key: string;
 };
 
+interface ShoppingRecipeSelectionContext {
+  recipeId?: string;
+  recipeTitle: string;
+}
+
 export function useRecipeIngredientSelection() {
   const groupStore = useGroupStore();
 
   const showIngredientSelectionSheet = ref(false);
-  const pendingRecipeForShopping = ref<Recipe | null>(null);
+  const pendingRecipeContext = ref<ShoppingRecipeSelectionContext | null>(null);
   const pendingShoppingNavigationUrl = ref("");
   const classifiedRecipeIngredients = ref<SelectableClassifiedRecipeIngredient[]>([]);
   const selectedIngredientKeys = ref<string[]>([]);
@@ -20,7 +25,7 @@ export function useRecipeIngredientSelection() {
   const confirmingIngredientSelection = ref(false);
 
   const selectionRecipeTitle = computed(
-    () => pendingRecipeForShopping.value?.title || "",
+    () => pendingRecipeContext.value?.recipeTitle || "",
   );
 
   function buildIngredientKey(
@@ -45,7 +50,7 @@ export function useRecipeIngredientSelection() {
   }
 
   function resetSelectionState() {
-    pendingRecipeForShopping.value = null;
+    pendingRecipeContext.value = null;
     pendingShoppingNavigationUrl.value = "";
     classifiedRecipeIngredients.value = [];
     selectedIngredientKeys.value = [];
@@ -81,6 +86,28 @@ export function useRecipeIngredientSelection() {
     });
   }
 
+  function applySelectableItems(
+    context: ShoppingRecipeSelectionContext,
+    items: ClassifiedRecipeIngredient[],
+  ) {
+    const selectableItems = items.map((item, index) => ({
+      ...item,
+      key: buildIngredientKey(item, index),
+    }));
+
+    if (!selectableItems.length) {
+      uni.$u.toast("当前食谱暂无可加入清单的原料");
+      return;
+    }
+
+    pendingRecipeContext.value = context;
+    classifiedRecipeIngredients.value = selectableItems;
+    selectedIngredientKeys.value = selectableItems
+      .filter((item) => item.selectedByDefault)
+      .map((item) => item.key);
+    showIngredientSelectionSheet.value = true;
+  }
+
   async function openIngredientSelection(recipe: Recipe) {
     if (loadingIngredientClassification.value) {
       return;
@@ -110,28 +137,39 @@ export function useRecipeIngredientSelection() {
         ingredients: recipe.ingredients || [],
       });
 
-      const selectableItems = result.ingredients.map((item, index) => ({
-        ...item,
-        key: buildIngredientKey(item, index),
-      }));
-
-      if (!selectableItems.length) {
-        uni.$u.toast("当前食谱暂无可加入清单的原料");
-        return;
-      }
-
-      pendingRecipeForShopping.value = recipe;
-      classifiedRecipeIngredients.value = selectableItems;
-      selectedIngredientKeys.value = selectableItems
-        .filter((item) => item.selectedByDefault)
-        .map((item) => item.key);
-      showIngredientSelectionSheet.value = true;
+      applySelectableItems(
+        {
+          recipeId: recipe.id || undefined,
+          recipeTitle: recipe.title || "协作采购清单",
+        },
+        result.ingredients,
+      );
     } catch (error: any) {
       uni.$u.toast(error?.msg || "原料分类失败，请稍后重试");
     } finally {
       loadingIngredientClassification.value = false;
       uni.hideLoading();
     }
+  }
+
+  async function openWithClassifiedIngredients(options: {
+    recipeId?: string;
+    recipeTitle?: string;
+    items: ClassifiedRecipeIngredient[];
+  }) {
+    const hasGroup = await ensureGroupReady();
+    if (!hasGroup) {
+      uni.$u.toast("请先加入家庭组");
+      return;
+    }
+
+    applySelectableItems(
+      {
+        recipeId: options.recipeId,
+        recipeTitle: options.recipeTitle || "协作采购清单",
+      },
+      options.items,
+    );
   }
 
   function toggleIngredientSelection(key: string) {
@@ -160,16 +198,16 @@ export function useRecipeIngredientSelection() {
       return;
     }
 
-    const recipe = pendingRecipeForShopping.value;
-    if (!recipe) {
+    const context = pendingRecipeContext.value;
+    if (!context) {
       return;
     }
 
     confirmingIngredientSelection.value = true;
 
     const query = [
-      `recipeId=${encodeURIComponent(recipe.id || "")}`,
-      `recipeTitle=${encodeURIComponent(recipe.title || "")}`,
+      `recipeId=${encodeURIComponent(context.recipeId || "")}`,
+      `recipeTitle=${encodeURIComponent(context.recipeTitle || "")}`,
       `ingredients=${encodeURIComponent(JSON.stringify(selectedIngredients))}`,
     ].join("&");
 
@@ -185,6 +223,7 @@ export function useRecipeIngredientSelection() {
     loadingIngredientClassification,
     confirmingIngredientSelection,
     openIngredientSelection,
+    openWithClassifiedIngredients,
     closeIngredientSelection,
     handleIngredientSelectionClosed,
     toggleIngredientSelection,

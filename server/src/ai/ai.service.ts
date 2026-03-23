@@ -1,9 +1,17 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import * as fs from 'fs';
 import OpenAI from 'openai';
-import { format } from 'path';
+import { basename } from 'path';
 import FormData = require('form-data');
-import { Readable } from 'stream';
+import type {
+  OcrTextEntry,
+  OcrTextSpan,
+  TimelineCandidateStep,
+  TimelineRecipeStep,
+  VideoFrameOcrPayload,
+  VideoRecipeMetadata,
+} from '@/modules/recipe/video/video-recipe.types';
 
 @Injectable()
 export class AiService {
@@ -109,7 +117,10 @@ export class AiService {
 
       const responseContent = completion.choices[0].message.content;
       this.logger.debug(`AI Response: ${responseContent}`);
-      return JSON.parse(responseContent || '{}');
+      return await this.parseJsonResponse(
+        responseContent || '{}',
+        'AI 菜谱生成',
+      );
     } catch (error) {
       this.logger.error(
         `Failed to generate recipe: ${error.message}`,
@@ -254,6 +265,482 @@ export class AiService {
       throw e;
     }
   }
+
+  async analyzeVideoRecipe(options: {
+    frames: string[];
+    transcript?: string;
+    frameTexts?: string[];
+    fallbackTitle?: string;
+  }): Promise<any> {
+    const model = this.config.get<string>('AI_VISION_MODEL') || 'qwen-vl-plus';
+    const client = this.visionClient || this.openai;
+
+    if (!client) {
+      throw new BadRequestException('AI Vision Service is not configured');
+    }
+
+    const transcript = (options.transcript || '').trim();
+    const trimmedTranscript =
+      transcript.length > 6000 ? `${transcript.slice(0, 6000)}...` : transcript;
+    const mergedFrameText = (options.frameTexts || [])
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .join('\n');
+    const trimmedFrameText =
+      mergedFrameText.length > 4000
+        ? `${mergedFrameText.slice(0, 4000)}...`
+        : mergedFrameText;
+
+    const textPrompt = `你是一个专业的美食视频分析助手。请根据视频关键帧和语音转写，生成一份可直接烹饪的结构化食谱 JSON。
+
+要求：
+1. 输出必须是一个合法 JSON 对象，不要输出 markdown 代码块。
+2. 结合画面、字幕、叠字、配方文字和语音信息提取菜名、食材、份量、步骤、时间、火候和难度。
+3. 如果信息不完整，可以基于烹饪常识做最小必要补全，但不要编造明显不合理的细节。
+4. 如果转写、画面文字和画面内容冲突，以更具体、更明确的文本信息为准。
+5. 如果无法确认封面图或营养信息，可返回 null。
+6. 如果菜名不明确，可参考这个兜底标题：${options.fallbackTitle || '视频解析食谱'}。
+7. 如果视频里没有说话，但画面出现了步骤字幕、配料表、调料比例、时长说明，必须尽量吸收这些文字，不要忽略。
+
+JSON 结构：
+{
+  "title": "菜谱标题",
+  "description": "一句话描述",
+  "difficulty": "简单 或 中等 或 困难",
+  "cook_time": 20,
+  "servings": 2,
+  "cover_url": null,
+  "source_url": null,
+  "tags": ["视频解析", "家常菜"],
+  "ingredients": [
+    { "name": "鸡腿", "quantity": 2, "unit": "个", "optional": false }
+  ],
+  "steps": [
+    { "instruction": "鸡腿冷水下锅焯水。", "duration_min": 5, "timer_required": true }
+  ],
+  "nutrition": null
+}
+
+语音转写内容：
+${trimmedTranscript || '无可用转写，请尽量依据画面和画面文字判断。'}
+
+视频画面文字提取结果：
+${trimmedFrameText || '未额外提取到明确画面文字，请直接从图片中识别字幕/叠字。'}`;
+
+    try {
+      const completion = await client.chat.completions.create({
+        model,
+        temperature: 0.2,
+        messages: [
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: textPrompt },
+              ...options.frames.map((frame) => ({
+                type: 'image_url' as const,
+                image_url: {
+                  url: frame,
+                },
+              })),
+            ],
+          },
+        ],
+      });
+
+      const responseContent = completion.choices[0].message.content || '';
+      return await this.parseJsonResponse(responseContent, '视频食谱解析');
+    } catch (error) {
+      this.logger.error(
+        `Failed to analyze video recipe: ${error.message}`,
+        error.stack,
+      );
+      throw new BadRequestException('视频食谱解析失败，请稍后重试');
+    }
+  }
+
+  async extractVideoFrameTexts(
+    frames: VideoFrameOcrPayload[],
+  ): Promise<OcrTextEntry[]> {
+    const model = this.config.get<string>('AI_VISION_MODEL') || 'qwen-vl-plus';
+    const client = this.visionClient || this.openai;
+
+    if (!client) {
+      throw new BadRequestException('AI Vision Service is not configured');
+    }
+
+    if (!frames.length) {
+      return [];
+    }
+
+    const collectedEntries: OcrTextEntry[] = [];
+
+    for (let index = 0; index < frames.length; index += 1) {
+      const frame = frames[index];
+      const prompt = `你是一个做菜视频 OCR 助手。当前会给你同一帧视频的 1 张原图和若干张文字放大裁剪图。
+
+识别目标：
+1. 优先读取视频叠加字幕、步骤字幕、食材列表、配料比例、时间说明、封面标题。
+2. 特别关注左侧、左上、底部这类带黑色描边的白色中文文字。
+3. 如果同一条文字在原图和裁剪图里重复出现，只保留一次。
+4. 忽略抖音号、平台 logo、水印、点赞评论 UI、昵称等与烹饪无关的文字。
+5. 尽量逐行保留原文，不要意译，不要自己改写。
+6. 哪怕只能看清局部，也尽量返回，例如“1勺生抽”“半勺老抽”“调碗料汁”这种碎片也要返回，不要因为不完整就忽略。
+7. 配料字卡请按一行一条输出。
+
+输出 JSON 结构：
+{
+  "texts": [
+    "1勺生抽",
+    "半勺老抽",
+    "调碗料汁"
+  ]
+}`;
+
+      try {
+        const completion = await client.chat.completions.create({
+          model,
+          temperature: 0,
+          messages: [
+            {
+              role: 'user',
+              content: [
+                {
+                  type: 'text',
+                  text: `${prompt}\n\n当前处理的是第 ${index + 1} 帧。第一张是原图，后续是同帧的文字放大裁剪图。`,
+                },
+                {
+                  type: 'image_url' as const,
+                  image_url: {
+                    url: frame.originalFrame,
+                  },
+                },
+                ...(frame.focusCrops || []).map((crop) => ({
+                  type: 'image_url' as const,
+                  image_url: {
+                    url: crop,
+                  },
+                })),
+              ],
+            },
+          ],
+        });
+
+        const responseContent = completion.choices[0].message.content || '';
+        const parsed = await this.parseJsonResponse(
+          responseContent,
+          `视频第 ${index + 1} 帧文字提取`,
+        );
+        const frameTexts = Array.isArray(parsed?.texts) ? parsed.texts : [];
+
+        const normalizedTexts = frameTexts
+          .map((item: unknown) => (typeof item === 'string' ? item.trim() : ''))
+          .filter(Boolean);
+
+        if (normalizedTexts.length > 0) {
+          collectedEntries.push({
+            timeSec: frame.timeSec,
+            texts: Array.from(new Set(normalizedTexts)),
+          });
+        }
+      } catch (error) {
+        this.logger.warn(
+          `Failed to extract texts from video frame ${index + 1}: ${error.message}`,
+        );
+      }
+    }
+
+    return collectedEntries;
+  }
+
+  async extractSegmentTimelineSteps(options: {
+    segmentStartSec: number;
+    segmentEndSec: number;
+    frames: Array<{ timeSec: number; image: string }>;
+    ocrEntries: OcrTextEntry[];
+  }): Promise<TimelineCandidateStep[]> {
+    const model = this.config.get<string>('AI_VISION_MODEL') || 'qwen-vl-plus';
+    const client = this.visionClient || this.openai;
+
+    if (!client) {
+      throw new BadRequestException('AI Vision Service is not configured');
+    }
+
+    const ocrTextBlock = options.ocrEntries.length
+      ? options.ocrEntries
+          .map(
+            (entry) =>
+              `${entry.timeSec.toFixed(2)}s: ${entry.texts.join(' | ')}`,
+          )
+          .join('\n')
+      : '无';
+    const strictOcrLines = options.ocrEntries
+      .flatMap((entry) => entry.texts)
+      .filter((text) =>
+        /(切|调|搅|拌|放入|下锅|炒|煎|煮|焖|扣|翻炒|盛出|淋入|炒香|炒出汁水)/.test(text),
+      );
+
+    const prompt = `你是一个做菜视频分段步骤提取助手。请只根据当前时间段内的画面和该时间段的 OCR 字幕，提取这一段里明确发生的烹饪步骤。
+
+规则：
+1. 只提取当前时间段 ${options.segmentStartSec.toFixed(2)}s - ${options.segmentEndSec.toFixed(2)}s 内明确发生的步骤。
+2. OCR 中已明确出现的动作字幕，不能改写、替换、同义转写，也不能把食材词换成别的食材。
+3. 你的任务是补充 OCR 没明确写出的动作，不是重写 OCR 已确认步骤。
+4. 不要补全当前时间段外的步骤。
+5. 如果这一段没有明确步骤，返回空数组。
+6. start_sec 和 end_sec 必须落在当前时间段内。
+7. evidence_sources 只能使用 visual 或 ocr，且至少一个。
+8. 结果顺序必须与这一段视频中的实际出现顺序一致。
+
+OCR 文字：
+${ocrTextBlock}
+
+OCR 已确认动作字幕（若存在，禁止改写这些原文）：
+${strictOcrLines.length ? strictOcrLines.join(' / ') : '无'}
+
+输出 JSON：
+{
+  "steps": [
+    {
+      "instruction": "调碗料汁",
+      "start_sec": ${options.segmentStartSec.toFixed(2)},
+      "end_sec": ${Math.min(options.segmentEndSec, options.segmentStartSec + 2).toFixed(2)},
+      "duration_min": 1,
+      "timer_required": false,
+      "evidence_sources": ["ocr"]
+    }
+  ]
+}`;
+
+    try {
+      const completion = await client.chat.completions.create({
+        model,
+        temperature: 0,
+        messages: [
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: prompt },
+              ...options.frames.map((frame) => ({
+                type: 'image_url' as const,
+                image_url: {
+                  url: frame.image,
+                },
+              })),
+            ],
+          },
+        ],
+      });
+
+      const responseContent = completion.choices[0].message.content || '';
+      const parsed = await this.parseJsonResponse(
+        responseContent,
+        `视频时间段 ${options.segmentStartSec.toFixed(2)}-${options.segmentEndSec.toFixed(2)} 步骤提取`,
+      );
+
+      return Array.isArray(parsed?.steps)
+        ? parsed.steps
+            .map((item: Record<string, unknown>) => ({
+              instruction: String(item?.instruction || '').trim(),
+              start_sec: Number(item?.start_sec || options.segmentStartSec),
+              end_sec: Number(item?.end_sec || options.segmentEndSec),
+              duration_min: Number(item?.duration_min || 1),
+              timer_required: Boolean(item?.timer_required),
+              evidence_sources: Array.isArray(item?.evidence_sources)
+                ? item.evidence_sources
+                    .map((source) => String(source))
+                    .filter((source) => ['visual', 'ocr'].includes(source)) as Array<'visual' | 'ocr'>
+                : ['visual'],
+            }))
+            .filter(
+              (item: TimelineCandidateStep) => item.instruction.length > 0,
+            )
+        : [];
+    } catch (error) {
+      this.logger.error(
+        `Failed to extract segment timeline steps: ${error.message}`,
+        error.stack,
+      );
+      throw new BadRequestException('视频分段步骤提取失败');
+    }
+  }
+
+  async generateVideoRecipeMetadata(options: {
+    fallbackTitle: string;
+    strictSteps: TimelineRecipeStep[];
+    transcript?: string;
+    ocrEntries?: OcrTextEntry[];
+    ocrSpans?: OcrTextSpan[];
+  }): Promise<VideoRecipeMetadata> {
+    if (!this.openai) {
+      throw new BadRequestException('AI Service is not fully configured');
+    }
+
+    const model = this.config.get<string>('AI_MODEL') || 'deepseek-chat';
+    const strictStepText = options.strictSteps
+      .map((step) => `${step.order}. ${step.instruction}`)
+      .join('\n');
+    const ocrTextBlock = (options.ocrSpans || [])
+      .map((entry) => entry.texts.join(' | '))
+      .filter(Boolean)
+      .join('\n');
+    const prompt = `你是一个做菜视频食谱整理助手。请根据已经确认的严格步骤、OCR 字幕和转写内容，生成食谱元信息与食材信息。
+
+要求：
+1. 不要新增或改写步骤，步骤列表已经在别处固定。
+2. 重点补齐标题、描述、难度、人份、标签、食材清单、营养信息。
+3. 如果无法确认营养信息，返回 null。
+4. 标题不明确时使用兜底标题：${options.fallbackTitle}。
+
+严格步骤：
+${strictStepText || '暂无'}
+
+OCR 文字：
+${ocrTextBlock || '无'}
+
+语音转写：
+${(options.transcript || '').trim() || '无'}
+
+输出 JSON：
+{
+  "title": "菜谱标题",
+  "description": "一句话描述",
+  "difficulty": "简单",
+  "servings": 2,
+  "cover_url": null,
+  "source_url": null,
+  "tags": ["视频解析"],
+  "ingredients": [
+    { "name": "土豆", "quantity": 2, "unit": "个", "optional": false }
+  ],
+  "nutrition": null
+}`;
+
+    try {
+      const completion = await this.openai.chat.completions.create({
+        model,
+        temperature: 0.2,
+        response_format: { type: 'json_object' },
+        messages: [
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+      });
+
+      const responseContent = completion.choices[0].message.content || '{}';
+      return (await this.parseJsonResponse(
+        responseContent,
+        '视频食谱元信息生成',
+      )) as VideoRecipeMetadata;
+    } catch (error) {
+      this.logger.error(
+        `Failed to generate video recipe metadata: ${error.message}`,
+        error.stack,
+      );
+      throw new BadRequestException('视频食谱元信息生成失败');
+    }
+  }
+
+  async generateAssistedTimelineInsertions(options: {
+    strictSteps: TimelineRecipeStep[];
+    transcript?: string;
+    ocrEntries?: OcrTextEntry[];
+    ocrSpans?: OcrTextSpan[];
+  }): Promise<
+    Array<{
+      insert_after_order: number;
+      instruction: string;
+      duration_min?: number;
+      timer_required?: boolean;
+    }>
+  > {
+    if (!this.openai) {
+      throw new BadRequestException('AI Service is not fully configured');
+    }
+
+    const model = this.config.get<string>('AI_MODEL') || 'deepseek-chat';
+    const strictStepText = options.strictSteps
+      .map((step) => `${step.order}. ${step.instruction}`)
+      .join('\n');
+    const ocrTextBlock = (options.ocrSpans || [])
+      .map((entry) => `${entry.startSec.toFixed(2)}s-${entry.endSec.toFixed(2)}s: ${entry.texts.join(' | ')}`)
+      .join('\n');
+    const prompt = `你是一个食谱补全助手。现有一份严格按视频证据确认的步骤列表，请只补充可能漏掉的桥接步骤、准备步骤或收尾步骤。
+
+规则：
+1. 严格步骤本身不能删除、改名、换序。
+2. 只返回“需要插入的补全步骤”，不要返回完整步骤列表。
+3. insert_after_order = 0 表示插在最前面。
+4. 如果没有必要补全，返回空数组。
+5. 插入步骤默认都视为 AI 推断步骤。
+
+严格步骤：
+${strictStepText || '暂无'}
+
+OCR 文字：
+${ocrTextBlock || '无'}
+
+语音转写：
+${(options.transcript || '').trim() || '无'}
+
+输出 JSON：
+{
+  "insertions": [
+    {
+      "insert_after_order": 1,
+      "instruction": "将调好的料汁放在一旁备用",
+      "duration_min": 1,
+      "timer_required": false
+    }
+  ]
+}`;
+
+    try {
+      const completion = await this.openai.chat.completions.create({
+        model,
+        temperature: 0.2,
+        response_format: { type: 'json_object' },
+        messages: [
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+      });
+
+      const responseContent = completion.choices[0].message.content || '{}';
+      const parsed = await this.parseJsonResponse(
+        responseContent,
+        '视频步骤补全生成',
+      );
+
+      return Array.isArray(parsed?.insertions)
+        ? parsed.insertions
+            .map((item: Record<string, unknown>) => ({
+              insert_after_order: Number(item?.insert_after_order || 0),
+              instruction: String(item?.instruction || '').trim(),
+              duration_min: Number(item?.duration_min || 2),
+              timer_required: Boolean(item?.timer_required),
+            }))
+            .filter(
+              (item: {
+                insert_after_order: number;
+                instruction: string;
+                duration_min: number;
+                timer_required: boolean;
+              }) => item.instruction.length > 0,
+            )
+        : [];
+    } catch (error) {
+      this.logger.error(
+        `Failed to generate assisted timeline insertions: ${error.message}`,
+        error.stack,
+      );
+      throw new BadRequestException('视频步骤补全生成失败');
+    }
+  }
+
   /**
    * AI 生成语音 (TTS)
    * 调用火山引擎 / 豆包语音 API
@@ -332,6 +819,26 @@ export class AiService {
    * 调用 SiliconFlow (FunAudioLLM/SenseVoiceSmall) 进行录音转写
    */
   async transcribeAudio(file: Express.Multer.File): Promise<string> {
+    return this.requestAudioTranscription({
+      file: file.buffer,
+      filename: file.originalname || 'audio.mp3',
+      contentType: file.mimetype || 'audio/mpeg',
+    });
+  }
+
+  async transcribeAudioFromPath(filePath: string): Promise<string> {
+    return this.requestAudioTranscription({
+      file: fs.createReadStream(filePath),
+      filename: basename(filePath),
+      contentType: 'audio/mpeg',
+    });
+  }
+
+  private async requestAudioTranscription(options: {
+    file: Buffer | fs.ReadStream;
+    filename: string;
+    contentType: string;
+  }): Promise<string> {
     const apiKey = this.config.get<string>('AI_SILICONFLOW_API_KEY');
     const model =
       this.config.get<string>('AI_SILICONFLOW_MODEL') ||
@@ -351,14 +858,15 @@ export class AiService {
       const axios = require('axios');
       const form = new FormData();
 
-      form.append('file', file.buffer, {
-        filename: file.originalname || 'audio.mp3',
-        contentType: file.mimetype || 'audio/mpeg',
+      form.append('file', options.file, {
+        filename: options.filename,
+        contentType: options.contentType,
       });
       form.append('model', model);
 
       const res = await axios.post(baseUrl, form, {
         headers: {
+          ...form.getHeaders(),
           Authorization: `Bearer ${apiKey}`,
         },
       });
@@ -433,5 +941,68 @@ export class AiService {
       );
       throw new BadRequestException('语义解析失败，请稍后重试');
     }
+  }
+
+  private async parseJsonResponse(responseContent: string, scene: string) {
+    const direct = this.extractJsonCandidate(responseContent);
+
+    if (direct) {
+      try {
+        return JSON.parse(direct);
+      } catch {
+        // fall through to repair flow
+      }
+    }
+
+    if (!this.openai) {
+      throw new BadRequestException(`${scene} 返回格式异常`);
+    }
+
+    try {
+      const model = this.config.get<string>('AI_MODEL') || 'deepseek-chat';
+      const completion = await this.openai.chat.completions.create({
+        model,
+        temperature: 0,
+        response_format: { type: 'json_object' },
+        messages: [
+          {
+            role: 'system',
+            content:
+              '你是一个 JSON 修复助手。请将用户给出的内容修正为一个合法 JSON 对象，只输出 JSON 对象本身。',
+          },
+          {
+            role: 'user',
+            content: responseContent,
+          },
+        ],
+      });
+
+      const repairedContent = completion.choices[0].message.content || '{}';
+      return JSON.parse(repairedContent);
+    } catch (error) {
+      this.logger.error(
+        `${scene} JSON repair failed: ${error.message}`,
+        error.stack,
+      );
+      throw new BadRequestException(`${scene} 返回格式异常`);
+    }
+  }
+
+  private extractJsonCandidate(responseContent: string) {
+    const trimmed = responseContent.trim();
+
+    if (!trimmed) {
+      return null;
+    }
+
+    if (
+      (trimmed.startsWith('{') && trimmed.endsWith('}'))
+      || (trimmed.startsWith('[') && trimmed.endsWith(']'))
+    ) {
+      return trimmed;
+    }
+
+    const jsonMatch = trimmed.match(/\{[\s\S]*\}/);
+    return jsonMatch?.[0] || null;
   }
 }

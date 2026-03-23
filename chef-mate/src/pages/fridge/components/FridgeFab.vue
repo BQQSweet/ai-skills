@@ -50,6 +50,18 @@
         <view class="flex items-center gap-3">
           <text
             class="text-slate-700 font-medium text-sm bg-white/90 px-3 py-1.5 rounded-lg shadow-sm backdrop-blur-sm"
+            >视频解析</text
+          >
+          <button
+            class="w-12 h-12 rounded-full bg-white border border-primary/20 flex items-center justify-center text-primary shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:bg-slate-50 transition-all active:scale-95 m-0 p-0 after:hidden"
+            @click="handleAction('video')"
+          >
+            <text class="material-symbols-outlined text-[24px]">movie</text>
+          </button>
+        </view>
+        <view class="flex items-center gap-3">
+          <text
+            class="text-slate-700 font-medium text-sm bg-white/90 px-3 py-1.5 rounded-lg shadow-sm backdrop-blur-sm"
             >手动输入</text
           >
           <button
@@ -96,6 +108,7 @@ import ScanCamera from "./ScanCamera.vue";
 const emit = defineEmits<{
   added: [];
   "ai-recipe": [];
+  "video-recipe": [];
 }>();
 
 const isFabOpen = ref(false);
@@ -106,6 +119,8 @@ const handleAction = (type: string) => {
   isFabOpen.value = false;
   if (type === "camera") {
     showScanCamera.value = true;
+  } else if (type === "video") {
+    emit("video-recipe");
   } else if (type === "mic") {
     uToastRef.value?.show({ message: "语音录入开发中", type: "default" });
   } else if (type === "edit") {

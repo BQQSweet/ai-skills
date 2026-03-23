@@ -74,6 +74,11 @@ export class CreateRecipeDto {
   @IsOptional()
   source_type?: string;
 
+  @ApiPropertyOptional({ description: '来源链接' })
+  @IsString()
+  @IsOptional()
+  source_url?: string;
+
   @ApiPropertyOptional({ description: '标签', example: ['家常菜', '快手菜'] })
   @IsArray()
   @IsOptional()

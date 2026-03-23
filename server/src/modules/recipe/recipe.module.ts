@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { BullModule } from '@nestjs/bullmq';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { RecipeController } from './recipe.controller';
@@ -9,10 +10,17 @@ import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { AdminGuard } from '@/common/guards/admin.guard';
 
 import { AiModule } from '@/ai/ai.module';
+import { VIDEO_RECIPE_QUEUE_NAME } from './constants/video-recipe.constants';
+import { RecipeVideoProcessor } from './video/recipe-video.processor';
+import { RecipeVideoService } from './video/recipe-video.service';
+import { FfmpegMediaService } from './video/ffmpeg-media.service';
 
 @Module({
   imports: [
     AiModule,
+    BullModule.registerQueue({
+      name: VIDEO_RECIPE_QUEUE_NAME,
+    }),
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
@@ -30,6 +38,9 @@ import { AiModule } from '@/ai/ai.module';
     PrismaService,
     JwtAuthGuard,
     AdminGuard,
+    RecipeVideoService,
+    RecipeVideoProcessor,
+    FfmpegMediaService,
   ],
   exports: [RecipeService],
 })

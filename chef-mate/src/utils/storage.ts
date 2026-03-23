@@ -10,6 +10,7 @@ const STORAGE_KEYS = {
   CURRENT_GROUP_ID: 'currentGroupId',
   DIETARY_PREFS: 'dietaryPrefs',
   SPEECH_LANGUAGE: 'speechLanguage',
+  ACTIVE_VIDEO_RECIPE_JOB: 'activeVideoRecipeJob',
 } as const;
 
 /** 获取存储值 */

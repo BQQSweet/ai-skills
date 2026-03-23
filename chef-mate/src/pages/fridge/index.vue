@@ -113,7 +113,11 @@
     </scroll-view>
 
     <FridgeAiBanner ref="aiRecipeEntryRef" :ingredients="selectedIngredients" />
-    <FridgeFab @added="loadItems" @ai-recipe="openAiRecipeEntry" />
+    <FridgeFab
+      @added="loadItems"
+      @ai-recipe="openAiRecipeEntry"
+      @video-recipe="openVideoRecipeEntry"
+    />
     <up-toast ref="uToastRef"></up-toast>
 
     <CmConfirmDialog
@@ -255,6 +259,12 @@ const toggleSelectItem = (item: FridgeItemUI) => {
 
 const openAiRecipeEntry = () => {
   aiRecipeEntryRef.value?.openPopup();
+};
+
+const openVideoRecipeEntry = () => {
+  uni.navigateTo({
+    url: "/pages/recipe/from-video",
+  });
 };
 
 const handleClearSelection = () => {

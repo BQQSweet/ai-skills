@@ -1,0 +1,874 @@
+{
+  "version": "video-recipe-cache-v1",
+  "jobId": "14",
+  "userId": "b00d6b12-6965-42e7-b311-78300a3fbae5",
+  "recipeId": "b3bce073-4db2-4dce-acdc-6bc9689f7585",
+  "currentMode": "strict",
+  "createdAt": "2026-03-23T04:37:21.240Z",
+  "expiresAt": "2026-03-24T04:37:21.240Z",
+  "durationSeconds": 50.340862,
+  "fallbackTitle": "视频解析食谱",
+  "sanitizedFileTitle": "",
+  "titleSource": "ai",
+  "transcript": "Yeah.🎼Yeah.あし？う。は。Yeah.ほら。やと。🎼  🎼Yeah.抖音。",
+  "analysisFrames": [
+    {
+      "path": "/Users/byy/develop/Intelligent-workbench/server/uploads/recipe-video/cache/14/analysis-frames/frame-1.jpg",
+      "timeSec": 5.59
+    },
+    {
+      "path": "/Users/byy/develop/Intelligent-workbench/server/uploads/recipe-video/cache/14/analysis-frames/frame-2.jpg",
+      "timeSec": 11.19
+    },
+    {
+      "path": "/Users/byy/develop/Intelligent-workbench/server/uploads/recipe-video/cache/14/analysis-frames/frame-3.jpg",
+      "timeSec": 16.78
+    },
+    {
+      "path": "/Users/byy/develop/Intelligent-workbench/server/uploads/recipe-video/cache/14/analysis-frames/frame-4.jpg",
+      "timeSec": 22.37
+    },
+    {
+      "path": "/Users/byy/develop/Intelligent-workbench/server/uploads/recipe-video/cache/14/analysis-frames/frame-5.jpg",
+      "timeSec": 27.97
+    },
+    {
+      "path": "/Users/byy/develop/Intelligent-workbench/server/uploads/recipe-video/cache/14/analysis-frames/frame-6.jpg",
+      "timeSec": 33.56
+    },
+    {
+      "path": "/Users/byy/develop/Intelligent-workbench/server/uploads/recipe-video/cache/14/analysis-frames/frame-7.jpg",
+      "timeSec": 39.15
+    },
+    {
+      "path": "/Users/byy/develop/Intelligent-workbench/server/uploads/recipe-video/cache/14/analysis-frames/frame-8.jpg",
+      "timeSec": 44.75
+    }
+  ],
+  "ocrEntries": [
+    {
+      "timeSec": 0.5,
+      "texts": [
+        "抖音号：mxy22051729191",
+        "喵小鱼"
+      ]
+    },
+    {
+      "timeSec": 1.5,
+      "texts": [
+        "抖音号：mxy22051729191",
+        "喵小鱼"
+      ]
+    },
+    {
+      "timeSec": 2.5,
+      "texts": [
+        "抖音号：mxy22051729191",
+        "喵小鱼"
+      ]
+    },
+    {
+      "timeSec": 3.5,
+      "texts": [
+        "抖音号：mxy22051729191",
+        "喵小鱼"
+      ]
+    },
+    {
+      "timeSec": 4.5,
+      "texts": [
+        "去皮的番茄切丁"
+      ]
+    },
+    {
+      "timeSec": 6.5,
+      "texts": [
+        "去皮的土豆切丁"
+      ]
+    },
+    {
+      "timeSec": 7.5,
+      "texts": [
+        "去皮的土豆切丁"
+      ]
+    },
+    {
+      "timeSec": 8.5,
+      "texts": [
+        "去皮的土豆切丁"
+      ]
+    },
+    {
+      "timeSec": 9.5,
+      "texts": [
+        "烤肠切段"
+      ]
+    },
+    {
+      "timeSec": 10.5,
+      "texts": [
+        "调碗料汁"
+      ]
+    },
+    {
+      "timeSec": 11.5,
+      "texts": [
+        "1勺生抽",
+        "半勺老抽",
+        "1勺耗油",
+        "1勺淀粉",
+        "半勺白糖",
+        "1勺番茄酱",
+        "大半碗水",
+        "调碗料汁"
+      ]
+    },
+    {
+      "timeSec": 12.5,
+      "texts": [
+        "1勺生抽",
+        "半勺老抽",
+        "1勺耗油",
+        "1勺淀粉",
+        "半勺白糖",
+        "1勺番茄酱",
+        "大半碗水",
+        "调碗料汁"
+      ]
+    },
+    {
+      "timeSec": 13.5,
+      "texts": [
+        "1勺生抽",
+        "半勺老抽",
+        "1勺耗油",
+        "1勺淀粉",
+        "半勺白糖",
+        "1勺番茄酱",
+        "大半碗水",
+        "调碗料汁"
+      ]
+    },
+    {
+      "timeSec": 14.5,
+      "texts": [
+        "1勺生抽",
+        "半勺老抽",
+        "1勺耗油",
+        "1勺淀粉",
+        "半勺白糖",
+        "1勺番茄酱",
+        "大半碗水",
+        "调碗料汁"
+      ]
+    },
+    {
+      "timeSec": 15.5,
+      "texts": [
+        "搅匀"
+      ]
+    },
+    {
+      "timeSec": 16.5,
+      "texts": [
+        "搅匀"
+      ]
+    },
+    {
+      "timeSec": 17.5,
+      "texts": [
+        "抖音号：mxy22051729191",
+        "喵小鱼"
+      ]
+    },
+    {
+      "timeSec": 18.5,
+      "texts": [
+        "油热放入土豆煎至表面焦黄盛出"
+      ]
+    },
+    {
+      "timeSec": 19.5,
+      "texts": [
+        "油热放入土豆煎至表面焦黄盛出"
+      ]
+    },
+    {
+      "timeSec": 21,
+      "texts": [
+        "油热放入土豆煎至表面焦黄盛出"
+      ]
+    },
+    {
+      "timeSec": 23,
+      "texts": [
+        "再放入烤肠煎至煎香"
+      ]
+    },
+    {
+      "timeSec": 25,
+      "texts": [
+        "全部盛出备用"
+      ]
+    },
+    {
+      "timeSec": 27,
+      "texts": [
+        "放入番茄加点盐炒出汁水"
+      ]
+    },
+    {
+      "timeSec": 29,
+      "texts": [
+        "放入番茄加点盐炒出汁水"
+      ]
+    },
+    {
+      "timeSec": 31,
+      "texts": [
+        "放入土豆和烤肠"
+      ]
+    },
+    {
+      "timeSec": 33,
+      "texts": [
+        "淋入料汁 煮至汤汁变浓稠"
+      ]
+    },
+    {
+      "timeSec": 35,
+      "texts": [
+        "扣一碗米饭 翻炒均匀"
+      ]
+    },
+    {
+      "timeSec": 37,
+      "texts": [
+        "扣一碗米饭 翻炒均匀"
+      ]
+    },
+    {
+      "timeSec": 39,
+      "texts": [
+        "扣一碗米饭 翻炒均匀"
+      ]
+    },
+    {
+      "timeSec": 41,
+      "texts": [
+        "再撒上点葱花"
+      ]
+    },
+    {
+      "timeSec": 43,
+      "texts": [
+        "吃饭啦"
+      ]
+    },
+    {
+      "timeSec": 45,
+      "texts": [
+        "配着烤肠和土豆吃真的绝了"
+      ]
+    },
+    {
+      "timeSec": 47,
+      "texts": [
+        "一个人也要好好吃饭哦"
+      ]
+    },
+    {
+      "timeSec": 49,
+      "texts": [
+        "大家都在",
+        "电饭煲100道懒人菜谱",
+        "搜索",
+        "截图保存到相册",
+        "抖音搜索页扫一扫"
+      ]
+    },
+    {
+      "timeSec": 50.24,
+      "texts": [
+        "大家都在",
+        "抖音",
+        "电饭煲100道懒人菜谱",
+        "搜索",
+        "截图保存到相册",
+        "抖音搜索页扫一扫"
+      ]
+    }
+  ],
+  "ocrSpans": [
+    {
+      "startSec": 4.5,
+      "endSec": 4.5,
+      "texts": [
+        "去皮的番茄切丁"
+      ],
+      "normalizedTexts": [
+        "去皮的番茄切丁"
+      ],
+      "fingerprint": "去皮的番茄切丁",
+      "kind": "subtitle"
+    },
+    {
+      "startSec": 6.5,
+      "endSec": 8.5,
+      "texts": [
+        "去皮的土豆切丁"
+      ],
+      "normalizedTexts": [
+        "去皮的土豆切丁"
+      ],
+      "fingerprint": "去皮的土豆切丁",
+      "kind": "subtitle"
+    },
+    {
+      "startSec": 9.5,
+      "endSec": 9.5,
+      "texts": [
+        "烤肠切段"
+      ],
+      "normalizedTexts": [
+        "烤肠切段"
+      ],
+      "fingerprint": "烤肠切段",
+      "kind": "subtitle"
+    },
+    {
+      "startSec": 10.5,
+      "endSec": 10.5,
+      "texts": [
+        "调碗料汁"
+      ],
+      "normalizedTexts": [
+        "调碗料汁"
+      ],
+      "fingerprint": "调碗料汁",
+      "kind": "ingredient_card"
+    },
+    {
+      "startSec": 11.5,
+      "endSec": 14.5,
+      "texts": [
+        "1勺生抽",
+        "半勺老抽",
+        "1勺耗油",
+        "1勺淀粉",
+        "半勺白糖",
+        "1勺番茄酱",
+        "大半碗水",
+        "调碗料汁"
+      ],
+      "normalizedTexts": [
+        "1勺生抽",
+        "半勺老抽",
+        "1勺耗油",
+        "1勺淀粉",
+        "半勺白糖",
+        "1勺番茄酱",
+        "大半碗水",
+        "调碗料汁"
+      ],
+      "fingerprint": "1勺淀粉|1勺生抽|1勺番茄酱|1勺耗油|半勺白糖|半勺老抽|大半碗水|调碗料汁",
+      "kind": "ingredient_card"
+    },
+    {
+      "startSec": 15.5,
+      "endSec": 16.5,
+      "texts": [
+        "搅匀"
+      ],
+      "normalizedTexts": [
+        "搅匀"
+      ],
+      "fingerprint": "搅匀",
+      "kind": "subtitle"
+    },
+    {
+      "startSec": 18.5,
+      "endSec": 21,
+      "texts": [
+        "油热放入土豆煎至表面焦黄盛出"
+      ],
+      "normalizedTexts": [
+        "油热放入土豆煎至表面焦黄盛出"
+      ],
+      "fingerprint": "油热放入土豆煎至表面焦黄盛出",
+      "kind": "subtitle"
+    },
+    {
+      "startSec": 23,
+      "endSec": 23,
+      "texts": [
+        "再放入烤肠煎至煎香"
+      ],
+      "normalizedTexts": [
+        "再放入烤肠煎至煎香"
+      ],
+      "fingerprint": "再放入烤肠煎至煎香",
+      "kind": "subtitle"
+    },
+    {
+      "startSec": 25,
+      "endSec": 25,
+      "texts": [
+        "全部盛出备用"
+      ],
+      "normalizedTexts": [
+        "全部盛出备用"
+      ],
+      "fingerprint": "全部盛出备用",
+      "kind": "subtitle"
+    },
+    {
+      "startSec": 27,
+      "endSec": 29,
+      "texts": [
+        "放入番茄加点盐炒出汁水"
+      ],
+      "normalizedTexts": [
+        "放入番茄加点盐炒出汁水"
+      ],
+      "fingerprint": "放入番茄加点盐炒出汁水",
+      "kind": "subtitle"
+    },
+    {
+      "startSec": 31,
+      "endSec": 31,
+      "texts": [
+        "放入土豆和烤肠"
+      ],
+      "normalizedTexts": [
+        "放入土豆和烤肠"
+      ],
+      "fingerprint": "放入土豆和烤肠",
+      "kind": "subtitle"
+    },
+    {
+      "startSec": 33,
+      "endSec": 33,
+      "texts": [
+        "淋入料汁 煮至汤汁变浓稠"
+      ],
+      "normalizedTexts": [
+        "淋入料汁煮至汤汁变浓稠"
+      ],
+      "fingerprint": "淋入料汁煮至汤汁变浓稠",
+      "kind": "subtitle"
+    },
+    {
+      "startSec": 35,
+      "endSec": 39,
+      "texts": [
+        "扣一碗米饭 翻炒均匀"
+      ],
+      "normalizedTexts": [
+        "扣一碗米饭翻炒均匀"
+      ],
+      "fingerprint": "扣一碗米饭翻炒均匀",
+      "kind": "ingredient_card"
+    },
+    {
+      "startSec": 41,
+      "endSec": 41,
+      "texts": [
+        "再撒上点葱花"
+      ],
+      "normalizedTexts": [
+        "再撒上点葱花"
+      ],
+      "fingerprint": "再撒上点葱花",
+      "kind": "subtitle"
+    },
+    {
+      "startSec": 43,
+      "endSec": 43,
+      "texts": [
+        "吃饭啦"
+      ],
+      "normalizedTexts": [
+        "吃饭啦"
+      ],
+      "fingerprint": "吃饭啦",
+      "kind": "subtitle"
+    },
+    {
+      "startSec": 45,
+      "endSec": 45,
+      "texts": [
+        "配着烤肠和土豆吃真的绝了"
+      ],
+      "normalizedTexts": [
+        "配着烤肠和土豆吃真的绝了"
+      ],
+      "fingerprint": "配着烤肠和土豆吃真的绝了",
+      "kind": "subtitle"
+    },
+    {
+      "startSec": 47,
+      "endSec": 47,
+      "texts": [
+        "一个人也要好好吃饭哦"
+      ],
+      "normalizedTexts": [
+        "一个人也要好好吃饭哦"
+      ],
+      "fingerprint": "一个人也要好好吃饭哦",
+      "kind": "subtitle"
+    },
+    {
+      "startSec": 49,
+      "endSec": 50.24,
+      "texts": [
+        "电饭煲100道懒人菜谱"
+      ],
+      "normalizedTexts": [
+        "电饭煲100道懒人菜谱"
+      ],
+      "fingerprint": "电饭煲100道懒人菜谱",
+      "kind": "subtitle"
+    }
+  ],
+  "segmentCandidates": [
+    {
+      "instruction": "将去皮的番茄切成丁。",
+      "start_sec": 0,
+      "end_sec": 5.59,
+      "duration_min": 1,
+      "timer_required": false,
+      "evidence_sources": [
+        "ocr"
+      ]
+    },
+    {
+      "instruction": "去皮的番茄切丁",
+      "start_sec": 4.5,
+      "end_sec": 11.19,
+      "duration_min": 5.6,
+      "timer_required": false,
+      "evidence_sources": [
+        "ocr",
+        "visual"
+      ],
+      "origin": "ocr_direct"
+    },
+    {
+      "instruction": "去皮的土豆切丁",
+      "start_sec": 6.5,
+      "end_sec": 8.5,
+      "duration_min": 1,
+      "timer_required": false,
+      "evidence_sources": [
+        "ocr"
+      ],
+      "origin": "ocr_direct"
+    },
+    {
+      "instruction": "烤肠切段",
+      "start_sec": 9.5,
+      "end_sec": 9.5,
+      "duration_min": 1,
+      "timer_required": false,
+      "evidence_sources": [
+        "ocr"
+      ],
+      "origin": "ocr_direct"
+    },
+    {
+      "instruction": "搅匀",
+      "start_sec": 15.5,
+      "end_sec": 16.5,
+      "duration_min": 1,
+      "timer_required": false,
+      "evidence_sources": [
+        "ocr"
+      ],
+      "origin": "ocr_direct"
+    },
+    {
+      "instruction": "油热放入土豆煎至表面焦黄盛出",
+      "start_sec": 18.5,
+      "end_sec": 21,
+      "duration_min": 1,
+      "timer_required": false,
+      "evidence_sources": [
+        "ocr"
+      ],
+      "origin": "ocr_direct"
+    },
+    {
+      "instruction": "再放入烤肠煎至煎香",
+      "start_sec": 23,
+      "end_sec": 23,
+      "duration_min": 1,
+      "timer_required": false,
+      "evidence_sources": [
+        "ocr"
+      ],
+      "origin": "ocr_direct"
+    },
+    {
+      "instruction": "全部盛出备用",
+      "start_sec": 25,
+      "end_sec": 25,
+      "duration_min": 1,
+      "timer_required": false,
+      "evidence_sources": [
+        "ocr"
+      ],
+      "origin": "ocr_direct"
+    },
+    {
+      "instruction": "放入番茄加点盐炒出汁水",
+      "start_sec": 27,
+      "end_sec": 29,
+      "duration_min": 1,
+      "timer_required": false,
+      "evidence_sources": [
+        "ocr"
+      ],
+      "origin": "ocr_direct"
+    },
+    {
+      "instruction": "放入土豆和烤肠",
+      "start_sec": 31,
+      "end_sec": 31,
+      "duration_min": 1,
+      "timer_required": false,
+      "evidence_sources": [
+        "ocr"
+      ],
+      "origin": "ocr_direct"
+    },
+    {
+      "instruction": "淋入料汁 煮至汤汁变浓稠",
+      "start_sec": 33,
+      "end_sec": 33,
+      "duration_min": 1,
+      "timer_required": false,
+      "evidence_sources": [
+        "ocr"
+      ],
+      "origin": "ocr_direct"
+    },
+    {
+      "instruction": "撒上葱花",
+      "start_sec": 39.15,
+      "end_sec": 41.15,
+      "duration_min": 1,
+      "timer_required": false,
+      "evidence_sources": [
+        "ocr"
+      ]
+    }
+  ],
+  "strictSteps": [
+    {
+      "order": 1,
+      "instruction": "去皮的番茄切丁",
+      "duration_min": 5.6,
+      "timer_required": false,
+      "estimated": false,
+      "evidence_sources": [
+        "ocr",
+        "visual"
+      ],
+      "evidence_start_sec": 0,
+      "evidence_end_sec": 11.19
+    },
+    {
+      "order": 2,
+      "instruction": "去皮的土豆切丁",
+      "duration_min": 1,
+      "timer_required": false,
+      "estimated": false,
+      "evidence_sources": [
+        "ocr"
+      ],
+      "evidence_start_sec": 6.5,
+      "evidence_end_sec": 8.5
+    },
+    {
+      "order": 3,
+      "instruction": "烤肠切段",
+      "duration_min": 1,
+      "timer_required": false,
+      "estimated": false,
+      "evidence_sources": [
+        "ocr"
+      ],
+      "evidence_start_sec": 9.5,
+      "evidence_end_sec": 9.5
+    },
+    {
+      "order": 4,
+      "instruction": "搅匀",
+      "duration_min": 1,
+      "timer_required": false,
+      "estimated": false,
+      "evidence_sources": [
+        "ocr"
+      ],
+      "evidence_start_sec": 11.5,
+      "evidence_end_sec": 16.5,
+      "details": [
+        "1勺生抽",
+        "半勺老抽",
+        "1勺耗油",
+        "1勺淀粉",
+        "半勺白糖",
+        "1勺番茄酱",
+        "大半碗水"
+      ]
+    },
+    {
+      "order": 5,
+      "instruction": "油热放入土豆煎至表面焦黄盛出",
+      "duration_min": 1,
+      "timer_required": false,
+      "estimated": false,
+      "evidence_sources": [
+        "ocr"
+      ],
+      "evidence_start_sec": 18.5,
+      "evidence_end_sec": 21
+    },
+    {
+      "order": 6,
+      "instruction": "再放入烤肠煎至煎香",
+      "duration_min": 1,
+      "timer_required": false,
+      "estimated": false,
+      "evidence_sources": [
+        "ocr"
+      ],
+      "evidence_start_sec": 23,
+      "evidence_end_sec": 23
+    },
+    {
+      "order": 7,
+      "instruction": "全部盛出备用",
+      "duration_min": 1,
+      "timer_required": false,
+      "estimated": false,
+      "evidence_sources": [
+        "ocr"
+      ],
+      "evidence_start_sec": 25,
+      "evidence_end_sec": 25
+    },
+    {
+      "order": 8,
+      "instruction": "放入番茄加点盐炒出汁水",
+      "duration_min": 1,
+      "timer_required": false,
+      "estimated": false,
+      "evidence_sources": [
+        "ocr"
+      ],
+      "evidence_start_sec": 27,
+      "evidence_end_sec": 29
+    },
+    {
+      "order": 9,
+      "instruction": "放入土豆和烤肠",
+      "duration_min": 1,
+      "timer_required": false,
+      "estimated": false,
+      "evidence_sources": [
+        "ocr"
+      ],
+      "evidence_start_sec": 31,
+      "evidence_end_sec": 39,
+      "details": [
+        "扣一碗米饭 翻炒均匀"
+      ]
+    },
+    {
+      "order": 10,
+      "instruction": "淋入料汁 煮至汤汁变浓稠",
+      "duration_min": 1,
+      "timer_required": false,
+      "estimated": false,
+      "evidence_sources": [
+        "ocr"
+      ],
+      "evidence_start_sec": 33,
+      "evidence_end_sec": 33
+    },
+    {
+      "order": 11,
+      "instruction": "撒上葱花",
+      "duration_min": 1,
+      "timer_required": false,
+      "estimated": false,
+      "evidence_sources": [
+        "ocr"
+      ],
+      "evidence_start_sec": 39.15,
+      "evidence_end_sec": 41.15
+    }
+  ],
+  "metadata": {
+    "title": "视频解析食谱",
+    "description": "一道结合番茄、土豆和烤肠的家常菜，通过煎炒和炖煮的方式制作，最后撒上葱花增添风味。",
+    "difficulty": "简单",
+    "servings": 2,
+    "cover_url": null,
+    "source_url": null,
+    "tags": [
+      "视频解析",
+      "家常菜",
+      "番茄",
+      "土豆",
+      "烤肠"
+    ],
+    "ingredients": [
+      {
+        "name": "番茄",
+        "quantity": 1,
+        "unit": "个",
+        "optional": false
+      },
+      {
+        "name": "土豆",
+        "quantity": 1,
+        "unit": "个",
+        "optional": false
+      },
+      {
+        "name": "烤肠",
+        "quantity": 1,
+        "unit": "根",
+        "optional": false
+      },
+      {
+        "name": "葱花",
+        "quantity": 1,
+        "unit": "适量",
+        "optional": false
+      },
+      {
+        "name": "油",
+        "quantity": 1,
+        "unit": "适量",
+        "optional": false
+      },
+      {
+        "name": "盐",
+        "quantity": 1,
+        "unit": "适量",
+        "optional": false
+      },
+      {
+        "name": "料汁",
+        "quantity": 1,
+        "unit": "适量",
+        "optional": false
+      }
+    ],
+    "nutrition": null
+  }
+}

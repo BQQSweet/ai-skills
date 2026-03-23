@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
+import { BullModule } from '@nestjs/bullmq';
 import { ConfigModule } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 
 // 配置
@@ -47,6 +49,19 @@ import { FeedModule } from './modules/feed/feed.module';
     ConfigModule.forRoot({
       isGlobal: true,
       load: [appConfig, jwtConfig, redisConfig, aiConfig, ossConfig],
+    }),
+
+    BullModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        const redis = configService.get<{ host: string; port: number }>('redis');
+        return {
+          connection: {
+            host: redis?.host || '127.0.0.1',
+            port: redis?.port || 6379,
+          },
+        };
+      },
     }),
 
     // 定时任务

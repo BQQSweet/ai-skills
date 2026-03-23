@@ -27,15 +27,24 @@ import {
   QueryRecipeDto,
   RecommendRecipeQueryDto,
 } from './dto/recipe.dto';
+import {
+  RegenerateVideoRecipeDto,
+  VideoRecipeModeDto,
+} from './dto/video-recipe.dto';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { AdminGuard } from '@/common/guards/admin.guard';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
+import { RecipeVideoService } from './video/recipe-video.service';
+import { videoRecipeUploadMulterOptions } from './video/recipe-video-upload';
 
 @ApiTags('recipe')
 @Controller('api/recipe')
 @ApiBearerAuth()
 export class RecipeController {
-  constructor(private readonly recipeService: RecipeService) {}
+  constructor(
+    private readonly recipeService: RecipeService,
+    private readonly recipeVideoService: RecipeVideoService,
+  ) {}
 
   @Post()
   @UseGuards(JwtAuthGuard, AdminGuard)
@@ -134,6 +143,56 @@ export class RecipeController {
   })
   async processVoiceCommand(@UploadedFile() file: Express.Multer.File) {
     return this.recipeService.processVoiceCommand(file);
+  }
+
+  @Post('from-video')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(
+    FileInterceptor('file', videoRecipeUploadMulterOptions),
+  )
+  @ApiOperation({ summary: '上传本地视频并创建解析任务' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+        mode: {
+          type: 'string',
+          enum: ['strict', 'assisted'],
+          default: 'strict',
+        },
+      },
+      required: ['file'],
+    },
+  })
+  async submitVideoParse(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() body: VideoRecipeModeDto,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.recipeVideoService.submitVideoParse(file, userId, body.mode);
+  }
+
+  @Get('jobs/:jobId')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: '查询视频解析任务状态' })
+  async getVideoParseJob(@Param('jobId') jobId: string) {
+    return this.recipeVideoService.getJobStatus(jobId);
+  }
+
+  @Post('jobs/:jobId/regenerate')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: '基于缓存证据重生成视频食谱结果' })
+  async regenerateVideoRecipe(
+    @Param('jobId') jobId: string,
+    @Body() body: RegenerateVideoRecipeDto,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.recipeVideoService.regenerateRecipe(jobId, userId, body.mode);
   }
 
   @Get(':id')

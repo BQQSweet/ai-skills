@@ -45,6 +45,18 @@
         >
           {{ step.instruction }}
         </text>
+        <view
+          v-if="Array.isArray(step.details) && step.details.length"
+          class="mt-2 rounded-2xl bg-slate-50 px-3 py-2 dark:bg-slate-800/70"
+        >
+          <text
+            v-for="(detail, detailIndex) in step.details"
+            :key="`${index}-detail-${detailIndex}`"
+            class="block text-xs leading-5 text-slate-500 dark:text-slate-400"
+          >
+            {{ detail }}
+          </text>
+        </view>
         <view class="flex flex-wrap gap-2 mt-3">
           <button
             class="m-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-medium border border-slate-100 dark:border-slate-700 transition-colors active:bg-slate-200 after:hidden"
